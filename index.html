@@ -975,6 +975,7 @@ function go(name,btn){
   btn.classList.add('on');
   if(name==='tide'){updateTide();renderCal()}
   if(name==='car'){updateClock();renderHistory();updateStats()}
+  if(name==='blog'){blogRenderList()}
 }
 function subGo(name,btn){
   document.querySelectorAll('.subpanel').forEach(p=>p.classList.remove('on'));
@@ -1616,12 +1617,7 @@ function blogRenderList() {
   }).join('');
 }
 
-// ブログタブ表示時にレンダリング
-const _origGo = go;
-function go(name, btn) {
-  _origGo(name, btn);
-  if (name === 'blog') blogRenderList();
-}
+// ブログタブ表示時にレンダリング（go関数に統合済み）
 
 // 初期化
 setTimeout(()=>{updateTide();renderCal()},200);
