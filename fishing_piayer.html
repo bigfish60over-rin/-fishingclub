@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Fishing Anthems - NAGAYOSHIRIN EDITION</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg-dark: #050914;
+    --glass-bg: rgba(15, 20, 35, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --accent: #00e5ff;
+    --accent-glow: rgba(0, 229, 255, 0.4);
+    --text-main: #f0f4f8;
+    --text-muted: #8b9bb4;
+    --player-height: 110px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
+  body {
+    background: var(--bg-dark);
+    background-image: radial-gradient(circle at 50% 0%, #111a30 0%, var(--bg-dark) 70%);
+    color: var(--text-main);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    padding-bottom: calc(var(--player-height) + 40px);
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    padding: 40px 20px 30px;
+    position: relative;
+    overflow: hidden;
+  }
+  .club-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    text-shadow: 0 0 10px var(--accent-glow);
+  }
+  .title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 12vw, 84px);
+    letter-spacing: 4px;
+    line-height: 1;
+    background: linear-gradient(180deg, #ffffff 0%, #7ca1c6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .subtitle { font-size: 13px; color: var(--text-muted); letter-spacing: 2px; }
+
+  /* TRACK LIST */
+  .container { max-width: 800px; margin: 0 auto; padding: 0 16px; }
+  .track-list { display: flex; flex-direction: column; gap: 12px; }
+  
+  .track-item {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+  .track-item:hover, .track-item:active { background: rgba(25, 35, 60, 0.8); transform: translateY(-2px); }
+  .track-item.playing {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.15);
+  }
+
+  .track-art-wrap { position: relative; width: 56px; height: 56px; flex-shrink: 0; }
+  .track-art { width: 100%; height: 100%; border-radius: 10px; object-fit: cover; }
+  
+  /* VISUALIZER */
+  .eq-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); border-radius: 10px;
+    display: none; align-items: center; justify-content: center; gap: 3px;
+  }
+  .playing .eq-overlay { display: flex; }
+  .eq-bar { width: 4px; background: var(--accent); border-radius: 2px; animation: eq 0.6s ease-in-out infinite alternate; }
+  .eq-bar:nth-child(2) { animation-delay: 0.2s; }
+  .eq-bar:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes eq { 0% { height: 8px; } 100% { height: 24px; } }
+
+  .track-info { flex: 1; min-width: 0; }
+  .track-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .playing .track-title { color: var(--accent); }
+  .track-desc { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .track-duration { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--text-muted); }
+
+  /* KARAOKE STAGE */
+  .karaoke-container {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+    height: 250px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    position: relative;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.5);
+  }
+  .karaoke-container::-webkit-scrollbar { width: 6px; }
+  .karaoke-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+  
+  .lyric-line {
+    font-size: 18px; color: var(--text-muted); line-height: 2.2;
+    transition: all 0.3s ease; opacity: 0.4; transform: scale(0.98);
+    transform-origin: left center;
+  }
+  .lyric-line.active {
+    color: var(--text-main); font-size: 24px; font-weight: 900;
+    opacity: 1; transform: scale(1);
+    text-shadow: 0 0 15px rgba(255,255,255,0.3);
+  }
+  .lyric-line.past { opacity: 0.2; }
+
+  /* PLAYER BAR */
+  .player-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(5, 9, 20, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--glass-border);
+    padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+    z-index: 1000;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .progress-wrapper { display: flex; align-items: center; gap: 12px; }
+  .time-text { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text-muted); width: 45px; }
+  .time-text.right { text-align: right; }
+  
+  .progress-area {
+    flex: 1; height: 32px; display: flex; align-items: center; cursor: pointer;
+    position: relative; touch-action: none;
+  }
+  .progress-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 3px; width: 0%; position: absolute; left: 0; top: 0; box-shadow: 0 0 10px var(--accent-glow);}
+  .progress-head { 
+    width: 16px; height: 16px; background: #fff; border-radius: 50%;
+    position: absolute; right: -8px; top: -5px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    transform: scale(0); transition: transform 0.2s;
+  }
+  .progress-area:active .progress-head { transform: scale(1.2); }
+
+  .controls-row { display: flex; align-items: center; justify-content: space-between; }
+  
+  .track-info-mini { display: flex; flex-direction: column; width: 25%; min-width: 80px; }
+  .mini-title { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mini-artist { font-size: 11px; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+
+  .main-controls { display: flex; align-items: center; gap: 20px; }
+  .btn {
+    background: none; border: none; color: var(--text-main);
+    font-size: 24px; cursor: pointer; padding: 10px;
+    border-radius: 50%; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn:active { transform: scale(0.9); background: rgba(255,255,255,0.1); }
+  .btn-play {
+    width: 64px; height: 64px; background: var(--text-main); color: var(--bg-dark);
+    font-size: 28px; padding-left: 6px; /* 視覚的中央揃え */
+  }
+  .btn-play.is-playing { padding-left: 0; }
+  .btn-play:active { background: var(--text-muted); transform: scale(0.95); }
+
+  .side-controls { display: flex; gap: 10px; width: 25%; justify-content: flex-end; }
+  .btn-small { font-size: 18px; color: var(--text-muted); padding: 8px; }
+  .btn-small.active { color: var(--accent); text-shadow: 0 0 8px var(--accent-glow); }
+
+  @media (max-width: 600px) {
+    .track-info-mini { display: none; }
+    .side-controls { width: auto; }
+    .main-controls { flex: 1; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="club-name">NAGAYOSHIRIN FISHING CLUB</div>
+  <div class="title">Fishing Anthems</div>
+  <div class="subtitle">PRODUCED BY GAKI-OYA RIN</div>
+</header>
+
+<div class="container">
+  <div class="track-list" id="trackList"></div>
+  
+  <div class="karaoke-container" id="karaokeBox">
+    <div style="text-align:center; color:#555; padding-top:40px; font-family:'Space Mono';">SELECT A TRACK TO VIEW LYRICS</div>
+  </div>
+</div>
+
+<div class="player-bar">
+  <div class="progress-wrapper">
+    <div class="time-text" id="timeCurrent">0:00</div>
+    <div class="progress-area" id="progressArea">
+      <div class="progress-bg">
+        <div class="progress-fill" id="progressFill">
+          <div class="progress-head"></div>
+        </div>
+      </div>
+    </div>
+    <div class="time-text right" id="timeTotal">0:00</div>
+  </div>
+  
+  <div class="controls-row">
+    <div class="track-info-mini">
+      <div class="mini-title" id="miniTitle">--</div>
+      <div class="mini-artist">READY</div>
+    </div>
+    
+    <div class="main-controls">
+      <button class="btn" onclick="playPrev()">⏮</button>
+      <button class="btn btn-play" id="playBtn" onclick="togglePlay()">▶</button>
+      <button class="btn" onclick="playNext()">⏭</button>
+    </div>
+    
+    <div class="side-controls">
+      <button class="btn btn-small" id="btnShuffle" onclick="toggleShuffle()">🔀</button>
+      <button class="btn btn-small" id="btnRepeat" onclick="toggleRepeat()">🔁</button>
+    </div>
+  </div>
+</div>
+
+<audio id="audioElement" preload="metadata"></audio>
+
+<script>
+// ナガヨシリン釣りクラブ プレミアムトラックス
+const SONGS = [
+  {
+    id: 0, title: "伝説の鱗 - 荒波の決意", desc: "嵐の海に挑む漁師の魂を描いた和風ロック", duration: 147,
+    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", // サンプル音源
+    lyrics: [
+      { t: 0, text: "♪ (Intro)" },
+      { t: 15, text: "荒れ狂う波の狭間で" },
+      { t: 20, text: "俺たちは竿を握る" },
+      { t: 25, text: "B21Wに乗って 海風を切り裂き" },
+      { t: 32, text: "長沼、吉彦、共に目指すあの磯へ" },
+      { t: 40, text: "唸るドラグ 尺超えの影" },
+      { t: 48, text: "伝説の鱗を 今、引きずり出せ！" }
+    ]
+  },
+  {
+    id: 1, title: "Night Lure - 深淵のアイナメ", desc: "静寂の夜釣りを表現したディープチル", duration: 210,
+    src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", // サンプル音源
+    lyrics: [
+      { t: 0, text: "♪ (Deep Sea Vibe)" },
+      { t: 10, text: "月明かりだけが頼りの" },
+      { t: 18, text: "テトラポッドの隙間" },
+      { t: 28, text: "底を叩くワームに" },
+      { t: 35, text: "生命の鼓動が伝わる" },
+      { t: 45, text: "息を呑む瞬間 全てを忘れさせる" }
+    ]
+  }
+];
+
+// 状態管理 (LocalStorage活用)
+let state = {
+  currentIdx: parseInt(localStorage.getItem('nrf_track')) || 0,
+  isPlaying: false,
+  shuffle: localStorage.getItem('nrf_shuffle') === 'true',
+  repeat: localStorage.getItem('nrf_repeat') === 'true',
+  volume: parseFloat(localStorage.getItem('nrf_vol')) || 1.0
+};
+
+const audio = document.getElementById('audioElement');
+const trackListEl = document.getElementById('trackList');
+const playBtn = document.getElementById('playBtn');
+const progressArea = document.getElementById('progressArea');
+const progressFill = document.getElementById('progressFill');
+const karaokeBox = document.getElementById('karaokeBox');
+let isDragging = false;
+
+// 初期化
+function init() {
+  renderTrackList();
+  updateControlsState();
+  loadTrack(state.currentIdx, false);
+  audio.volume = state.volume;
+}
+
+// トラックリスト描画
+function renderTrackList() {
+  trackListEl.innerHTML = SONGS.map((song, idx) => `
+    <div class="track-item ${idx === state.currentIdx ? 'playing' : ''}" onclick="selectTrack(${idx})">
+      <div class="track-art-wrap">
+        <img class="track-art" src="https://picsum.photos/seed/${song.id + 100}/100/100" alt="Art">
+        <div class="eq-overlay">
+          <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+        </div>
+      </div>
+      <div class="track-info">
+        <div class="track-title">${song.title}</div>
+        <div class="track-desc">${song.desc}</div>
+      </div>
+      <div class="track-duration">${formatTime(song.duration)}</div>
+    </div>
+  `).join('');
+}
+
+function loadTrack(idx, autoPlay = true) {
+  state.currentIdx = idx;
+  localStorage.setItem('nrf_track', idx);
+  const song = SONGS[idx];
+  
+  audio.src = song.src;
+  document.getElementById('miniTitle').textContent = song.title;
+  document.querySelectorAll('.track-item').forEach((el, i) => {
+    el.classList.toggle('playing', i === idx);
+  });
+
+  renderLyrics(song.lyrics);
+  
+  if (autoPlay) {
+    audio.play();
+    state.isPlaying = true;
+    updatePlayBtn();
+  }
+}
+
+function selectTrack(idx) {
+  if (state.currentIdx === idx) {
+    togglePlay();
+  } else {
+    loadTrack(idx, true);
+  }
+}
+
+function togglePlay() {
+  if (audio.paused) {
+    audio.play();
+    state.isPlaying = true;
+  } else {
+    audio.pause();
+    state.isPlaying = false;
+  }
+  updatePlayBtn();
+}
+
+function updatePlayBtn() {
+  playBtn.innerHTML = state.isPlaying ? '⏸' : '▶';
+  playBtn.classList.toggle('is-playing', state.isPlaying);
+  // 再生停止時にEQアニメーションを止める
+  document.querySelectorAll('.track-item').forEach((el, i) => {
+    if(i === state.currentIdx) {
+       const eq = el.querySelector('.eq-overlay');
+       eq.style.display = state.isPlaying ? 'flex' : 'none';
+    }
+  });
+}
+
+function playNext() {
+  let next = state.shuffle ? Math.floor(Math.random() * SONGS.length) : state.currentIdx + 1;
+  if (next >= SONGS.length) next = 0;
+  loadTrack(next, true);
+}
+
+function playPrev() {
+  if (audio.currentTime > 3) {
+    audio.currentTime = 0;
+  } else {
+    let prev = state.currentIdx - 1;
+    if (prev < 0) prev = SONGS.length - 1;
+    loadTrack(prev, true);
+  }
+}
+
+function toggleShuffle() {
+  state.shuffle = !state.shuffle;
+  localStorage.setItem('nrf_shuffle', state.shuffle);
+  updateControlsState();
+}
+
+function toggleRepeat() {
+  state.repeat = !state.repeat;
+  localStorage.setItem('nrf_repeat', state.repeat);
+  updateControlsState();
+}
+
+function updateControlsState() {
+  document.getElementById('btnShuffle').classList.toggle('active', state.shuffle);
+  document.getElementById('btnRepeat').classList.toggle('active', state.repeat);
+}
+
+// シークバー制御 (釣り場での操作性を考慮した広いタップ領域)
+progressArea.addEventListener('pointerdown', (e) => {
+  isDragging = true;
+  updateProgressFromEvent(e);
+});
+window.addEventListener('pointermove', (e) => {
+  if (isDragging) updateProgressFromEvent(e);
+});
+window.addEventListener('pointerup', (e) => {
+  if (isDragging) {
+    updateProgressFromEvent(e);
+    isDragging = false;
+  }
+});
+
+function updateProgressFromEvent(e) {
+  const rect = progressArea.getBoundingClientRect();
+  let percent = (e.clientX - rect.left) / rect.width;
+  percent = Math.max(0, Math.min(1, percent));
+  progressFill.style.width = `${percent * 100}%`;
+  if (!isDragging || e.type === 'pointerup') {
+    audio.currentTime = percent * audio.duration;
+  }
+}
+
+// オーディオイベント同期
+audio.addEventListener('timeupdate', () => {
+  if (!isDragging && audio.duration) {
+    const percent = (audio.currentTime / audio.duration) * 100;
+    progressFill.style.width = `${percent}%`;
+    document.getElementById('timeCurrent').textContent = formatTime(audio.currentTime);
+  }
+  syncLyrics();
+});
+
+audio.addEventListener('loadedmetadata', () => {
+  document.getElementById('timeTotal').textContent = formatTime(audio.duration);
+});
+
+audio.addEventListener('ended', () => {
+  if (state.repeat) {
+    audio.currentTime = 0;
+    audio.play();
+  } else {
+    playNext();
+  }
+});
+
+// カラオケ機能
+let currentLyricIdx = -1;
+function renderLyrics(lyrics) {
+  if (!lyrics || lyrics.length === 0) {
+    karaokeBox.innerHTML = `<div style="text-align:center; color:#555; padding-top:40px; font-family:'Space Mono';">NO LYRICS AVAILABLE</div>`;
+    return;
+  }
+  karaokeBox.innerHTML = `<div style="height: 100px;"></div>` + lyrics.map((l, i) => `<div class="lyric-line" id="lyric-${i}">${l.text}</div>`).join('') + `<div style="height: 150px;"></div>`;
+  currentLyricIdx = -1;
+}
+
+function syncLyrics() {
+  const lyrics = SONGS[state.currentIdx].lyrics;
+  if (!lyrics) return;
+  const t = audio.currentTime;
+  
+  let activeIdx = -1;
+  for (let i = lyrics.length - 1; i >= 0; i--) {
+    if (t >= lyrics[i].t) { activeIdx = i; break; }
+  }
+  
+  if (activeIdx !== currentLyricIdx && activeIdx !== -1) {
+    if(currentLyricIdx !== -1) {
+      const oldEl = document.getElementById(`lyric-${currentLyricIdx}`);
+      if(oldEl) { oldEl.classList.remove('active'); oldEl.classList.add('past'); }
+    }
+    const newEl = document.getElementById(`lyric-${activeIdx}`);
+    if(newEl) {
+      newEl.classList.add('active');
+      newEl.classList.remove('past');
+      // 滑らかなスクロール
+      karaokeBox.scrollTo({
+        top: newEl.offsetTop - karaokeBox.clientHeight / 2 + 20,
+        behavior: 'smooth'
+      });
+    }
+    currentLyricIdx = activeIdx;
+  }
+}
+
+function formatTime(sec) {
+  if (isNaN(sec)) return "0:00";
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+init();
+</script>
+</body>
+</html>

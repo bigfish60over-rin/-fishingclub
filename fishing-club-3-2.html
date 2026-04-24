@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<title>釣りクラブ</title>
+<!--
+  ★ Googleサイト埋め込みコード
+
+  <iframe
+    src="https://あなた.github.io/リポジトリ名/fishing-club.html"
+    width="100%" height="860"
+    allow="microphone; geolocation"
+    style="border:none; border-radius:12px;">
+  </iframe>
+
+  ※ allow="microphone; geolocation" 必須
+  ※ HTTPSでホストすること（GitHub Pages推奨）
+-->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
+
+/* ══════════════════════════════════════
+   デザイントークン（海テーマで統一）
+══════════════════════════════════════ */
+:root {
+  --ink:   #0e1a2b;
+  --deep:  #13243d;
+  --layer: #1a3252;
+  --rim:   rgba(56,189,248,0.18);
+  --sky:   #38bdf8;   /* メインアクセント（海） */
+  --sun:   #fbbf24;   /* 第2アクセント（割り勘強調） */
+  --fish:  #34d399;   /* 成功・通話 */
+  --warn:  #f87171;   /* 警告・終了 */
+  --pur:   #a78bfa;   /* 割り勘サブ（IC・割引） */
+  --muted: #64839e;
+  --text:  #e2eef9;
+  --r: 13px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--ink);color:var(--text);
+  font-family:'Noto Sans JP',sans-serif;
+  min-height:100vh;padding-bottom:72px;
+}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 120% 40% at 50% 110%,rgba(56,189,248,.05),transparent),
+    radial-gradient(ellipse 60% 25% at 80% 10%,rgba(251,191,36,.03),transparent);
+}
+
+/* ── ナビ ── */
+.nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:rgba(13,24,43,.96);border-top:1px solid var(--rim);
+  display:flex;backdrop-filter:blur(12px);
+}
+.ntab{
+  flex:1;background:transparent;border:none;color:var(--muted);
+  padding:10px 4px 8px;font-family:inherit;font-size:10px;font-weight:700;
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;
+  transition:color .2s;border-top:2.5px solid transparent;
+}
+.ntab .ni{font-size:22px;line-height:1}
+.ntab.on{color:var(--sky);border-top-color:var(--sky)}
+
+/* ── パネル ── */
+.panel{display:none;padding:13px;position:relative;z-index:1}
+.panel.on{display:block}
+
+/* ── カード ── */
+.card{
+  background:rgba(19,36,61,.9);border:1px solid var(--rim);
+  border-radius:var(--r);padding:13px;margin-bottom:10px;
+  backdrop-filter:blur(6px);
+}
+.ctitle{
+  font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--sky);margin-bottom:11px;
+  display:flex;align-items:center;gap:5px;
+}
+
+/* ── 共通入力（海テーマ） ── */
+input,select{
+  width:100%;
+  background:rgba(26,50,82,.8);
+  border:1px solid var(--rim);
+  border-radius:9px;
+  color:var(--text);
+  font-family:'DM Mono',monospace;
+  font-size:15px;
+  padding:10px 12px;
+  outline:none;
+  transition:border-color .2s;
+  -webkit-appearance:none;
+}
+input:focus,select:focus{border-color:var(--sky)}
+input::placeholder{color:var(--muted)}
+select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364839e' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
+}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field{margin-bottom:9px}.field:last-child{margin-bottom:0}
+.lbl{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:500}
+
+/* ══════════════════════════════════════
+   ブログタブ
+══════════════════════════════════════ */
+.blog-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.blog-title{font-size:18px;font-weight:900}
+.blog-tabs{display:flex;gap:5px;margin-bottom:10px}
+.btab{flex:1;background:rgba(26,50,82,.4);border:1px solid var(--rim);border-radius:9px;padding:7px 5px;font-family:inherit;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .2s}
+.btab.on{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.35);color:var(--sky)}
+
+/* 投稿カード */
+.post-card{background:rgba(19,36,61,.9);border:1px solid var(--rim);border-radius:var(--r);padding:13px;margin-bottom:10px;position:relative}
+.post-card.type-report{border-left:3px solid var(--fish)}
+.post-card.type-notice{border-left:3px solid var(--sun)}
+.post-meta{display:flex;align-items:center;gap:7px;margin-bottom:7px;flex-wrap:wrap}
+.post-type{font-size:9px;font-weight:700;padding:2px 8px;border-radius:50px;text-transform:uppercase;letter-spacing:1px}
+.type-label-report{background:rgba(52,211,153,.12);color:var(--fish);border:1px solid rgba(52,211,153,.25)}
+.type-label-notice{background:rgba(251,191,36,.12);color:var(--sun);border:1px solid rgba(251,191,36,.25)}
+.post-date{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace}
+.post-title{font-size:15px;font-weight:700;margin-bottom:6px;line-height:1.4}
+.post-body{font-size:13px;color:rgba(226,238,249,.8);line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.post-img{width:100%;border-radius:9px;margin-top:9px;max-height:240px;object-fit:cover;display:block}
+.post-fish{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.fish-tag{font-size:11px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);color:var(--fish);border-radius:50px;padding:2px 9px}
+.post-actions{display:flex;gap:6px;margin-top:9px;border-top:1px solid var(--rim);padding-top:8px}
+.act-btn{background:transparent;border:1px solid var(--rim);border-radius:7px;color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;padding:5px 10px;cursor:pointer;transition:all .2s}
+.act-btn:hover{border-color:var(--sky);color:var(--sky)}
+.act-btn.del:hover{border-color:var(--warn);color:var(--warn)}
+
+/* 投稿フォーム */
+.post-form{background:rgba(19,36,61,.95);border:1px solid var(--rim);border-radius:var(--r);padding:13px;margin-bottom:10px}
+.form-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--sky);margin-bottom:11px}
+.type-sel{display:flex;gap:6px;margin-bottom:9px}
+.tsel-btn{flex:1;background:rgba(26,50,82,.4);border:1.5px solid var(--rim);border-radius:9px;padding:8px;font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .2s}
+.tsel-btn.on{background:rgba(56,189,248,.12);border-color:var(--sky);color:var(--sky)}
+.blog-inp{width:100%;background:rgba(26,50,82,.8);border:1px solid var(--rim);border-radius:9px;color:var(--text);font-family:inherit;font-size:14px;padding:10px 12px;outline:none;-webkit-appearance:none;margin-bottom:8px;transition:border-color .2s}
+.blog-inp:focus{border-color:var(--sky)}
+.blog-textarea{width:100%;background:rgba(26,50,82,.8);border:1px solid var(--rim);border-radius:9px;color:var(--text);font-family:inherit;font-size:13px;padding:10px 12px;outline:none;resize:vertical;min-height:100px;margin-bottom:8px;line-height:1.7;transition:border-color .2s}
+.blog-textarea:focus{border-color:var(--sky)}
+.img-preview{width:100%;border-radius:9px;margin-bottom:8px;max-height:180px;object-fit:cover;display:none}
+.img-preview.show{display:block}
+.file-btn{display:flex;align-items:center;gap:7px;background:rgba(26,50,82,.5);border:1.5px dashed var(--rim);border-radius:9px;padding:10px 12px;cursor:pointer;margin-bottom:8px;font-size:12px;color:var(--muted);transition:all .2s}
+.file-btn:hover{border-color:var(--sky);color:var(--sky)}
+.fish-inp-row{display:flex;gap:6px;margin-bottom:8px}
+.fish-inp-row input{flex:1}
+.post-btn{width:100%;background:var(--sky);color:var(--ink);border:none;border-radius:var(--r);padding:12px;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer;transition:all .15s}
+.post-btn:active{transform:scale(.97)}
+
+/* 管理者ログイン */
+.admin-bar{display:flex;align-items:center;justify-content:space-between;background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:9px 12px;margin-bottom:10px}
+.admin-status{font-size:12px;font-weight:700;color:var(--pur)}
+.admin-btn{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);border-radius:8px;color:var(--pur);font-family:inherit;font-size:11px;font-weight:700;padding:5px 11px;cursor:pointer}
+
+.empty-blog{text-align:center;color:var(--muted);font-size:13px;padding:40px 0;line-height:1.8}
+
+/* シート連携バー */
+.sheet-bar{display:flex;align-items:center;justify-content:space-between;background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:8px 12px;margin-bottom:10px;gap:8px}
+.sheet-status{font-size:11px;color:#a78bfa;font-weight:700;flex:1}
+.sheet-btn{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);border-radius:8px;color:#a78bfa;font-family:inherit;font-size:11px;font-weight:700;padding:5px 11px;cursor:pointer;white-space:nowrap}
+.sheet-btn:active{transform:scale(.96)}
+.post-type-sheet{background:rgba(167,139,250,.12);color:#a78bfa;border:1px solid rgba(167,139,250,.25)}
+
+/* 管理者パスワードモーダル */
+.pw-modal{display:none;position:fixed;inset:0;z-index:600;align-items:center;justify-content:center;background:rgba(10,20,35,.9);backdrop-filter:blur(8px)}
+.pw-modal.on{display:flex}
+.pw-box{background:var(--deep);border:2px solid var(--pur);border-radius:18px;padding:24px 20px;text-align:center;max-width:280px;width:90%;animation:pop .3s cubic-bezier(.34,1.56,.64,1)}
+.pw-title{font-size:16px;font-weight:900;color:var(--pur);margin-bottom:4px}
+.pw-sub{font-size:11px;color:var(--muted);margin-bottom:14px}
+.pw-inp{width:100%;background:rgba(26,50,82,.8);border:1.5px solid rgba(167,139,250,.3);border-radius:9px;color:var(--text);font-family:'DM Mono',monospace;font-size:16px;padding:10px 12px;outline:none;text-align:center;letter-spacing:4px;margin-bottom:12px;-webkit-appearance:none}
+.pw-inp:focus{border-color:var(--pur)}
+.pw-btns{display:flex;gap:8px}
+.pw-ok{flex:1;background:var(--pur);color:#fff;border:none;border-radius:9px;padding:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.pw-cancel{background:transparent;border:1px solid var(--rim);border-radius:9px;padding:10px 14px;color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.pw-err{font-size:11px;color:var(--warn);margin-bottom:8px;display:none}
+.pw-err.show{display:block}
+
+/* 釣行レポートサブタブ */
+.blog-top-tabs{display:flex;gap:5px;margin-bottom:12px}
+.bttab{flex:1;background:rgba(26,50,82,.4);border:1px solid var(--rim);border-radius:9px;padding:9px 5px;font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .2s}
+.bttab.on{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.35);color:var(--fish)}
+.blog-sub{display:none}.blog-sub.on{display:block}
+
+/* 釣行レポートパネル内スタイル */
+.rp-hero{background:linear-gradient(135deg,rgba(200,75,17,.18),rgba(14,165,160,.1));border:1px solid rgba(200,75,17,.3);border-radius:var(--r);padding:16px 14px;margin-bottom:12px;position:relative;overflow:hidden}
+.rp-hero::before{content:'';position:absolute;top:0;right:0;width:45%;height:100%;background:repeating-linear-gradient(-55deg,transparent,transparent 8px,rgba(200,75,17,.04) 8px,rgba(200,75,17,.04) 9px);pointer-events:none}
+.rp-club{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.25em;color:var(--fish);text-transform:uppercase;margin-bottom:6px}
+.rp-title{font-size:22px;font-weight:900;line-height:1.1;margin-bottom:4px;color:var(--text)}
+.rp-title span{color:#c84b11}
+.rp-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+.rp-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.rp-badge{font-family:'DM Mono',monospace;font-size:10px;padding:3px 9px;border:1px solid rgba(200,75,17,.5);color:#f59e0b;background:rgba(200,75,17,.1);border-radius:4px;letter-spacing:.1em}
+
+.rp-section{margin-bottom:14px}
+.rp-sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(200,75,17,.3)}
+.rp-sec-num{font-family:'DM Mono',monospace;font-size:28px;font-weight:700;color:rgba(200,75,17,.25);line-height:1}
+.rp-sec-title{font-size:14px;font-weight:900;color:var(--text)}
+
+.rp-card{background:rgba(19,36,61,.9);border:1px solid var(--rim);border-radius:var(--r);padding:12px;margin-bottom:8px}
+.rp-text{font-size:13px;line-height:1.9;color:rgba(226,238,249,.85)}
+.rp-text p+p{margin-top:.9em}
+.rp-highlight{border-left:3px solid #c84b11;padding:8px 12px;margin:10px 0;font-size:13px;color:#f59e0b;font-weight:700;line-height:1.6;background:rgba(200,75,17,.06);border-radius:0 8px 8px 0}
+
+/* タイムライン（レポート内） */
+.rp-tl{padding-left:24px;position:relative}
+.rp-tl::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,#c84b11,#0ea5a0,transparent)}
+.rp-tl-item{position:relative;margin-bottom:14px}
+.rp-tl-dot{position:absolute;left:-28px;top:3px;width:10px;height:10px;border-radius:50%;background:#c84b11;border:2px solid var(--ink);box-shadow:0 0 6px #c84b11}
+.rp-tl-time{font-family:'DM Mono',monospace;font-size:11px;color:#0ea5a0;margin-bottom:2px}
+.rp-tl-txt{font-size:13px;line-height:1.7;color:rgba(226,238,249,.85)}
+.rp-tl-txt strong{color:#f59e0b}
+
+/* メンバーカード */
+.rp-members{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.rp-member{background:rgba(26,50,82,.7);border:1px solid var(--rim);border-radius:10px;padding:11px 10px;text-align:center}
+.rp-member.solo{grid-column:span 2}
+.rp-mem-icon{font-size:28px;margin-bottom:5px}
+.rp-mem-name{font-size:13px;font-weight:700;margin-bottom:3px}
+.rp-mem-role{font-size:10px;color:var(--muted)}
+.rp-mem-fish{margin-top:6px;display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
+.rp-fish-tag{font-size:10px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);color:var(--fish);border-radius:50px;padding:1px 7px}
+
+/* 釣果テーブル */
+.rp-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+.rp-table th{background:rgba(200,75,17,.15);color:#f59e0b;font-weight:700;padding:7px 8px;text-align:left;border-bottom:1px solid rgba(200,75,17,.3)}
+.rp-table td{padding:7px 8px;border-bottom:1px solid var(--rim);color:rgba(226,238,249,.85);vertical-align:top}
+.rp-table tr:last-child td{border-bottom:none}
+.rp-table tr:hover td{background:rgba(56,189,248,.04)}
+
+/* チャートラッパー */
+.rp-chart-wrap{background:rgba(14,26,43,.8);border:1px solid var(--rim);border-radius:10px;padding:12px;margin-top:8px}
+.rp-chart-label{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.rp-chart-wrap canvas{width:100%!important;max-height:160px}
+
+/* スタッツグリッド */
+.rp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:8px}
+.rp-stat{background:rgba(26,50,82,.7);border:1px solid var(--rim);border-radius:10px;padding:10px 7px;text-align:center}
+.rp-stat-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:#f59e0b;line-height:1}
+.rp-stat-lbl{font-size:10px;color:var(--muted);margin-top:3px}
+
+/* 反省ボックス */
+.rp-reflection{background:rgba(26,50,82,.5);border:1px solid var(--rim);border-radius:var(--r);padding:12px}
+.rp-ref-title{font-size:12px;font-weight:700;color:var(--sky);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
+.rp-ref-item{padding:8px 0;border-bottom:1px solid var(--rim)}
+.rp-ref-item:last-child{border-bottom:none}
+.rp-ref-item h4{font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:3px}
+.rp-ref-item p{font-size:12px;color:rgba(226,238,249,.75);line-height:1.7}
+
+/* ══════════════════════════════════════
+   潮見タブ
+══════════════════════════════════════ */
+.loc-row{display:flex;gap:7px;margin-bottom:10px}
+.loc-row select{flex:1}
+.btn-ghost{background:transparent;border:1.5px solid var(--rim);border-radius:10px;color:var(--text);padding:10px 13px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-ghost:hover{border-color:var(--sky);color:var(--sky)}
+
+.tide-now{background:linear-gradient(135deg,rgba(19,36,61,.95),rgba(26,50,82,.8));border:1px solid var(--rim);border-radius:var(--r);padding:14px;margin-bottom:10px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}
+.tdate{font-size:11px;color:var(--muted);margin-bottom:2px}
+.tmoon{font-size:26px;line-height:1}
+.ttype{font-size:14px;font-weight:700;color:var(--sun);margin:3px 0}
+.tloc{font-size:11px;color:var(--muted)}
+.tnp{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.28);border-radius:10px;padding:10px;text-align:center;white-space:nowrap}
+.tnp-lbl{font-size:9px;color:var(--muted);margin-bottom:3px;font-weight:700;text-transform:uppercase}
+.tnp-time{font-family:'DM Mono',monospace;font-size:18px;color:var(--sun)}
+.tnp-kind{font-size:11px;color:var(--text);margin-top:2px}
+.tnp-cnt{font-size:10px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
+
+.gauge-wrap{margin-bottom:10px}
+.gauge-lbl{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:12px}
+.gauge-title{font-weight:700}
+.gauge-score{font-family:'DM Mono',monospace;font-size:14px;font-weight:700}
+.gauge-bar{height:11px;background:rgba(26,50,82,.8);border-radius:50px;overflow:hidden}
+.gauge-fill{height:100%;border-radius:50px;transition:width 1s ease}
+.gauge-reason{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
+
+.graph-wrap{background:rgba(14,26,43,.8);border:1px solid var(--rim);border-radius:12px;padding:10px 10px 4px;margin-bottom:10px}
+#tideCanvas{width:100%;height:105px;display:block}
+
+.timeline{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.tevent{display:flex;align-items:center;gap:9px;background:rgba(19,36,61,.8);border:1px solid var(--rim);border-radius:10px;padding:9px 11px;transition:all .2s}
+.tevent.best{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.05)}
+.tevent.good{border-color:rgba(52,211,153,.28);background:rgba(52,211,153,.04)}
+.tevent.past{opacity:.4}
+.te-ico{font-size:18px;flex-shrink:0}
+.te-body{flex:1}
+.te-time{font-family:'DM Mono',monospace;font-size:14px;font-weight:700}
+.te-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.te-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:50px;white-space:nowrap}
+.badge-best{background:rgba(251,191,36,.14);color:var(--sun);border:1px solid rgba(251,191,36,.28)}
+.badge-good{background:rgba(52,211,153,.1);color:var(--fish);border:1px solid rgba(52,211,153,.22)}
+.badge-low{background:rgba(100,131,158,.08);color:var(--muted);border:1px solid var(--rim)}
+
+/* カレンダー */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.cal-month{font-size:14px;font-weight:700}
+.cal-nav{background:transparent;border:1px solid var(--rim);border-radius:7px;color:var(--muted);padding:5px 9px;cursor:pointer;font-family:inherit;font-size:12px}
+.cal-nav:hover{border-color:var(--sky);color:var(--sky)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-dow{text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:3px 0 5px}
+.cal-cell{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;position:relative;background:rgba(26,50,82,.28);border:1px solid transparent;font-size:12px}
+.cal-cell:hover{border-color:var(--sky)}
+.cal-cell.today{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.38);color:var(--sky);font-weight:700}
+.cal-cell.selected{background:rgba(251,191,36,.14);border-color:rgba(251,191,36,.45)}
+.cal-cell.other-month{opacity:.3}
+.cday{font-size:12px;font-weight:700;line-height:1}
+.cmoon{font-size:9px;line-height:1;margin-top:1px}
+.cscore{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:78%;height:3px;border-radius:2px}
+.sc5{background:var(--sun)}.sc4{background:var(--fish)}.sc3{background:var(--sky)}.sc2{background:var(--muted)}.sc1{background:var(--rim)}
+.cal-detail{background:rgba(26,50,82,.55);border:1px solid var(--rim);border-radius:10px;padding:11px;margin-top:9px}
+.cal-dtitle{font-size:13px;font-weight:700;margin-bottom:7px;color:var(--sun)}
+.cdr{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid var(--rim);font-size:12px}
+.cdr:last-child{border-bottom:none}
+.cdr-t{font-family:'DM Mono',monospace;width:40px;flex-shrink:0}
+.cdr-l{flex:1;color:var(--muted)}
+
+/* アラート */
+.tgl-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--rim)}
+.tgl-row:last-child{border-bottom:none}
+.tgl-lbl{font-size:13px;font-weight:500}
+.tgl-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.tgl{width:42px;height:23px;background:var(--layer);border-radius:50px;border:1px solid var(--rim);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.tgl::after{content:'';position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:var(--muted);transition:all .2s}
+.tgl.on{background:rgba(52,211,153,.18);border-color:var(--fish)}
+.tgl.on::after{left:21px;background:var(--fish)}
+.alert-banner{display:none;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.22);border-radius:9px;padding:8px 12px;margin-bottom:9px;font-size:12px;color:var(--sun);font-weight:700;text-align:center;animation:glow 2.5s infinite}
+.alert-banner.show{display:block}
+@keyframes glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 16px rgba(251,191,36,.18)}}
+
+/* ══════════════════════════════════════
+   割り勘タブ（海テーマに統合）
+══════════════════════════════════════ */
+
+/* ヘッダー時計（割り勘タブ内） */
+.carpool-header{display:flex;align-items:center;justify-content:space-between;background:rgba(19,36,61,.9);border:1px solid var(--rim);border-radius:var(--r);padding:10px 13px;margin-bottom:10px}
+.cp-title-block .cpt{font-size:16px;font-weight:900}
+.cp-title-block .cpt span{color:var(--sun)}
+.cp-title-block .cps{font-size:10px;color:var(--muted);margin-top:1px}
+.clkbox{font-family:'DM Mono',monospace;background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:5px 9px;text-align:right;flex-shrink:0}
+.clktime{font-size:14px;color:var(--sun);font-weight:500}
+.clkdisc{font-size:9px;color:var(--fish);margin-top:1px;font-family:'Noto Sans JP',sans-serif}
+
+/* IC パネル（海テーマ色） */
+.icpanel{border:1px solid var(--rim);border-radius:11px;overflow:hidden;margin-bottom:10px}
+.icstatus{display:flex;align-items:center;gap:9px;padding:10px 12px;background:rgba(26,50,82,.6)}
+.icdot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s}
+.icdot.scanning{background:var(--sun);animation:bl 1s infinite}
+.icdot.found{background:var(--fish)}
+.icdot.error{background:var(--warn)}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+.icinfo{flex:1;min-width:0}
+.icname{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icsub{font-size:11px;color:var(--muted);margin-top:1px}
+.icbtn{background:var(--pur);color:#fff;border:none;border-radius:8px;padding:7px 11px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .15s}
+.icbtn:active{transform:scale(.93)}
+.icdetail{display:none;padding:8px 12px;border-top:1px solid var(--rim);flex-direction:column;gap:7px}
+.icdetail.show{display:flex}
+.ictag{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px;flex-wrap:wrap}
+.ictag strong{color:var(--text);font-family:'DM Mono',monospace}
+.ic-cand-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:2px}
+.ic-cands{display:flex;flex-direction:column;gap:4px}
+.ic-cand{display:flex;align-items:center;gap:7px;background:rgba(26,50,82,.5);border:1px solid var(--rim);border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left;font-family:inherit;transition:all .2s;width:100%}
+.ic-cand.sel{border-color:var(--fish);background:rgba(52,211,153,.1)}
+.ic-cand:hover{border-color:var(--sky)}
+.ic-cand-name{font-size:13px;font-weight:700;color:var(--text);flex:1;min-width:0}
+.ic-cand-road{font-size:10px;color:var(--muted);background:rgba(56,189,248,.1);border-radius:4px;padding:2px 5px;white-space:nowrap;flex-shrink:0}
+.ic-cand-dist{font-family:'DM Mono',monospace;font-size:11px;color:var(--sun);white-space:nowrap;flex-shrink:0}
+
+/* 割引ボックス */
+.discbox{background:rgba(26,50,82,.5);border:1px solid var(--rim);border-radius:9px;padding:10px;margin-bottom:10px}
+.disc-auto-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--fish);margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.discpill{display:inline-flex;align-items:center;gap:5px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);border-radius:50px;padding:5px 11px;font-size:12px;font-weight:700;color:var(--fish);transition:all .3s}
+.disc-manual{margin-top:9px}
+.badge-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.dbadge{padding:5px 10px;border-radius:50px;border:1px solid var(--rim);font-size:10px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--muted);background:transparent;font-family:inherit}
+.dbadge.active{border-color:var(--pur);background:rgba(167,139,250,.14);color:var(--pur)}
+.discinfo{font-size:10px;color:var(--muted);margin-top:5px;line-height:1.5}
+
+/* 計算・リセットボタン */
+.btn-row{display:flex;gap:8px;margin-top:4px}
+.calcbtn{flex:1;background:var(--sun);color:var(--ink);border:none;border-radius:var(--r);padding:13px;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.calcbtn:active{transform:scale(.97)}
+.resetbtn{background:transparent;color:var(--warn);border:1.5px solid var(--warn);border-radius:var(--r);padding:13px 15px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.resetbtn:active{transform:scale(.97);background:rgba(248,113,113,.08)}
+
+/* 結果カード */
+.rescrd{background:linear-gradient(135deg,rgba(19,36,61,.98),rgba(26,50,82,.85));border:1px solid rgba(167,139,250,.35);border-radius:var(--r);padding:15px;margin-top:10px;display:none}
+.rescrd.show{display:block}
+.restotal{text-align:center;margin-bottom:13px}
+.reslbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px}
+.resamt{font-family:'DM Mono',monospace;font-size:36px;font-weight:500;color:var(--sun);line-height:1}
+.resbkd{border-top:1px solid var(--rim);padding-top:11px}
+.bkrow{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px}
+.bkkey{color:var(--muted)}
+.bkval{font-family:'DM Mono',monospace;color:var(--text);font-size:12px}
+.bkval.disc{color:var(--fish)}
+.bkval.tot{color:var(--sun);font-size:14px;font-weight:700}
+.bkrow.sep{border-top:1px dashed var(--rim);margin-top:5px;padding-top:9px}
+.memlist{display:flex;flex-direction:column;gap:6px}
+.memchip{display:flex;align-items:center;justify-content:space-between;background:rgba(26,50,82,.6);border:1px solid var(--rim);border-radius:9px;padding:9px 11px}
+.memname{font-size:13px;font-weight:500}
+.memdrv{font-size:9px;color:var(--pur);background:rgba(167,139,250,.14);border-radius:50px;padding:1px 6px;margin-left:5px;font-weight:700}
+.memamt{font-family:'DM Mono',monospace;font-size:14px;color:var(--sun)}
+.sharebtn{width:100%;background:rgba(26,50,82,.6);border:1px solid var(--rim);border-radius:var(--r);padding:11px;color:var(--text);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:9px;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s}
+.sharebtn:hover{border-color:var(--pur);color:var(--pur)}
+
+/* メンバー */
+.marow{display:flex;gap:7px;margin-bottom:7px}
+.marow input{flex:1}
+.addbtn{background:var(--sun);color:var(--ink);border:none;border-radius:9px;width:42px;font-size:20px;font-weight:700;cursor:pointer;flex-shrink:0}
+.mentry{display:flex;align-items:center;gap:6px;background:rgba(26,50,82,.6);border:1px solid var(--rim);border-radius:9px;padding:8px 10px;margin-bottom:5px}
+.mentry input{flex:1;background:transparent;border:none;padding:0;font-size:14px;color:var(--text)}
+.mentry input:focus{border:none}
+.drvtgl{background:transparent;border:1px solid var(--rim);border-radius:50px;color:var(--muted);font-size:10px;font-weight:700;padding:3px 7px;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap}
+.drvtgl.active{border-color:var(--pur);color:var(--pur);background:rgba(167,139,250,.12)}
+.rmbtn{background:transparent;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 2px}
+.rmbtn:hover{color:var(--warn)}
+
+/* 割り勘履歴 */
+.hitem{background:rgba(19,36,61,.85);border:1px solid var(--rim);border-radius:var(--r);padding:11px;margin-bottom:8px}
+.htop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+.hroute{font-size:13px;font-weight:700;line-height:1.3}
+.hdate{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;flex-shrink:0;margin-left:7px}
+.hmeta{display:flex;gap:7px;flex-wrap:wrap}
+.htag{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px}
+.htag strong{color:var(--text);font-family:'DM Mono',monospace}
+
+/* 設定（割り勘） */
+.srow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--rim)}
+.srow:last-child{border-bottom:none}
+.slbl{font-size:13px;font-weight:500}
+.ssub{font-size:10px;color:var(--muted);margin-top:1px}
+.sinput{width:108px;text-align:right;background:rgba(26,50,82,.8);border:1px solid var(--rim);border-radius:8px;padding:7px 8px;font-family:'DM Mono',monospace;font-size:13px;color:var(--text);outline:none;-webkit-appearance:none}
+.sinput:focus{border-color:var(--sky)}
+.shdr{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--muted);padding:11px 0 4px}
+.saved-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.28);border-radius:50px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--fish);margin-left:6px;opacity:0;transition:opacity .4s}
+.saved-badge.show{opacity:1}
+
+/* 割り勘サブタブ */
+.sub-tabs{display:flex;gap:5px;margin-bottom:10px}
+.stab{flex:1;background:rgba(26,50,82,.4);border:1px solid var(--rim);border-radius:9px;padding:8px 6px;font-family:inherit;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .2s}
+.stab.on{background:rgba(251,191,36,.12);border-color:rgba(251,191,36,.35);color:var(--sun)}
+
+.subpanel{display:none}
+.subpanel.on{display:block}
+
+/* ══════════════════════════════════════
+   共通モーダル・トースト
+══════════════════════════════════════ */
+.modal-bg{display:none;position:fixed;inset:0;z-index:500;align-items:center;justify-content:center;background:rgba(10,20,35,.85);backdrop-filter:blur(8px)}
+.modal-bg.on{display:flex}
+.modal-box{background:var(--deep);border:2px solid var(--sun);border-radius:18px;padding:24px 20px;text-align:center;max-width:285px;width:90%;animation:pop .3s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.m-ico{font-size:48px;margin-bottom:7px}
+.m-title{font-size:18px;font-weight:900;color:var(--sun);margin-bottom:5px}
+.m-body{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:16px;white-space:pre-line}
+.m-close{background:var(--sun);color:var(--ink);border:none;border-radius:10px;padding:10px 26px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--fish);color:var(--ink);padding:8px 15px;border-radius:50px;font-size:12px;font-weight:700;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- ナビ -->
+<div class="nav">
+  <button class="ntab on" onclick="go('tide',this)"><span class="ni">🌊</span>潮見</button>
+  <button class="ntab"    onclick="go('blog',this)"><span class="ni">📝</span>ブログ</button>
+  <button class="ntab"    onclick="go('car', this)"><span class="ni">🚗</span>割り勘</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     ブログパネル
+══════════════════════════════════════ -->
+<div id="panel-blog" class="panel">
+
+  <!-- トップサブタブ -->
+  <div class="blog-top-tabs">
+    <button class="bttab on" onclick="blogTopGo('posts',this)">📋 投稿一覧</button>
+    <button class="bttab"    onclick="blogTopGo('report',this)">🏆 第1回 鹿島釣行</button>
+  </div>
+
+  <!-- ─── 投稿一覧 ─── -->
+  <div id="bsub-posts" class="blog-sub on">
+
+  <!-- シート連携バー -->
+  <div class="sheet-bar">
+    <span class="sheet-status" id="sheetStatus">📊 釣果データ読み込み中…</span>
+    <button class="sheet-btn" onclick="fetchSheetPosts()">🔄 更新</button>
+  </div>
+
+  <!-- 管理者バー -->
+  <div class="admin-bar">
+    <span class="admin-status" id="adminStatus">👤 閲覧モード</span>
+    <button class="admin-btn" id="adminToggleBtn" onclick="blogAdminToggle()">管理者ログイン</button>
+  </div>
+
+  <!-- 投稿フォーム（管理者のみ表示） -->
+  <div class="post-form" id="postForm" style="display:none">
+    <div class="form-title">✏️ 新規投稿</div>
+    <div class="type-sel">
+      <button class="tsel-btn on" id="tsel-report" onclick="blogSetType('report',this)">🐟 釣果報告</button>
+      <button class="tsel-btn"    id="tsel-notice" onclick="blogSetType('notice',this)">📢 お知らせ</button>
+    </div>
+    <input  class="blog-inp"      id="postTitle"    placeholder="タイトル">
+    <textarea class="blog-textarea" id="postBody"   placeholder="内容を書いてください…"></textarea>
+    <div id="fishSection">
+      <div class="fish-inp-row">
+        <input class="blog-inp" style="margin-bottom:0" id="fishInput" placeholder="釣れた魚（例：アジ）" maxlength="15">
+        <button class="addbtn" style="background:var(--fish);color:var(--ink);border:none;border-radius:9px;width:42px;font-size:20px;font-weight:700;cursor:pointer;flex-shrink:0" onclick="blogAddFish()">＋</button>
+      </div>
+      <div class="post-fish" id="fishTagsPreview" style="margin-top:6px;margin-bottom:8px"></div>
+    </div>
+    <label class="file-btn" for="postImg">📷 写真を追加（任意）</label>
+    <input type="file" id="postImg" accept="image/*" style="display:none" onchange="blogPreviewImg(this)">
+    <img class="img-preview" id="imgPreview" src="" alt="">
+    <button class="post-btn" onclick="blogSubmit()">📝 投稿する</button>
+  </div>
+
+  <!-- 絞り込みタブ -->
+  <div class="blog-tabs">
+    <button class="btab on" onclick="blogFilter('all',this)">📋 すべて</button>
+    <button class="btab"    onclick="blogFilter('report',this)">🐟 釣果</button>
+    <button class="btab"    onclick="blogFilter('notice',this)">📢 お知らせ</button>
+  </div>
+
+  <!-- 投稿リスト -->
+  <div id="blogList"></div>
+
+  </div><!-- /bsub-posts -->
+
+  <!-- ─── 第1回 鹿島釣行レポート ─── -->
+  <div id="bsub-report" class="blog-sub">
+
+    <!-- ヒーロー -->
+    <div class="rp-hero">
+      <div class="rp-club">ナガヨシリン fishing club</div>
+      <div class="rp-title">鹿島<span>釣行</span><br>レポート</div>
+      <div class="rp-date">2026.04.11〜12 ／ 茨城県鹿島 公共埠頭</div>
+      <div class="rp-badges">
+        <span class="rp-badge">#01 KASHIMA</span>
+        <span class="rp-badge">総釣果 7本</span>
+        <span class="rp-badge">3名参加</span>
+      </div>
+    </div>
+
+    <!-- 01 ストーリー -->
+    <div class="rp-section">
+      <div class="rp-sec-hdr"><span class="rp-sec-num">01</span><span class="rp-sec-title">釣行ストーリー</span></div>
+      <div class="rp-card rp-text">
+        <p>4月11日夜、3名は鹿島港公共埠頭へ向かった。夜の海風は思いのほか冷たく、特にガキオヤRinは防寒不足で震えながらの釣行となった。</p>
+        <div class="rp-highlight">「サヨリがあんなに釣れてるのに…仕掛けが違った」</div>
+        <p>夜半にNAGANUMAがアジを2連発。夜明け前の根魚タイムにガキオヤRinがカサゴを3連発と底力を見せた。勇者ヨシヒコは今回ノーフィッシュだったが、釣り場の雰囲気を誰よりも楽しんでいた。</p>
+        <p>12時に竿を仕舞い、帰路はラーメンショップへ。熱い一杯が冷えた体に染みた。「また来るぞ、鹿島。」</p>
+      </div>
+    </div>
+
+    <!-- 02 タイムライン -->
+    <div class="rp-section">
+      <div class="rp-sec-hdr"><span class="rp-sec-num">02</span><span class="rp-sec-title">タイムライン</span></div>
+      <div class="rp-card">
+        <div class="rp-tl">
+          <div class="rp-tl-item"><div class="rp-tl-dot"></div><div class="rp-tl-time">21:00</div><div class="rp-tl-txt">鹿島港 公共埠頭 到着・準備開始</div></div>
+          <div class="rp-tl-item"><div class="rp-tl-dot"></div><div class="rp-tl-time">22:51</div><div class="rp-tl-txt"><strong>ガキオヤRin</strong> メバル13cm ファーストフィッシュ！</div></div>
+          <div class="rp-tl-item"><div class="rp-tl-dot"></div><div class="rp-tl-time">23:13〜14</div><div class="rp-tl-txt"><strong>NAGANUMA</strong> アジ12cm・15cm 連続ヒット</div></div>
+          <div class="rp-tl-item"><div class="rp-tl-dot"></div><div class="rp-tl-time">04:34〜05:11</div><div class="rp-tl-txt"><strong>ガキオヤRin</strong> カサゴ3連発！根魚タイムを完全攻略</div></div>
+          <div class="rp-tl-item"><div class="rp-tl-dot"></div><div class="rp-tl-time">10:02</div><div class="rp-tl-txt"><strong>NAGANUMA</strong> メゴチ10cm ラスト1本</div></div>
+          <div class="rp-tl-item"><div class="rp-tl-dot"></div><div class="rp-tl-time">12:00</div><div class="rp-tl-txt">納竿 → ラーメンショップで打ち上げ🍜</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 メンバー -->
+    <div class="rp-section">
+      <div class="rp-sec-hdr"><span class="rp-sec-num">03</span><span class="rp-sec-title">参加メンバー</span></div>
+      <div class="rp-members">
+        <div class="rp-member">
+          <div class="rp-mem-icon">🎣</div>
+          <div class="rp-mem-name">NAGANUMA</div>
+          <div class="rp-mem-role">会長 / ドライバー</div>
+          <div class="rp-mem-fish"><span class="rp-fish-tag">アジ×2</span><span class="rp-fish-tag">メゴチ×1</span></div>
+        </div>
+        <div class="rp-member">
+          <div class="rp-mem-icon">🦸</div>
+          <div class="rp-mem-name">勇者ヨシヒコ</div>
+          <div class="rp-mem-role">副会長</div>
+          <div class="rp-mem-fish"><span class="rp-fish-tag" style="color:var(--muted);border-color:var(--rim)">ノーフィッシュ</span></div>
+        </div>
+        <div class="rp-member solo">
+          <div class="rp-mem-icon">👦</div>
+          <div class="rp-mem-name">ガキオヤRin</div>
+          <div class="rp-mem-role">若手エース（防寒要強化）</div>
+          <div class="rp-mem-fish"><span class="rp-fish-tag">メバル×1</span><span class="rp-fish-tag">カサゴ×3</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 釣果 -->
+    <div class="rp-section">
+      <div class="rp-sec-hdr"><span class="rp-sec-num">04</span><span class="rp-sec-title">釣果詳細</span></div>
+      <div class="rp-stats">
+        <div class="rp-stat"><div class="rp-stat-val">7</div><div class="rp-stat-lbl">総釣果</div></div>
+        <div class="rp-stat"><div class="rp-stat-val">4</div><div class="rp-stat-lbl">魚種</div></div>
+        <div class="rp-stat"><div class="rp-stat-val">15<span style="font-size:12px">cm</span></div><div class="rp-stat-lbl">最大サイズ</div></div>
+      </div>
+      <div class="rp-card">
+        <table class="rp-table">
+          <thead><tr><th>魚種</th><th>釣った人</th><th>サイズ</th><th>時刻</th></tr></thead>
+          <tbody>
+            <tr><td>🐟 メバル</td><td>ガキオヤRin</td><td>13cm</td><td>22:51</td></tr>
+            <tr><td>🐟 アジ</td><td>NAGANUMA</td><td>12cm</td><td>23:13</td></tr>
+            <tr><td>🐟 アジ</td><td>NAGANUMA</td><td>15cm</td><td>23:14</td></tr>
+            <tr><td>🦀 カサゴ</td><td>ガキオヤRin</td><td>10cm</td><td>04:34</td></tr>
+            <tr><td>🦀 カサゴ</td><td>ガキオヤRin</td><td>10cm</td><td>04:51</td></tr>
+            <tr><td>🦀 カサゴ</td><td>ガキオヤRin</td><td>9cm</td><td>05:11</td></tr>
+            <tr><td>🐠 メゴチ</td><td>NAGANUMA</td><td>10cm</td><td>10:02</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- チャート：メンバー別釣果 -->
+      <div class="rp-chart-wrap">
+        <div class="rp-chart-label">メンバー別 釣果数</div>
+        <canvas id="rpMemberChart"></canvas>
+      </div>
+      <!-- チャート：魚種内訳 -->
+      <div class="rp-chart-wrap" style="margin-top:8px">
+        <div class="rp-chart-label">魚種内訳</div>
+        <canvas id="rpSpeciesChart"></canvas>
+      </div>
+    </div>
+
+    <!-- 05 反省・まとめ -->
+    <div class="rp-section">
+      <div class="rp-sec-hdr"><span class="rp-sec-num">05</span><span class="rp-sec-title">総括・反省点</span></div>
+      <div class="rp-reflection">
+        <div class="rp-ref-title">📝 今回の学び</div>
+        <div class="rp-ref-item"><h4>情報収集</h4><p>サヨリがトリックサビキで爆釣してたのに指を咥えて見るだけ。現地リサーチと事前情報収集が次回への宿題。</p></div>
+        <div class="rp-ref-item"><h4>仕掛け・道具</h4><p>持ち合わせで対応しようとしたが限界あり。状況に合わせた仕掛けの用意が釣果を大きく左右することを実感。</p></div>
+        <div class="rp-ref-item"><h4>経験値の蓄積</h4><p>夜明け前の根魚タイムは確実に攻略できつつある。ガキオヤRinのカサゴ3連発がそれを証明。時合いの把握が鍵。</p></div>
+        <div class="rp-ref-item"><h4>次回への課題</h4><p>サヨリ用トリックサビキを準備。地元釣り師への情報収集。防寒対策（特にガキオヤRin）を万全に。</p></div>
+      </div>
+    </div>
+
+    <!-- フッター -->
+    <div class="rp-card" style="text-align:center;padding:16px">
+      <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.1em">ナガヨシリン fishing club</div>
+      <div style="font-size:18px;font-weight:900;margin:6px 0;color:#f59e0b">また来るぞ、鹿島。</div>
+      <div style="font-size:11px;color:var(--muted)">NAGANUMA ｜ 勇者ヨシヒコ ｜ ガキオヤRin</div>
+    </div>
+
+  </div><!-- /bsub-report -->
+
+</div>
+
+<!-- パスワードモーダル -->
+<div class="pw-modal" id="pwModal">
+  <div class="pw-box">
+    <div class="pw-title">🔐 管理者ログイン</div>
+    <div class="pw-sub">パスワードを入力してください</div>
+    <div class="pw-err" id="pwErr">パスワードが違います</div>
+    <input class="pw-inp" id="pwInp" type="password" placeholder="••••" maxlength="20">
+    <div class="pw-btns">
+      <button class="pw-cancel" onclick="blogClosePw()">キャンセル</button>
+      <button class="pw-ok" onclick="blogCheckPw()">ログイン</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     潮見パネル
+══════════════════════════════════════ -->
+<div id="panel-tide" class="panel on">
+  <div class="loc-row">
+    <select id="locSel" onchange="saveLoc();updateTide()">
+      <optgroup label="── 汎用（湾・主要港）──">
+        <option value="tokyo">東京湾（木更津・横浜）</option>
+        <option value="sendai">仙台湾</option>
+        <option value="osaka">大阪湾</option>
+        <option value="ise">伊勢湾（名古屋）</option>
+        <option value="hiroshima">広島湾</option>
+        <option value="fukuoka">博多湾（福岡）</option>
+        <option value="kochi">土佐湾（高知）</option>
+        <option value="sapporo">石狩湾（札幌）</option>
+        <option value="okinawa">沖縄（那覇）</option>
+      </optgroup>
+      <optgroup label="── 茨城県 ──">
+        <option value="nakaminato">那珂湊漁港</option>
+        <option value="oarai">大洗港・大洗磯前</option>
+        <option value="hitachi_ko">日立港（常陸那珂港）</option>
+        <option value="taira">平潟港（北茨城市）</option>
+        <option value="isohama">磯浜漁港（北茨城）</option>
+        <option value="kashima">鹿島港（神栖・鹿嶋）</option>
+        <option value="hasaki">波崎漁港（神栖市）</option>
+        <option value="kamisu">神栖漁港（息栖）</option>
+        <option value="kashima_beach">鹿島灘（海岸一帯）</option>
+        <option value="hikata">涸沼（涸沼川・汽水湖）</option>
+        <option value="kitaura">北浦（霞ヶ浦北）</option>
+      </optgroup>
+      <optgroup label="── 福島県 ──">
+        <option value="onahama">小名浜港（いわき市）</option>
+        <option value="onahama_dike">小名浜港 新防波堤</option>
+        <option value="yotsukura">四倉漁港（いわき）</option>
+        <option value="nakoso">勿来漁港（いわき南部）</option>
+        <option value="hirono">広野漁港</option>
+        <option value="futaba">富岡漁港（双葉郡）</option>
+        <option value="namie">浪江漁港（請戸地区）</option>
+        <option value="haramachi">原町漁港（南相馬市）</option>
+        <option value="odaka">小高漁港（南相馬）</option>
+        <option value="soma">相馬港（松川浦）</option>
+        <option value="shinchi">新地漁港</option>
+      </optgroup>
+      <optgroup label="── 千葉県（外房）──">
+        <option value="choshi">銚子港（外港・内港）</option>
+        <option value="choshi_dike">銚子外港 防波堤</option>
+        <option value="choshi_kawa">利根川河口（銚子側）</option>
+        <option value="soto_kawaguchi">外川漁港（銚子市）</option>
+        <option value="iinoka">飯岡漁港（旭市）</option>
+        <option value="asahi_iwao">岩船漁港（旭市）</option>
+        <option value="chosei_taito">太東漁港（いすみ市）</option>
+        <option value="onjuku">御宿港（夷隅郡）</option>
+        <option value="katsuura">勝浦港</option>
+        <option value="ohara">大原漁港（いすみ）</option>
+      </optgroup>
+      <optgroup label="── 千葉県（内房・東京湾）──">
+        <option value="kisarazu">木更津港</option>
+        <option value="futtsu">富津漁港</option>
+        <option value="tateyama">館山港（南房総）</option>
+        <option value="chikura">千倉港（南房総）</option>
+        <option value="shirahama">白浜（南房総 磯）</option>
+        <option value="funabashi">船橋漁港</option>
+        <option value="urayasu">浦安（市川・行徳）</option>
+        <option value="naruto">成東漁港（山武）</option>
+      </optgroup>
+    </select>
+    <button class="btn-ghost" onclick="updateTide()">🔄</button>
+  </div>
+  <div class="alert-banner" id="alertBanner">🔔 アラートが設定されています</div>
+  <div class="tide-now">
+    <div><div class="tdate" id="tDate"></div><div class="tmoon" id="tMoon"></div><div class="ttype" id="tType"></div><div class="tloc" id="tLoc"></div></div>
+    <div class="tnp"><div class="tnp-lbl">次の潮</div><div class="tnp-time" id="tnpTime">--:--</div><div class="tnp-kind" id="tnpKind">---</div><div class="tnp-cnt" id="tnpCnt">--分後</div></div>
+  </div>
+  <div class="card gauge-wrap" style="padding:12px">
+    <div class="gauge-lbl"><span class="gauge-title">🎣 今の釣れる度</span><span class="gauge-score" id="gScore" style="color:var(--sun)">―</span></div>
+    <div class="gauge-bar"><div class="gauge-fill" id="gFill" style="width:0%"></div></div>
+    <div class="gauge-reason" id="gReason">計算中…</div>
+  </div>
+  <div class="graph-wrap"><canvas id="tideCanvas"></canvas></div>
+  <div class="card" style="padding:12px">
+    <div class="ctitle">⏱️ 今日の潮タイムライン</div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+  <div class="card" style="padding:12px">
+    <div class="ctitle">📅 釣行カレンダー</div>
+    <div class="cal-header">
+      <button class="cal-nav" onclick="calPrev()">＜</button>
+      <span class="cal-month" id="calMonth"></span>
+      <button class="cal-nav" onclick="calNext()">＞</button>
+    </div>
+    <div class="cal-grid"><div class="cal-dow">日</div><div class="cal-dow">月</div><div class="cal-dow">火</div><div class="cal-dow">水</div><div class="cal-dow">木</div><div class="cal-dow">金</div><div class="cal-dow" style="color:var(--warn)">土</div></div>
+    <div class="cal-grid" id="calGrid" style="margin-top:2px"></div>
+    <div class="cal-detail" id="calDetail" style="display:none"></div>
+  </div>
+  <div class="card" style="padding:12px">
+    <div class="ctitle">🔔 アラート設定</div>
+    <div class="tgl-row"><div><div class="tgl-lbl">満潮30分前に通知</div><div class="tgl-sub">青物・アジ・サバが活性化</div></div><div class="tgl" id="tgl1" onclick="toggleTgl('tgl1','high')"></div></div>
+    <div class="tgl-row"><div><div class="tgl-lbl">干潮30分前に通知</div><div class="tgl-sub">根魚・底物狙いのチャンス</div></div><div class="tgl" id="tgl2" onclick="toggleTgl('tgl2','low')"></div></div>
+    <div class="tgl-row"><div><div class="tgl-lbl">マズメ時に通知</div><div class="tgl-sub">夜明け・日没30分前</div></div><div class="tgl" id="tgl3" onclick="toggleTgl('tgl3','mazume')"></div></div>
+    <div class="tgl-row"><div><div class="tgl-lbl">釣れる度MAX時に通知</div><div class="tgl-sub">スコア90以上で即アラート</div></div><div class="tgl" id="tgl4" onclick="toggleTgl('tgl4','peak')"></div></div>
+    <div style="font-size:10px;color:var(--muted);margin-top:7px;line-height:1.6">※ 初回はブラウザの通知許可が必要です<br>※ 通知をONにするとアプリを閉じても通知が届きます（iOS Safariはホーム画面追加が必要）</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     割り勘パネル
+══════════════════════════════════════ -->
+<div id="panel-car" class="panel">
+
+  <!-- ヘッダー時計 -->
+  <div class="carpool-header">
+    <div class="cp-title-block">
+      <div class="cpt">🚗 <span>割り勘</span>ドライブ</div>
+      <div class="cps">ガソリン代・高速代を一発計算</div>
+    </div>
+    <div class="clkbox">
+      <div class="clktime" id="liveClk">--:--</div>
+      <div class="clkdisc" id="liveDisc">判定中…</div>
+    </div>
+  </div>
+
+  <!-- サブタブ：計算 / 履歴 / 設定 -->
+  <div class="sub-tabs">
+    <button class="stab on" onclick="subGo('calc',this)">🧮 計算</button>
+    <button class="stab"    onclick="subGo('hist',this)">📋 履歴</button>
+    <button class="stab"    onclick="subGo('cfg', this)">⚙️ 設定</button>
+  </div>
+
+  <!-- 計算 -->
+  <div id="sub-calc" class="subpanel on">
+    <div class="card">
+      <div class="ctitle">👥 乗車メンバー</div>
+      <div class="marow">
+        <input id="memberInput" placeholder="名前を入力…" maxlength="10">
+        <button class="addbtn" onclick="addMember()">＋</button>
+      </div>
+      <div id="memberList"></div>
+    </div>
+    <div class="card">
+      <div class="ctitle">⛽ ガソリン</div>
+      <div class="row2">
+        <div class="field"><span class="lbl">走行距離 (km)</span><input type="number" id="distance" placeholder="150" inputmode="decimal"></div>
+        <div class="field"><span class="lbl">燃費 (km/L)</span><input type="number" id="fuelEff" placeholder="15" inputmode="decimal"></div>
+      </div>
+      <div class="field"><span class="lbl">ガソリン単価 (円/L)</span><input type="number" id="fuelPrice" placeholder="175" inputmode="decimal"></div>
+    </div>
+    <div class="card">
+      <div class="ctitle">🛣️ 高速道路</div>
+      <div class="icpanel">
+        <div class="icstatus">
+          <div class="icdot" id="icDot"></div>
+          <div class="icinfo"><div class="icname" id="icName">位置情報でICと時刻を自動検出</div><div class="icsub" id="icSub">乗車直前にタップ</div></div>
+          <button class="icbtn" id="icBtn" onclick="detectIC()">📍 IC検出</button>
+        </div>
+        <div class="icdetail" id="icDetail">
+          <div class="ictag">🕐 乗車時刻 <strong id="icTime">--:--</strong></div>
+          <div class="ictag">🗺️ 選択中 <strong id="icNameVal">―</strong></div>
+          <div class="ictag">📏 距離 <strong id="icDist">―</strong>&nbsp;&nbsp;🎯 精度 <strong id="icAcc">―</strong></div>
+          <div class="ic-cand-label">📋 近いIC候補（タップして選択）</div>
+          <div class="ic-cands" id="icCandidates"></div>
+        </div>
+      </div>
+      <div class="discbox">
+        <div class="disc-auto-lbl">⚡ 時間帯割引（乗車時刻で自動判定）</div>
+        <div class="discpill" id="discPill"><span id="discIcon">🔄</span><span id="discText">現在時刻を読み取り中…</span></div>
+        <div class="disc-manual">
+          <span class="lbl">手動で変更</span>
+          <div class="badge-row">
+            <button class="dbadge" onclick="manualDisc(this,0)">割引なし</button>
+            <button class="dbadge" onclick="manualDisc(this,0.1)">深夜10%</button>
+            <button class="dbadge" onclick="manualDisc(this,0.2)">深夜20%</button>
+            <button class="dbadge" onclick="manualDisc(this,0.3)">深夜30%</button>
+            <button class="dbadge" onclick="manualDisc(this,0.3)">休日30%</button>
+            <button class="dbadge" onclick="manualDisc(this,0.1)">朝夕10%</button>
+            <button class="dbadge" onclick="manualDisc(this,0.2)">ETC2.0 20%</button>
+          </div>
+          <div class="discinfo">深夜割引：0〜4時 ／ 平日朝夕：6〜9時・17〜20時 ／ 休日：土日祝</div>
+        </div>
+      </div>
+      <div class="row2" style="margin-bottom:9px">
+        <div class="field"><span class="lbl">高速料金 (円・片道)</span><input type="number" id="toll" placeholder="2400" inputmode="numeric"></div>
+        <div class="field"><span class="lbl">往復</span><select id="roundtrip"><option value="1">片道のみ</option><option value="2">往復</option></select></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctitle">🅿️ 駐車場・その他</div>
+      <div class="row2">
+        <div class="field"><span class="lbl">駐車場代 (円)</span><input type="number" id="parking" placeholder="500" inputmode="numeric"></div>
+        <div class="field"><span class="lbl">その他 (円)</span><input type="number" id="otherCost" placeholder="0" inputmode="numeric"></div>
+      </div>
+      <div class="field"><span class="lbl">ドライバー優遇</span>
+        <select id="driverPerk">
+          <option value="equal">均等割り（ドライバーも同額）</option>
+          <option value="free">ドライバーは無料</option>
+          <option value="half">ドライバーは半額</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="calcbtn" onclick="calculate()">💰 計算する</button>
+      <button class="resetbtn" onclick="resetAll()">🔄 リセット</button>
+    </div>
+    <div class="rescrd" id="result">
+      <div class="restotal"><div class="reslbl">一人あたりの負担額</div><div class="resamt" id="perPerson">―</div></div>
+      <div class="resbkd" id="breakdown"></div>
+      <div id="memberResults" class="memlist" style="margin-top:12px;border-top:1px solid var(--rim);padding-top:12px"></div>
+      <button class="sharebtn" onclick="shareResult()">📋 結果をコピー</button>
+    </div>
+  </div>
+
+  <!-- 履歴 -->
+  <div id="sub-hist" class="subpanel">
+    <div id="historyList"></div>
+  </div>
+
+  <!-- 設定 -->
+  <div id="sub-cfg" class="subpanel">
+    <div class="card">
+      <div class="ctitle">⚙️ デフォルト設定 <span class="saved-badge" id="savedBadge">✓ 保存済み</span></div>
+      <div class="shdr">ガソリン</div>
+      <div class="srow"><div><div class="slbl">燃費</div><div class="ssub">km/L</div></div><input class="sinput" type="number" id="defFuelEff" inputmode="decimal" placeholder="15"></div>
+      <div class="srow"><div><div class="slbl">ガソリン単価</div><div class="ssub">円/L</div></div><input class="sinput" type="number" id="defFuelPrice" inputmode="numeric" placeholder="175"></div>
+      <div class="shdr">高速道路</div>
+      <div class="srow"><div><div class="slbl">往復デフォルト</div></div><select class="sinput" id="defRoundtrip"><option value="1">片道</option><option value="2">往復</option></select></div>
+      <div class="shdr">その他</div>
+      <div class="srow"><div><div class="slbl">端数処理</div></div><select class="sinput" id="rounding"><option value="ceil">切り上げ</option><option value="round">四捨五入</option><option value="floor">切り捨て</option></select></div>
+      <div class="srow"><div><div class="slbl">ドライバー優遇デフォルト</div></div><select class="sinput" id="defDriverPerk"><option value="equal">均等割り</option><option value="free">無料</option><option value="half">半額</option></select></div>
+      <div class="srow"><div><div class="slbl">よく使うメンバーを保存</div><div class="ssub">次回起動時に自動読み込み</div></div><button onclick="saveMembers()" style="background:var(--fish);color:var(--ink);border:none;border-radius:8px;padding:7px 12px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">保存</button></div>
+      <div style="margin-top:12px"><button onclick="saveAllSettings()" style="width:100%;background:var(--sun);color:var(--ink);border:none;border-radius:10px;padding:12px;font-family:inherit;font-size:14px;font-weight:900;cursor:pointer">💾 すべての設定を保存</button></div>
+    </div>
+    <div class="card">
+      <div class="ctitle">📊 統計</div>
+      <div class="bkrow"><span class="bkkey">トリップ数</span><span class="bkval" id="statTrips">0</span></div>
+      <div class="bkrow"><span class="bkkey">総走行距離</span><span class="bkval" id="statDist">0 km</span></div>
+      <div class="bkrow"><span class="bkkey">総支払額</span><span class="bkval" id="statTotal">¥0</span></div>
+      <div class="bkrow"><span class="bkkey">平均一人あたり</span><span class="bkval" id="statAvg">¥0</span></div>
+      <div style="margin-top:11px"><button onclick="clearHistory()" style="width:100%;background:transparent;color:var(--warn);border:1px solid var(--warn);border-radius:9px;padding:9px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">🗑️ 履歴をすべて削除</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル -->
+<div class="modal-bg" id="modal">
+  <div class="modal-box">
+    <div class="m-ico" id="mIco">🐟</div>
+    <div class="m-title" id="mTitle"></div>
+    <div class="m-body"  id="mBody"></div>
+    <button class="m-close" onclick="closeModal()">OK！準備する</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+'use strict';
+
+// ─── Service Worker（アラーム用） ───────────────
+const SW_CODE = `
+self.addEventListener('message', e => {
+  const {type, delay, ico, title, body} = e.data || {};
+  if (type === 'schedule') {
+    setTimeout(() => {
+      self.registration.showNotification('🎣 ' + title, {
+        body: body,
+        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text y="52" font-size="52">🎣</text></svg>',
+        badge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text y="52" font-size="52">🎣</text></svg>',
+        tag: title,
+        renotify: true,
+        requireInteraction: true
+      });
+    }, delay);
+  }
+});
+`;
+let swReg = null;
+async function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    const blob = new Blob([SW_CODE], {type:'application/javascript'});
+    const url = URL.createObjectURL(blob);
+    swReg = await navigator.serviceWorker.register(url, {scope:'/'});
+  } catch(e) {}
+}
+registerSW();
+
+async function scheduleNotification(delay, ico, title, body) {
+  // ブラウザ通知（フォアグラウンド）
+  if (delay <= 0) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('🎣 ' + title, {body, requireInteraction: true});
+    }
+    return;
+  }
+  // Service Worker経由（バックグラウンド対応）
+  if (swReg && swReg.active) {
+    swReg.active.postMessage({type:'schedule', delay, ico, title, body});
+  } else if ('serviceWorker' in navigator) {
+    const reg = await navigator.serviceWorker.ready.catch(()=>null);
+    if (reg && reg.active) reg.active.postMessage({type:'schedule', delay, ico, title, body});
+  }
+  // フォールバック: setTimeout（アプリが開いている場合）
+  alertTimers.push(setTimeout(() => fireAlert(ico, title, body), delay));
+}
+
+// ─── ユーティリティ ───────────────────────────
+const Store=(()=>{const m={};const ts=fn=>{try{return fn(localStorage)}catch(e){}try{return fn(sessionStorage)}catch(e){}return null};return{get:k=>{const v=ts(s=>s.getItem(k));return v!==null?v:(m[k]??null)},set:(k,v)=>{m[k]=v;ts(s=>{s.setItem(k,v);return true})}};})();
+
+function toast(msg,dur=2800){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),dur)}
+
+// ─── タブ切替 ─────────────────────────────────
+function go(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('panel-'+name).classList.add('on');
+  btn.classList.add('on');
+  if(name==='tide'){updateTide();renderCal()}
+  if(name==='car'){updateClock();renderHistory();updateStats()}
+  if(name==='blog'){blogRenderList()}
+}
+function subGo(name,btn){
+  document.querySelectorAll('.subpanel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('sub-'+name).classList.add('on');
+  btn.classList.add('on');
+  if(name==='hist')renderHistory();
+  if(name==='cfg')updateStats();
+}
+
+// ── 通話機能は削除済み ──
+// (PeerJS/WebRTC通話コードを削除)
+// ── (通話関連コード削除済み) ──
+
+// ══════════════════════════════════════════════
+// 潮汐計算
+// ══════════════════════════════════════════════
+const LOC={
+  // ── 汎用（湾・主要港） ──
+  tokyo:    {name:'東京湾（木更津・横浜）',   ph:0,    amp:1.4,  pref:'東京'},
+  osaka:    {name:'大阪湾',                  ph:2.0,  amp:1.1,  pref:'大阪'},
+  ise:      {name:'伊勢湾（名古屋）',         ph:1.5,  amp:1.6,  pref:'愛知'},
+  fukuoka:  {name:'博多湾（福岡）',           ph:-1.0, amp:1.7,  pref:'福岡'},
+  sapporo:  {name:'石狩湾（札幌）',           ph:3.0,  amp:0.9,  pref:'北海道'},
+  sendai:   {name:'仙台湾',                  ph:0.5,  amp:1.1,  pref:'宮城'},
+  hiroshima:{name:'広島湾',                  ph:2.5,  amp:2.1,  pref:'広島'},
+  kochi:    {name:'土佐湾（高知）',           ph:1.0,  amp:1.5,  pref:'高知'},
+  okinawa:  {name:'沖縄（那覇）',             ph:-0.5, amp:0.8,  pref:'沖縄'},
+  // ── 茨城県 ──
+  oarai:       {name:'大洗港・大洗磯前',       ph:0.20, amp:1.25, pref:'茨城', fish:'アジ・サバ・ヒラメ・カレイ'},
+  nakaminato:  {name:'那珂湊漁港',             ph:0.20, amp:1.25, pref:'茨城', fish:'アジ・サバ・コウイカ・ヒラメ'},
+  hitachi_ko:  {name:'日立港（常陸那珂港）',   ph:0.15, amp:1.20, pref:'茨城', fish:'アジ・サバ・イワシ・ヒラメ'},
+  taira:       {name:'平潟港（北茨城市）',     ph:0.10, amp:1.15, pref:'茨城', fish:'アジ・ヒラメ・根魚'},
+  isohama:     {name:'磯浜漁港（北茨城）',     ph:0.10, amp:1.15, pref:'茨城', fish:'アイナメ・メバル・ソイ'},
+  kashima:     {name:'鹿島港（神栖・鹿嶋）',   ph:0.35, amp:1.30, pref:'茨城', fish:'青物・ヒラメ・シーバス'},
+  hasaki:      {name:'波崎漁港（神栖市）',     ph:0.45, amp:1.35, pref:'茨城', fish:'ヒラメ・イシモチ・シーバス'},
+  kamisu:      {name:'神栖漁港（息栖）',       ph:0.40, amp:1.30, pref:'茨城', fish:'ヒラメ・マゴチ・キス'},
+  kashima_beach:{name:'鹿島灘（海岸一帯）',   ph:0.35, amp:1.30, pref:'茨城', fish:'キス・カレイ・イシモチ'},
+  hikata:      {name:'涸沼（涸沼川・汽水湖）', ph:0.15, amp:0.60, pref:'茨城', fish:'シーバス・ウナギ・ハゼ'},
+  kitaura:     {name:'北浦（霞ヶ浦北）',       ph:0.10, amp:0.50, pref:'茨城', fish:'バス・ヘラブナ・ワカサギ'},
+  // ── 福島県 ──
+  onahama:     {name:'小名浜港（いわき市）',   ph:0.75, amp:1.20, pref:'福島', fish:'アジ・サバ・イカ・ヒラメ'},
+  onahama_dike:{name:'小名浜港 新防波堤',      ph:0.75, amp:1.20, pref:'福島', fish:'青物・回遊魚'},
+  yotsukura:   {name:'四倉漁港（いわき）',     ph:0.75, amp:1.20, pref:'福島', fish:'アジ・カレイ・ヒラメ'},
+  nakoso:      {name:'勿来漁港（いわき南部）', ph:0.75, amp:1.22, pref:'福島', fish:'アジ・クロダイ・シーバス'},
+  hirono:      {name:'広野漁港',               ph:0.70, amp:1.18, pref:'福島', fish:'アジ・サバ・イカ'},
+  futaba:      {name:'富岡漁港（双葉郡）',     ph:0.68, amp:1.15, pref:'福島', fish:'アジ・イシモチ・シーバス'},
+  namie:       {name:'浪江漁港（請戸地区）',   ph:0.65, amp:1.15, pref:'福島', fish:'アジ・カレイ・ヒラメ'},
+  haramachi:   {name:'原町漁港（南相馬市）',   ph:0.60, amp:1.12, pref:'福島', fish:'ヒラメ・マゴチ・カレイ'},
+  odaka:       {name:'小高漁港（南相馬）',      ph:0.60, amp:1.12, pref:'福島', fish:'アジ・イシモチ・シーバス'},
+  soma:        {name:'相馬港（松川浦）',        ph:0.55, amp:1.10, pref:'福島', fish:'ヒラメ・カレイ・アイナメ'},
+  shinchi:     {name:'新地漁港',               ph:0.52, amp:1.08, pref:'福島', fish:'カレイ・アイナメ・ハゼ'},
+  // ── 千葉県（外房） ──
+  choshi:      {name:'銚子港（外港・内港）',   ph:0.50, amp:1.35, pref:'千葉', fish:'アジ・サバ・イワシ・ヒラメ'},
+  choshi_dike: {name:'銚子外港 防波堤',         ph:0.50, amp:1.35, pref:'千葉', fish:'青物・ヒラメ・回遊魚'},
+  choshi_kawa: {name:'利根川河口（銚子側）',   ph:0.48, amp:1.30, pref:'千葉', fish:'シーバス・ヒラメ・マゴチ'},
+  soto_kawaguchi:{name:'外川漁港（銚子市）',   ph:0.50, amp:1.35, pref:'千葉', fish:'アジ・サバ・メバル'},
+  iinoka:      {name:'飯岡漁港（旭市）',       ph:0.48, amp:1.30, pref:'千葉', fish:'キス・イシモチ・ヒラメ'},
+  asahi_iwao:  {name:'岩船漁港（旭市）',       ph:0.45, amp:1.28, pref:'千葉', fish:'カレイ・アジ・キス'},
+  chosei_taito:{name:'太東漁港（いすみ市）',   ph:0.30, amp:1.20, pref:'千葉', fish:'アジ・回遊魚・ヒラメ'},
+  onjuku:      {name:'御宿港（夷隅郡）',       ph:0.25, amp:1.18, pref:'千葉', fish:'アジ・サバ・イサキ'},
+  katsuura:    {name:'勝浦港',                 ph:0.20, amp:1.15, pref:'千葉', fish:'アジ・サバ・イカ・タコ'},
+  ohara:       {name:'大原漁港（いすみ）',     ph:0.28, amp:1.20, pref:'千葉', fish:'アジ・サバ・カサゴ'},
+  // ── 千葉県（内房・東京湾） ──
+  kisarazu:    {name:'木更津港',               ph:0.00, amp:1.40, pref:'千葉', fish:'アジ・クロダイ・シーバス'},
+  futtsu:      {name:'富津漁港',               ph:0.00, amp:1.42, pref:'千葉', fish:'キス・ハゼ・シロギス'},
+  tateyama:    {name:'館山港（南房総）',        ph:-0.10,amp:1.10, pref:'千葉', fish:'アジ・アオリイカ・根魚'},
+  chikura:     {name:'千倉港（南房総）',        ph:-0.15,amp:1.08, pref:'千葉', fish:'アジ・サバ・メジナ'},
+  shirahama:   {name:'白浜（南房総 磯）',      ph:-0.15,amp:1.08, pref:'千葉', fish:'グレ・ブダイ・イシダイ'},
+  funabashi:   {name:'船橋漁港',               ph:0.05, amp:1.38, pref:'千葉', fish:'アジ・ハゼ・シーバス'},
+  urayasu:     {name:'浦安（市川・行徳）',      ph:0.05, amp:1.38, pref:'千葉', fish:'シーバス・ハゼ・クロダイ'},
+  naruto:      {name:'成東漁港（山武）',        ph:0.35, amp:1.28, pref:'千葉', fish:'カレイ・キス・アジ'},
+};
+function tideH(h,ph,amp){const T=12.42;return amp*Math.cos(2*Math.PI*(h+ph)/T)+amp*0.28*Math.cos(2*Math.PI*(h+ph)/(T/2))}
+function moonPhase(date){const ref=new Date('2024-01-11');const p=((((date-ref)/86400000)%29.53)+29.53)%29.53;if(p<1.5)return{ico:'🌑',name:'新月',q:'大潮★★★★★',score:5};if(p<5)return{ico:'🌒',name:'三日月',q:'中潮★★★☆☆',score:3};if(p<9)return{ico:'🌓',name:'上弦',q:'小潮★★☆☆☆',score:2};if(p<13)return{ico:'🌔',name:'十三夜',q:'中潮★★★☆☆',score:3};if(p<16.5)return{ico:'🌕',name:'満月',q:'大潮★★★★★',score:5};if(p<20)return{ico:'🌖',name:'十六夜',q:'中潮★★★☆☆',score:3};if(p<24)return{ico:'🌗',name:'下弦',q:'小潮★★☆☆☆',score:2};if(p<27)return{ico:'🌘',name:'有明月',q:'中潮★★★☆☆',score:3};return{ico:'🌑',name:'晦日',q:'大潮★★★★★',score:5}}
+function fishingScore(now,cfg){const moon=moonPhase(now);const h=now.getHours()+now.getMinutes()/60;const h1=tideH(h+0.5,cfg.ph,cfg.amp);const speed=Math.abs(h1-tideH(h,cfg.ph,cfg.amp))*2;const mazume=(h>=4.5&&h<=6.5)||(h>=17&&h<=19.5)?30:0;const score=Math.min(Math.round(mazume+moon.score*6+Math.min(speed/cfg.amp*40,40)),100);let reason='';if(mazume>0)reason+='🌅 マズメ時間帯 ';if(moon.score>=4)reason+='🌕 大潮 ';if(speed>cfg.amp*0.5)reason+='🌊 潮がよく動いています';else reason+=reason?'':'普通のコンディション';return{score,reason}}
+function getDayPeaks(date,cfg){const base=new Date(date);base.setHours(0,0,0,0);const pts=[];for(let m=0;m<=1440;m+=10)pts.push({min:m,h:tideH(m/60,cfg.ph,cfg.amp),time:new Date(base.getTime()+m*60000)});const peaks=[];for(let i=1;i<pts.length-1;i++){const p=pts[i-1].h,c=pts[i].h,n=pts[i+1].h;if(c>p&&c>n)peaks.push({...pts[i],isHigh:true});if(c<p&&c<n)peaks.push({...pts[i],isHigh:false})}return peaks}
+
+let alertCfg={high:false,low:false,mazume:false,peak:false};
+// アラート設定の復元
+try{const saved=JSON.parse(Store.get('alertCfg')||'{}');Object.assign(alertCfg,saved)}catch(e){}
+// アラート設定UI反映
+Object.entries(alertCfg).forEach(([key,val])=>{const id={high:'tgl1',low:'tgl2',mazume:'tgl3',peak:'tgl4'}[key];if(id&&val)document.getElementById(id)?.classList.add('on')});
+if(Object.values(alertCfg).some(v=>v))document.getElementById('alertBanner')?.classList.add('show');
+
+let alertTimers=[];
+
+function updateTide(){
+  const k=document.getElementById('locSel').value;const cfg=LOC[k];const now=new Date();const moon=moonPhase(now);
+  document.getElementById('tDate').textContent=now.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+  document.getElementById('tMoon').textContent=moon.ico;
+  document.getElementById('tType').textContent=`${moon.name} ／ ${moon.q}`;
+  document.getElementById('tLoc').textContent=cfg.name+(cfg.fish?`　🐟 ${cfg.fish}`:'');
+  const peaks=getDayPeaks(now,cfg);const next=peaks.find(p=>p.time>now);
+  if(next){const diff=Math.round((next.time-now)/60000);document.getElementById('tnpTime').textContent=`${String(next.time.getHours()).padStart(2,'0')}:${String(next.time.getMinutes()).padStart(2,'0')}`;document.getElementById('tnpKind').textContent=next.isHigh?'⬆️ 満潮':'⬇️ 干潮';document.getElementById('tnpCnt').textContent=`${diff}分後`}
+  const fs=fishingScore(now,cfg);document.getElementById('gScore').textContent=`${fs.score}/100`;const fill=document.getElementById('gFill');fill.style.width=fs.score+'%';fill.style.background=fs.score>=75?'linear-gradient(90deg,#fbbf24,#f87171)':fs.score>=50?'linear-gradient(90deg,#34d399,#38bdf8)':'var(--muted)';document.getElementById('gReason').textContent=fs.reason;
+  drawGraph(now,cfg);renderTimeline(peaks,now,cfg);setupAlertTimers(peaks,now,cfg);
+}
+function drawGraph(now,cfg){const canvas=document.getElementById('tideCanvas');const W=canvas.offsetWidth||320,H=105;canvas.width=W;canvas.height=H;const ctx=canvas.getContext('2d');const pts=[];for(let m=0;m<=1440;m+=12){const h=tideH(m/60,cfg.ph,cfg.amp);pts.push({x:(m/1440)*W,y:H/2-(h/cfg.amp)*(H/2-13)})}
+  const grd=ctx.createLinearGradient(0,0,0,H);grd.addColorStop(0,'rgba(56,189,248,.28)');grd.addColorStop(1,'rgba(56,189,248,.02)');ctx.beginPath();ctx.moveTo(0,H);pts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.lineTo(W,H);ctx.closePath();ctx.fillStyle=grd;ctx.fill();
+  ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(let i=1;i<pts.length-1;i++){const cx=(pts[i].x+pts[i+1].x)/2,cy=(pts[i].y+pts[i+1].y)/2;ctx.quadraticCurveTo(pts[i].x,pts[i].y,cx,cy)}ctx.strokeStyle='rgba(56,189,248,.85)';ctx.lineWidth=2.5;ctx.stroke();
+  const nx=((now.getHours()*60+now.getMinutes())/1440)*W;ctx.beginPath();ctx.moveTo(nx,0);ctx.lineTo(nx,H);ctx.strokeStyle='rgba(251,191,36,.8)';ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(251,191,36,.85)';ctx.font='bold 9px DM Mono,monospace';ctx.fillText('今',nx+3,11);
+  ctx.fillStyle='rgba(100,131,158,.7)';ctx.font='8px DM Mono,monospace';[0,6,12,18,24].forEach(h=>{ctx.fillText(h+'時',(h/24)*W+2,H-3)})}
+function renderTimeline(peaks,now,cfg){
+  const el=document.getElementById('timeline');const moon=moonPhase(now);
+  el.innerHTML=peaks.slice(0,8).map(p=>{const past=p.time<now;const h=p.time.getHours()+p.time.getMinutes()/60;const mazume=(h>=4.5&&h<=6.5)||(h>=17&&h<=19.5);const cls=p.isHigh&&(mazume||moon.score>=4)?'best':p.isHigh||mazume?'good':'';const badge=cls==='best'?'badge-best':cls==='good'?'badge-good':'badge-low';const lbl=cls==='best'?'🔥 絶好のチャンス！':cls==='good'?'✅ チャンスタイム':'💤 潮止まり';const hh=String(p.time.getHours()).padStart(2,'0'),mm=String(p.time.getMinutes()).padStart(2,'0');return`<div class="tevent ${cls} ${past?'past':''}"><span class="te-ico">${p.isHigh?'⬆️':'⬇️'}</span><div class="te-body"><div class="te-time">${hh}:${mm} ${p.isHigh?'満潮':'干潮'}</div><div class="te-sub">${p.h.toFixed(2)}m${past?' 終了':''}</div></div><span class="te-badge ${badge}">${lbl}</span></div>`}).join('')}
+
+// カレンダー
+let calY=new Date().getFullYear(),calM=new Date().getMonth(),selDate=null;
+function calPrev(){if(calM===0){calM=11;calY--}else calM--;renderCal()}
+function calNext(){if(calM===11){calM=0;calY++}else calM++;renderCal()}
+function dayScore(date){const k=document.getElementById('locSel')?.value||'tokyo';const cfg=LOC[k];let best=0;for(let h=4;h<=20;h++){const t=new Date(date);t.setHours(h,0,0,0);const s=fishingScore(t,cfg).score;if(s>best)best=s}return Math.min(best,100)}
+function renderCal(){document.getElementById('calMonth').textContent=`${calY}年 ${calM+1}月`;const today=new Date();today.setHours(0,0,0,0);const first=new Date(calY,calM,1);const last=new Date(calY,calM+1,0);let html='';
+  for(let i=0;i<first.getDay();i++){const d=new Date(calY,calM,-first.getDay()+1+i);html+=calCell(d,dayScore(d),true)}
+  for(let d=1;d<=last.getDate();d++){const date=new Date(calY,calM,d);html+=calCell(date,dayScore(date),false,date.getTime()===today.getTime(),selDate&&date.getTime()===selDate.getTime())}
+  const rem=7-((first.getDay()+last.getDate())%7);if(rem<7)for(let d=1;d<=rem;d++)html+=calCell(new Date(calY,calM+1,d),0,true);
+  document.getElementById('calGrid').innerHTML=html}
+function calCell(date,score,other,isToday=false,isSel=false){const moon=moonPhase(date);const sc=Math.max(1,Math.ceil(score/20));const cls=[other?'other-month':'',isToday?'today':'',isSel?'selected':''].filter(Boolean).join(' ');return`<div class="cal-cell ${cls}" onclick="selectDay('${date.toISOString().slice(0,10)}')"><div class="cday">${date.getDate()}</div><div class="cmoon">${moon.ico}</div><div class="cscore sc${sc}"></div></div>`}
+function selectDay(iso){selDate=new Date(iso);renderCal();const k=document.getElementById('locSel').value;const cfg=LOC[k];const peaks=getDayPeaks(selDate,cfg);const moon=moonPhase(selDate);const detail=document.getElementById('calDetail');detail.style.display='block';detail.innerHTML=`<div class="cal-dtitle">${selDate.toLocaleDateString('ja-JP',{month:'long',day:'numeric',weekday:'short'})} ${moon.ico} ${moon.name}／${moon.q}</div>`+peaks.slice(0,6).map(p=>{const hh=String(p.time.getHours()).padStart(2,'0'),mm=String(p.time.getMinutes()).padStart(2,'0');const fs=fishingScore(p.time,cfg);const bc=fs.score>=75?'var(--sun)':fs.score>=50?'var(--fish)':'var(--muted)';return`<div class="cdr"><span class="cdr-t">${hh}:${mm}</span><span class="cdr-l">${p.isHigh?'⬆️ 満潮':'⬇️ 干潮'} ${p.h.toFixed(2)}m</span><span style="color:${bc};font-weight:700;font-size:11px">${fs.score}点</span></div>`}).join('')}
+
+// アラート
+function toggleTgl(id,key){const el=document.getElementById(id);alertCfg[key]=!alertCfg[key];el.classList.toggle('on',alertCfg[key]);Store.set('alertCfg',JSON.stringify(alertCfg));document.getElementById('alertBanner').classList.toggle('show',Object.values(alertCfg).some(v=>v));toast(alertCfg[key]?'🔔 アラートを設定しました':'🔕 アラートをオフにしました');if(alertCfg[key]&&'Notification'in window&&Notification.permission==='default')Notification.requestPermission();updateTide()}
+function setupAlertTimers(peaks,now,cfg){alertTimers.forEach(t=>clearTimeout(t));alertTimers=[];peaks.forEach(p=>{const before30=new Date(p.time.getTime()-30*60000);const diff=before30-now;if(diff<=0||diff>4*3600000)return;if(p.isHigh&&alertCfg.high)scheduleNotification(diff,'🐠','満潮30分前！','まもなく満潮！青物・アジ・サバが活発になります。\n仕掛けを準備してください。');if(!p.isHigh&&alertCfg.low)scheduleNotification(diff,'🦀','干潮30分前！','干潮が近い！根魚・底物が狙い目。\n仕掛けを底に近づけて。');if(alertCfg.peak){const fs=fishingScore(p.time,cfg);if(fs.score>=90)scheduleNotification(diff,'🔥','釣れる度MAX！',`スコア${fs.score}点！今が絶好のチャンスです！\n${fs.reason}`)}});if(alertCfg.mazume){[{h:5,m:0,ico:'🌅',title:'夜明けマズメ！',body:'夜明け前後30分！\nトップウォーターが有効です。'},{h:17,m:30,ico:'🌇',title:'夕マズメ！',body:'日没黄金タイム！\nシルエット系ルアーが最強。'}].forEach(({h,m,ico,title,body})=>{const t=new Date(now);t.setHours(h,m,0,0);const d=t-now-30*60000;if(d>0&&d<86400000)scheduleNotification(d,ico,title,body)})}}
+function fireAlert(ico,title,body){document.getElementById('mIco').textContent=ico;document.getElementById('mTitle').textContent=title;document.getElementById('mBody').textContent=body;document.getElementById('modal').classList.add('on');beep();if('Notification'in window&&Notification.permission==='granted')new Notification('🎣 '+title,{body})}
+function closeModal(){document.getElementById('modal').classList.remove('on')}
+function beep(){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[[880,0],[1100,.18],[880,.36]].forEach(([f,d])=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.42,ctx.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+d+.55);o.start(ctx.currentTime+d);o.stop(ctx.currentTime+d+.6)})}catch(e){}}
+
+// ══════════════════════════════════════════════
+// 割り勘
+// ══════════════════════════════════════════════
+let members=[],currentDiscount=0,autoDiscount=0,manualOverride=false,lastResult=null,tripHistory=[];
+let detectedIC=null;
+try{tripHistory=JSON.parse(Store.get('driveHistory')||'[]')}catch(e){tripHistory=[]}
+
+// 設定永続化
+const DEF_KEYS={defFuelEff:{store:'defFuelEff',target:'fuelEff',fallback:'15'},defFuelPrice:{store:'defFuelPrice',target:'fuelPrice',fallback:'175'},defRoundtrip:{store:'defRoundtrip',target:'roundtrip',fallback:'1'},rounding:{store:'rounding',target:null,fallback:'ceil'},defDriverPerk:{store:'defDriverPerk',target:'driverPerk',fallback:'equal'}};
+function loadSettings(){Object.entries(DEF_KEYS).forEach(([id,cfg])=>{const val=Store.get(cfg.store)??cfg.fallback;const el=document.getElementById(id);if(el)el.value=val;if(cfg.target){const t=document.getElementById(cfg.target);if(t)t.value=val}})}
+function autoSaveSetting(id){const cfg=DEF_KEYS[id];if(!cfg)return;const val=document.getElementById(id).value;Store.set(cfg.store,val);if(cfg.target){const t=document.getElementById(cfg.target);if(t)t.value=val}const b=document.getElementById('savedBadge');b.classList.add('show');clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove('show'),2000)}
+function saveAllSettings(){Object.keys(DEF_KEYS).forEach(id=>autoSaveSetting(id));toast('⚙️ 設定を保存しました ✓')}
+Object.keys(DEF_KEYS).forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('change',()=>autoSaveSetting(id))});
+loadSettings();
+
+// ライブクロック
+function getDiscount(date){const h=date.getHours(),day=date.getDay();const isWE=day===0||day===6;if(h>=0&&h<4)return{rate:.3,label:'🌙 深夜割引 30%',color:'#a78bfa'};if(!isWE&&((h>=6&&h<9)||(h>=17&&h<20)))return{rate:.1,label:'🌅 平日朝夕割引 10%',color:'#fbbf24'};if(isWE)return{rate:.3,label:'🎌 休日割引 30%',color:'#34d399'};return{rate:0,label:'割引なし（通常料金）',color:'#64839e'}}
+function updateClock(){const now=new Date();const hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0');document.getElementById('liveClk').textContent=`${hh}:${mm}`;const d=getDiscount(now);document.getElementById('liveDisc').textContent=d.label;if(!manualOverride){autoDiscount=currentDiscount=d.rate;const pill=document.getElementById('discPill');document.getElementById('discIcon').textContent=d.rate>0?'✅':'➖';document.getElementById('discText').textContent=d.label;pill.style.cssText=`color:${d.color};background:${d.rate>0?'rgba(52,211,153,.1)':'rgba(100,131,158,.08)'};border-color:${d.rate>0?'rgba(52,211,153,.22)':'rgba(56,189,248,.15)'}`}}
+setInterval(updateClock,5000);updateClock();
+
+// ══ IC検出（精度向上版：220箇所以上、道路名付き、候補複数表示） ══
+// 凡例: n=IC名, r=道路名, la=緯度, lo=経度
+const IC_DATA=[
+  // ━━ 東北自動車道 ━━
+  {n:'川口JCT',r:'東北道',la:35.8272,lo:139.7230},{n:'浦和IC',r:'東北道',la:35.8639,lo:139.6488},
+  {n:'岩槻IC',r:'東北道',la:35.9469,lo:139.7086},{n:'久喜IC',r:'東北道',la:36.0606,lo:139.6666},
+  {n:'加須IC',r:'東北道',la:36.1281,lo:139.6050},{n:'羽生IC',r:'東北道',la:36.1753,lo:139.5556},
+  {n:'館林IC',r:'東北道',la:36.2469,lo:139.5319},{n:'佐野藤岡IC',r:'東北道',la:36.3108,lo:139.5625},
+  {n:'佐野SA',r:'東北道',la:36.3600,lo:139.5619},{n:'栃木IC',r:'東北道',la:36.3736,lo:139.7036},
+  {n:'都賀JCT',r:'東北道',la:36.4172,lo:139.8172},{n:'鹿沼IC',r:'東北道',la:36.4953,lo:139.7486},
+  {n:'宇都宮IC',r:'東北道',la:36.5544,lo:139.8866},{n:'矢板IC',r:'東北道',la:36.7247,lo:139.9311},
+  {n:'西那須野塩原IC',r:'東北道',la:36.8875,lo:139.9839},{n:'那須IC',r:'東北道',la:37.0150,lo:140.0569},
+  {n:'那須高原SA',r:'東北道',la:37.0600,lo:140.0800},{n:'黒磯板室IC',r:'東北道',la:37.0731,lo:140.0022},
+  {n:'白河IC',r:'東北道',la:37.1389,lo:140.2178},{n:'白河中央スマートIC',r:'東北道',la:37.1150,lo:140.2200},
+  {n:'矢吹IC',r:'東北道',la:37.2042,lo:140.3328},{n:'須賀川IC',r:'東北道',la:37.2894,lo:140.3556},
+  {n:'郡山南IC',r:'東北道',la:37.3272,lo:140.3556},{n:'郡山IC',r:'東北道',la:37.3719,lo:140.3753},
+  {n:'郡山JCT',r:'東北道',la:37.4047,lo:140.3528},{n:'本宮IC',r:'東北道',la:37.5117,lo:140.3961},
+  {n:'二本松IC',r:'東北道',la:37.5958,lo:140.4269},{n:'福島西IC',r:'東北道',la:37.7408,lo:140.4039},
+  {n:'福島JCT',r:'東北道',la:37.7769,lo:140.4636},{n:'福島飯坂IC',r:'東北道',la:37.8228,lo:140.4981},
+  {n:'国見IC',r:'東北道',la:37.8958,lo:140.5333},{n:'白石IC',r:'東北道',la:38.0008,lo:140.6078},
+  {n:'白石蔵王IC',r:'東北道',la:38.0353,lo:140.6333},{n:'仙台南IC',r:'東北道',la:38.1888,lo:140.8325},
+  {n:'仙台宮城IC',r:'東北道',la:38.2697,lo:140.9042},{n:'泉IC',r:'東北道',la:38.3278,lo:140.8803},
+  {n:'泉スマートIC',r:'東北道',la:38.3400,lo:140.8600},{n:'富谷JCT',r:'東北道',la:38.3861,lo:140.8697},
+  {n:'大和IC',r:'東北道',la:38.4264,lo:140.8933},{n:'三本木PA',r:'東北道',la:38.5214,lo:140.9056},
+  {n:'古川IC',r:'東北道',la:38.5756,lo:140.9572},{n:'築館IC',r:'東北道',la:38.7367,lo:141.0711},
+  {n:'若柳金成IC',r:'東北道',la:38.8239,lo:141.1097},{n:'一関IC',r:'東北道',la:38.9289,lo:141.1267},
+  {n:'平泉前沢IC',r:'東北道',la:39.0072,lo:141.1528},{n:'水沢IC',r:'東北道',la:39.0922,lo:141.1297},
+  {n:'北上JCT',r:'東北道',la:39.2742,lo:141.1242},{n:'北上金ケ崎IC',r:'東北道',la:39.2917,lo:141.0981},
+  {n:'花巻IC',r:'東北道',la:39.3689,lo:141.1317},{n:'花巻南IC',r:'東北道',la:39.4072,lo:141.1253},
+  {n:'盛岡南IC',r:'東北道',la:39.6181,lo:141.1519},{n:'盛岡IC',r:'東北道',la:39.7364,lo:141.1522},
+  {n:'滝沢IC',r:'東北道',la:39.8011,lo:141.1358},{n:'岩手山SA',r:'東北道',la:39.8700,lo:141.0900},
+  {n:'西根IC',r:'東北道',la:39.9497,lo:141.0797},{n:'松尾八幡平IC',r:'東北道',la:40.0092,lo:141.0781},
+  {n:'安代JCT',r:'東北道',la:40.0753,lo:141.1008},{n:'鹿角八幡平IC',r:'東北道',la:40.1636,lo:140.9911},
+  {n:'碇ケ関IC',r:'東北道',la:40.3586,lo:140.5714},{n:'大鰐弘前IC',r:'東北道',la:40.4697,lo:140.4928},
+  {n:'津軽SA',r:'東北道',la:40.5500,lo:140.4800},{n:'黒石IC',r:'東北道',la:40.5956,lo:140.5428},
+  {n:'青森中央IC',r:'東北道',la:40.7697,lo:140.7261},{n:'青森IC',r:'東北道',la:40.7890,lo:140.7628},
+  // ━━ 常磐自動車道 ━━（全IC網羅・修正済み）
+  {n:'三郷JCT',r:'常磐道',la:35.8369,lo:139.8281},
+  {n:'三郷IC',r:'常磐道',la:35.8342,lo:139.8372},
+  {n:'流山IC',r:'常磐道',la:35.8589,lo:139.9022},
+  {n:'流山おおたかの森スマートIC',r:'常磐道',la:35.8800,lo:139.9300},
+  {n:'柏JCT',r:'常磐道',la:35.8986,lo:139.9986},
+  {n:'柏IC',r:'常磐道',la:35.8889,lo:139.9506},
+  {n:'柏TG',r:'常磐道',la:35.9003,lo:139.9764},
+  {n:'我孫子IC',r:'常磐道',la:35.8775,lo:140.0261},
+  {n:'谷和原IC',r:'常磐道',la:35.9617,lo:140.0314},
+  {n:'守谷スマートIC',r:'常磐道',la:35.9756,lo:140.0539},
+  {n:'谷田部IC',r:'常磐道',la:35.9978,lo:140.0906},
+  {n:'桜土浦IC',r:'常磐道',la:36.0756,lo:140.1517},
+  {n:'土浦北IC',r:'常磐道',la:36.1189,lo:140.1814},
+  {n:'千代田石岡IC',r:'常磐道',la:36.1572,lo:140.2022},
+  {n:'石岡小美玉スマートIC',r:'常磐道',la:36.2047,lo:140.2556},
+  {n:'水戸IC',r:'常磐道',la:36.3663,lo:140.4639},
+  {n:'水戸北スマートIC',r:'常磐道',la:36.4181,lo:140.4572},
+  {n:'那珂IC',r:'常磐道',la:36.4583,lo:140.4986},
+  {n:'東海スマートIC',r:'常磐道',la:36.4900,lo:140.5800},
+  {n:'日立南太田IC',r:'常磐道',la:36.5358,lo:140.6072},
+  {n:'日立中央IC',r:'常磐道',la:36.5811,lo:140.6422},
+  {n:'日立北IC',r:'常磐道',la:36.6378,lo:140.6714},
+  {n:'高萩IC',r:'常磐道',la:36.7019,lo:140.7178},
+  {n:'北茨城IC',r:'常磐道',la:36.7858,lo:140.7528},
+  {n:'いわきJCT',r:'常磐道',la:36.9656,lo:140.8128},
+  {n:'いわき勿来IC',r:'常磐道',la:36.8678,lo:140.7853},
+  {n:'いわき湯本IC',r:'常磐道',la:36.9322,lo:140.8131},
+  {n:'いわき中央IC',r:'常磐道',la:36.9847,lo:140.8578},
+  {n:'いわき四倉IC',r:'常磐道',la:37.0797,lo:140.9147},
+  {n:'広野IC',r:'常磐道',la:37.2067,lo:141.0211},
+  {n:'常磐富岡IC',r:'常磐道',la:37.3294,lo:141.0303},
+  {n:'浪江IC',r:'常磐道',la:37.4731,lo:141.0769},
+  {n:'南相馬IC',r:'常磐道',la:37.6258,lo:140.9539},
+  {n:'相馬IC',r:'常磐道',la:37.7942,lo:140.8625},
+  {n:'山元IC',r:'常磐道',la:37.9444,lo:140.8528},
+  {n:'亘理IC',r:'常磐道',la:37.9981,lo:140.8578},
+  {n:'岩沼IC',r:'常磐道',la:38.0961,lo:140.8719},
+  {n:'仙台東IC',r:'常磐道',la:38.2128,lo:140.9367},
+  {n:'仙台港IC',r:'常磐道',la:38.2608,lo:140.9753},
+  // ━━ 北関東自動車道 ━━
+  {n:'岩舟JCT',r:'北関東道',la:36.3267,lo:139.6256},{n:'都賀JCT',r:'北関東道',la:36.4172,lo:139.8172},
+  {n:'栃木都賀JCT',r:'北関東道',la:36.4172,lo:139.8172},{n:'壬生IC',r:'北関東道',la:36.3856,lo:139.8114},
+  {n:'宇都宮上三川IC',r:'北関東道',la:36.4939,lo:139.8953},{n:'真岡IC',r:'北関東道',la:36.4381,lo:140.0150},
+  {n:'茂木IC',r:'北関東道',la:36.4617,lo:140.1897},{n:'水戸南IC',r:'北関東道',la:36.3344,lo:140.4158},
+  {n:'水戸IC（北関東）',r:'北関東道',la:36.3453,lo:140.4103},{n:'ひたちなか IC',r:'北関東道',la:36.3958,lo:140.5169},
+  {n:'東水戸IC',r:'北関東道',la:36.3631,lo:140.5403},{n:'常陸那珂港IC',r:'北関東道',la:36.4200,lo:140.6050},
+  {n:'桜川筑西IC',r:'北関東道',la:36.3833,lo:139.9800},{n:'笠間西IC',r:'北関東道',la:36.3656,lo:140.2469},
+  {n:'笠間北IC',r:'北関東道',la:36.3733,lo:140.2972},{n:'友部JCT',r:'北関東道',la:36.3589,lo:140.3606},
+  // ━━ 関越自動車道 ━━
+  {n:'練馬IC',r:'関越道',la:35.7503,lo:139.6157},{n:'所沢IC',r:'関越道',la:35.8016,lo:139.4703},
+  {n:'狭山PA',r:'関越道',la:35.8356,lo:139.4136},{n:'川越IC',r:'関越道',la:35.8844,lo:139.3878},
+  {n:'鶴ヶ島JCT',r:'関越道',la:35.9311,lo:139.3872},{n:'鶴ヶ島IC',r:'関越道',la:35.9397,lo:139.3678},
+  {n:'東松山IC',r:'関越道',la:36.0358,lo:139.4028},{n:'嵐山小川IC',r:'関越道',la:36.0928,lo:139.3328},
+  {n:'嵐山PA',r:'関越道',la:36.1033,lo:139.3117},{n:'花園IC',r:'関越道',la:36.1714,lo:139.2397},
+  {n:'本庄児玉IC',r:'関越道',la:36.2097,lo:139.1569},{n:'本庄早稲田IC',r:'関越道',la:36.2311,lo:139.0744},
+  {n:'上里SA',r:'関越道',la:36.2592,lo:139.0397},{n:'神流川',r:'関越道',la:36.2806,lo:139.0169},
+  {n:'藤岡JCT',r:'関越道',la:36.2681,lo:139.0064},{n:'藤岡IC',r:'関越道',la:36.2583,lo:139.0036},
+  {n:'高崎JCT',r:'関越道',la:36.3111,lo:139.0108},{n:'高崎IC',r:'関越道',la:36.3219,lo:139.0031},
+  {n:'高崎玉村スマートIC',r:'関越道',la:36.2953,lo:139.0472},{n:'前橋IC',r:'関越道',la:36.3808,lo:139.0819},
+  {n:'赤城IC',r:'関越道',la:36.4617,lo:139.0981},{n:'駒寄スマートIC',r:'関越道',la:36.4736,lo:138.9992},
+  {n:'渋川伊香保IC',r:'関越道',la:36.5411,lo:138.9958},{n:'月夜野IC',r:'関越道',la:36.6942,lo:138.9208},
+  {n:'水上IC',r:'関越道',la:36.7542,lo:138.9236},{n:'湯沢IC',r:'関越道',la:36.9347,lo:138.8228},
+  {n:'塩沢石打IC',r:'関越道',la:37.0206,lo:138.8331},{n:'六日町IC',r:'関越道',la:37.0647,lo:138.8842},
+  {n:'小出IC',r:'関越道',la:37.2172,lo:138.9369},{n:'堀之内IC',r:'関越道',la:37.2783,lo:138.8950},
+  {n:'小千谷IC',r:'関越道',la:37.3081,lo:138.7961},{n:'長岡JCT',r:'関越道',la:37.4347,lo:138.8564},
+  {n:'長岡IC',r:'関越道',la:37.4458,lo:138.8500},{n:'三条燕IC',r:'関越道',la:37.6089,lo:138.8758},
+  {n:'巻潟東IC',r:'関越道',la:37.7250,lo:138.9606},{n:'新潟西IC',r:'関越道',la:37.8669,lo:138.9814},
+  {n:'新潟IC',r:'関越道',la:37.9011,lo:139.0803},
+  // ━━ 東名高速道路 ━━
+  {n:'東京IC',r:'東名',la:35.6197,lo:139.6897},{n:'用賀IC',r:'東名',la:35.6233,lo:139.6536},
+  {n:'横浜町田IC',r:'東名',la:35.5282,lo:139.4389},{n:'横浜青葉IC',r:'東名',la:35.5578,lo:139.5206},
+  {n:'厚木IC',r:'東名',la:35.4564,lo:139.3422},{n:'秦野中井IC',r:'東名',la:35.3797,lo:139.2319},
+  {n:'大井松田IC',r:'東名',la:35.3303,lo:139.1425},{n:'御殿場IC',r:'東名',la:35.3106,lo:138.9436},
+  {n:'裾野IC',r:'東名',la:35.1681,lo:138.8939},{n:'沼津IC',r:'東名',la:35.1094,lo:138.8633},
+  {n:'富士IC',r:'東名',la:35.1617,lo:138.6769},{n:'富士川SA',r:'東名',la:35.1461,lo:138.6369},
+  {n:'清水IC',r:'東名',la:35.0278,lo:138.5286},{n:'静岡IC',r:'東名',la:34.9803,lo:138.4078},
+  {n:'焼津IC',r:'東名',la:34.8750,lo:138.3339},{n:'吉田IC',r:'東名',la:34.8194,lo:138.2389},
+  {n:'相良牧之原IC',r:'東名',la:34.7456,lo:138.1800},{n:'菊川IC',r:'東名',la:34.7508,lo:137.9958},
+  {n:'掛川IC',r:'東名',la:34.7522,lo:137.9128},{n:'袋井IC',r:'東名',la:34.7578,lo:137.8328},
+  {n:'磐田IC',r:'東名',la:34.7503,lo:137.8011},{n:'浜松IC',r:'東名',la:34.7356,lo:137.7339},
+  {n:'浜松西IC',r:'東名',la:34.7244,lo:137.6350},{n:'湖西IC',r:'東名',la:34.6764,lo:137.5328},
+  {n:'豊川IC',r:'東名',la:34.8106,lo:137.3767},{n:'音羽蒲郡IC',r:'東名',la:34.8425,lo:137.2536},
+  {n:'岡崎IC',r:'東名',la:34.9511,lo:137.2086},{n:'豊田IC',r:'東名',la:35.0756,lo:137.2136},
+  {n:'豊田JCT',r:'東名',la:35.1167,lo:137.2019},{n:'名古屋IC',r:'東名',la:35.1756,lo:136.9742},
+  // ━━ 中央自動車道 ━━
+  {n:'高井戸IC',r:'中央道',la:35.6756,lo:139.6003},{n:'調布IC',r:'中央道',la:35.6594,lo:139.5481},
+  {n:'稲城IC',r:'中央道',la:35.6456,lo:139.4925},{n:'八王子JCT',r:'中央道',la:35.6450,lo:139.3631},
+  {n:'八王子IC',r:'中央道',la:35.6450,lo:139.3197},{n:'相模湖IC',r:'中央道',la:35.6144,lo:139.1897},
+  {n:'大月JCT',r:'中央道',la:35.5947,lo:138.9369},{n:'大月IC',r:'中央道',la:35.5950,lo:138.9344},
+  {n:'勝沼IC',r:'中央道',la:35.6589,lo:138.7578},{n:'甲府昭和IC',r:'中央道',la:35.6478,lo:138.5586},
+  {n:'甲府南IC',r:'中央道',la:35.6039,lo:138.5289},{n:'甲斐双葉SA',r:'中央道',la:35.7039,lo:138.4800},
+  {n:'韮崎IC',r:'中央道',la:35.7253,lo:138.4481},{n:'須玉IC',r:'中央道',la:35.7814,lo:138.3439},
+  {n:'長坂IC',r:'中央道',la:35.8483,lo:138.3181},{n:'小淵沢IC',r:'中央道',la:35.8772,lo:138.2681},
+  {n:'諏訪南IC',r:'中央道',la:35.9414,lo:138.1936},{n:'諏訪IC',r:'中央道',la:36.0378,lo:138.1050},
+  {n:'岡谷JCT',r:'中央道',la:36.0678,lo:138.0369},{n:'塩尻北IC',r:'中央道',la:36.1411,lo:137.9839},
+  {n:'塩尻IC',r:'中央道',la:36.1039,lo:137.9681},{n:'伊那IC',r:'中央道',la:35.8567,lo:137.9553},
+  {n:'駒ヶ根IC',r:'中央道',la:35.7461,lo:137.9319},{n:'飯田IC',r:'中央道',la:35.4919,lo:137.8819},
+  {n:'恵那IC',r:'中央道',la:35.4486,lo:137.4231},{n:'土岐IC',r:'中央道',la:35.3508,lo:137.1911},
+  {n:'多治見IC',r:'中央道',la:35.3228,lo:137.1181},{n:'小牧東IC',r:'中央道',la:35.2822,lo:136.9814},
+  {n:'小牧JCT',r:'中央道',la:35.2636,lo:136.9158},{n:'小牧IC',r:'中央道',la:35.2625,lo:136.9253},
+  // ━━ 首都圏中央連絡自動車道（圏央道）茨城区間中心 ━━
+  {n:'つくばJCT',r:'圏央道',la:36.0733,lo:140.0697},{n:'つくば牛久IC',r:'圏央道',la:35.9814,lo:140.1008},
+  {n:'阿見東IC',r:'圏央道',la:35.9486,lo:140.1908},{n:'稲敷IC',r:'圏央道',la:35.9350,lo:140.2708},
+  {n:'稲敷東IC',r:'圏央道',la:35.9333,lo:140.3364},{n:'神崎IC',r:'圏央道',la:35.9028,lo:140.4444},
+  {n:'大栄JCT',r:'圏央道',la:35.8606,lo:140.5019},{n:'大栄IC',r:'圏央道',la:35.8483,lo:140.5103},
+  {n:'松尾横芝IC',r:'圏央道',la:35.7617,lo:140.5336},{n:'山武成東IC',r:'圏央道',la:35.7056,lo:140.5361},
+  {n:'東金JCT',r:'圏央道',la:35.6619,lo:140.4239},{n:'東金IC',r:'圏央道',la:35.6725,lo:140.4181},
+  {n:'茂原北IC',r:'圏央道',la:35.5814,lo:140.3578},{n:'茂原長南IC',r:'圏央道',la:35.5358,lo:140.2783},
+  {n:'市原鶴舞IC',r:'圏央道',la:35.4714,lo:140.1736},{n:'木更津東IC',r:'圏央道',la:35.4533,lo:139.9939},
+  {n:'木更津JCT',r:'圏央道',la:35.4317,lo:139.9378},
+  // ━━ 東関東自動車道 ━━
+  {n:'高谷JCT',r:'東関東道',la:35.6911,lo:139.9253},{n:'市川IC',r:'東関東道',la:35.7336,lo:139.9536},
+  {n:'千葉北IC',r:'東関東道',la:35.7056,lo:140.1050},{n:'千葉北IC（東関東）',r:'東関東道',la:35.7056,lo:140.1050},
+  {n:'四街道IC',r:'東関東道',la:35.6503,lo:140.1633},{n:'佐倉IC',r:'東関東道',la:35.7222,lo:140.2294},
+  {n:'酒々井IC',r:'東関東道',la:35.7386,lo:140.3228},{n:'成田JCT',r:'東関東道',la:35.7664,lo:140.3594},
+  {n:'成田IC',r:'東関東道',la:35.7828,lo:140.3769},{n:'大栄IC（東関東）',r:'東関東道',la:35.8483,lo:140.5103},
+  {n:'潮来IC',r:'東関東道',la:35.9483,lo:140.5642},{n:'鉾田IC',r:'東関東道',la:36.1467,lo:140.5742},
+  {n:'茨城空港北IC',r:'東関東道',la:36.1769,lo:140.4153},{n:'茨城空港IC',r:'東関東道',la:36.1781,lo:140.4161},
+  // ━━ 常陸那珂有料道路 ━━
+  {n:'ひたちなかIC',r:'常陸那珂道',la:36.3958,lo:140.5169},{n:'常陸那珂IC',r:'常陸那珂道',la:36.4219,lo:140.5900},
+  // ━━ 東京外環自動車道 ━━
+  {n:'大泉JCT',r:'外環道',la:35.7611,lo:139.6319},{n:'大泉IC',r:'外環道',la:35.7569,lo:139.6225},
+  {n:'和光北IC',r:'外環道',la:35.7800,lo:139.6133},{n:'新倉PA',r:'外環道',la:35.7900,lo:139.6300},
+  {n:'川口JCT（外環）',r:'外環道',la:35.8272,lo:139.7230},{n:'川口IC',r:'外環道',la:35.8272,lo:139.7250},
+  {n:'川口東IC',r:'外環道',la:35.8175,lo:139.7756},{n:'三郷西IC',r:'外環道',la:35.8247,lo:139.8064},
+  {n:'三郷JCT（外環）',r:'外環道',la:35.8369,lo:139.8281},{n:'三郷南IC',r:'外環道',la:35.8156,lo:139.8386},
+  {n:'高谷JCT（外環）',r:'外環道',la:35.6911,lo:139.9253},
+  // ━━ 銚子連絡道路・千葉東金道路など千葉県内有料道路 ━━
+  {n:'千葉東JCT',r:'千葉東金道路',la:35.6258,lo:140.2394},{n:'中野IC',r:'千葉東金道路',la:35.6211,lo:140.3161},
+  {n:'山田IC',r:'千葉東金道路',la:35.6156,lo:140.3847},{n:'東金IC（千葉東金）',r:'千葉東金道路',la:35.6725,lo:140.4181},
+  {n:'成田IC（新空港道）',r:'新空港道',la:35.7761,lo:140.3892},{n:'富里IC',r:'新空港道',la:35.7386,lo:140.3975},
+];
+
+function hav(la1,lo1,la2,lo2){
+  const R=6371,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180;
+  const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// 近い順上位N件を返す（精度向上の核心）
+function nearestICs(lat,lng,n=5){
+  return IC_DATA
+    .map(ic=>({...ic,dist:hav(lat,lng,ic.la,ic.lo)}))
+    .sort((a,b)=>a.dist-b.dist)
+    .slice(0,n);
+}
+
+function detectIC(){
+  if(!navigator.geolocation){setIC('error','位置情報が非対応です','');return}
+  setIC('scanning','位置情報を取得中…','許可ダイアログが出たら「許可」をタップ');
+  const btn=document.getElementById('icBtn');btn.disabled=true;btn.textContent='取得中…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const{latitude:lat,longitude:lng,accuracy}=pos.coords;
+    const now=new Date();
+    const ts=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    const candidates=nearestICs(lat,lng,5);
+    const top=candidates[0];
+    // 最寄りを仮セット
+    detectedIC={name:top.n,road:top.r,lat,lng,time:now,dist:top.dist,accuracy};
+    setIC('found',`最寄り：${top.n}（${top.r}）`,`約 ${top.dist.toFixed(1)} km ／ 乗車時刻 ${ts}`);
+    document.getElementById('icTime').textContent=ts;
+    document.getElementById('icNameVal').textContent=`${top.n}（${top.r}）`;
+    document.getElementById('icDist').textContent=`${top.dist.toFixed(1)} km`;
+    document.getElementById('icAcc').textContent=`±${Math.round(accuracy)}m`;
+    // 候補リスト表示
+    document.getElementById('icCandidates').innerHTML=candidates.map((c,i)=>`
+      <button onclick="selectIC(${i})" id="icC_${i}" class="ic-cand ${i===0?'sel':''}" data-idx="${i}">
+        <span class="ic-cand-name">${c.n}</span>
+        <span class="ic-cand-road">${c.r}</span>
+        <span class="ic-cand-dist">${c.dist.toFixed(1)}km</span>
+      </button>`).join('');
+    window._icCandidates=candidates;
+    window._icNow=now;
+    document.getElementById('icDetail').classList.add('show');
+    btn.textContent='🔄 再検出';btn.disabled=false;
+    applyICDiscount(top,now,ts);
+    toast(`📍 ${top.n}（${top.r}）を検出`);
+  },err=>{
+    const msgs={1:'アクセスが拒否されました',2:'位置情報を取得できません',3:'タイムアウト'};
+    setIC('error',msgs[err.code]||'取得失敗','ブラウザ設定を確認してください');
+    btn.textContent='再試行';btn.disabled=false;toast('⚠️ '+(msgs[err.code]||'取得失敗'));
+  },{enableHighAccuracy:true,timeout:14000,maximumAge:0});
+}
+
+function selectIC(i){
+  const c=window._icCandidates[i];const now=window._icNow||new Date();
+  const ts=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  document.querySelectorAll('.ic-cand').forEach((el,j)=>el.classList.toggle('sel',j===i));
+  document.getElementById('icNameVal').textContent=`${c.n}（${c.r}）`;
+  document.getElementById('icDist').textContent=`${c.dist.toFixed(1)} km`;
+  detectedIC={name:c.n,road:c.r,lat:detectedIC.lat,lng:detectedIC.lng,time:now,dist:c.dist,accuracy:detectedIC.accuracy};
+  setIC('found',`選択：${c.n}（${c.r}）`,`約 ${c.dist.toFixed(1)} km ／ 乗車時刻 ${ts}`);
+  applyICDiscount(c,now,ts);
+  toast(`✅ ${c.n} を選択しました`);
+}
+
+function applyICDiscount(ic,now,ts){
+  const d=getDiscount(now);currentDiscount=autoDiscount=d.rate;manualOverride=false;
+  const pill=document.getElementById('discPill');
+  document.getElementById('discIcon').textContent='📍';
+  document.getElementById('discText').textContent=`${ic.n} ${ts}乗車 → ${d.label}`;
+  pill.style.color=d.color;
+  document.querySelectorAll('.dbadge').forEach(b=>b.classList.remove('active'));
+}
+function setIC(state,name,sub){document.getElementById('icDot').className='icdot'+(state?' '+state:'');document.getElementById('icName').textContent=name;document.getElementById('icSub').textContent=sub}
+function manualDisc(btn,val){document.querySelectorAll('.dbadge').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentDiscount=val;manualOverride=true;const pill=document.getElementById('discPill');document.getElementById('discIcon').textContent='✋';document.getElementById('discText').textContent=val>0?`手動設定：${Math.round(val*100)}%割引`:'手動設定：割引なし';pill.style.cssText=`color:${val>0?'var(--sun)':'var(--muted)'};background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.22)`}
+
+// メンバー
+const savedM=JSON.parse(Store.get('savedMembers')||'[]');members=savedM.length?savedM:[{name:'じぶん',driver:true},{name:'友人A',driver:false}];renderMembers();
+function addMember(){const inp=document.getElementById('memberInput');const name=inp.value.trim();if(!name)return;members.push({name,driver:members.length===0});inp.value='';renderMembers();inp.focus()}
+document.getElementById('memberInput').addEventListener('keydown',e=>{if(e.key==='Enter')addMember()});
+function renderMembers(){const list=document.getElementById('memberList');if(!members.length){list.innerHTML='<div style="text-align:center;color:var(--muted);font-size:12px;padding:8px">メンバーを追加してください</div>';return}list.innerHTML=members.map((m,i)=>`<div class="mentry"><span style="font-size:14px">${m.driver?'🚗':'👤'}</span><input value="${m.name.replace(/"/g,'&quot;')}" onchange="members[${i}].name=this.value" placeholder="名前"><button class="drvtgl ${m.driver?'active':''}" onclick="toggleDrv(${i})">ドライバー</button><button class="rmbtn" onclick="removeMember(${i})">✕</button></div>`).join('')}
+function toggleDrv(i){members.forEach((m,j)=>m.driver=j===i);renderMembers()}
+function removeMember(i){members.splice(i,1);if(members.length&&!members.some(m=>m.driver))members[0].driver=true;renderMembers()}
+function saveMembers(){Store.set('savedMembers',JSON.stringify(members));toast('👥 メンバーを保存しました ✓')}
+
+// リセット
+function resetAll(){if(!confirm('入力内容と検出情報をリセットしますか？'))return;['distance','toll','parking','otherCost'].forEach(id=>document.getElementById(id).value='');loadSettings();manualOverride=false;document.querySelectorAll('.dbadge').forEach(b=>b.classList.remove('active'));updateClock();detectedIC=null;setIC('','位置情報でICと時刻を自動検出','乗車直前にタップ');document.getElementById('icDetail').classList.remove('show');const btn=document.getElementById('icBtn');btn.textContent='📍 IC検出';btn.disabled=false;document.getElementById('result').classList.remove('show');toast('🔄 リセットしました')}
+
+// 計算
+function calculate(){if(!members.length){toast('メンバーを追加してください');return}
+  const dist=parseFloat(document.getElementById('distance').value)||0;const fe=parseFloat(document.getElementById('fuelEff').value)||15;const fp=parseFloat(document.getElementById('fuelPrice').value)||175;const toll=parseFloat(document.getElementById('toll').value)||0;const rt=parseInt(document.getElementById('roundtrip').value)||1;const park=parseFloat(document.getElementById('parking').value)||0;const oth=parseFloat(document.getElementById('otherCost').value)||0;const dperk=document.getElementById('driverPerk').value;
+  const fuelCost=(dist/fe)*fp;const tollDisc=toll*currentDiscount;const tollAfter=(toll-tollDisc)*rt;const total=fuelCost+tollAfter+park+oth;
+  const rn=Store.get('rounding')||'ceil';const fn=rn==='ceil'?Math.ceil:rn==='floor'?Math.floor:Math.round;const n=members.length;let drvAmt,pasAmt,perPerson;
+  if(dperk==='equal'){perPerson=fn(total/n);drvAmt=pasAmt=perPerson}else if(dperk==='free'){pasAmt=fn(total/Math.max(n-1,1));drvAmt=0;perPerson=pasAmt}else{drvAmt=fn(total*.5);pasAmt=n>1?fn((total-drvAmt)/(n-1)):drvAmt;perPerson=pasAmt}
+  const refT=detectedIC?detectedIC.time:new Date();const disc=getDiscount(refT);const icLbl=detectedIC?detectedIC.name:'';const icTLbl=detectedIC?String(detectedIC.time.getHours()).padStart(2,'0')+':'+String(detectedIC.time.getMinutes()).padStart(2,'0'):'';
+  lastResult={total,fuelCost,toll,tollDisc,tollAfter,park,oth,perPerson,drvAmt,pasAmt,dist,dperk,discRate:currentDiscount,discLabel:disc.label,icLbl,icTLbl,members:members.map(m=>({...m})),date:new Date().toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})};
+  document.getElementById('perPerson').innerHTML=dperk==='equal'?`¥<span style="font-size:36px">${perPerson.toLocaleString()}</span>`:`¥<span style="font-size:32px">${pasAmt.toLocaleString()}</span><small style="font-size:11px;color:var(--muted);margin-left:4px">同乗者</small>`;
+  const dl=currentDiscount>0?(icLbl?`${icLbl} ${icTLbl}乗車→${Math.round(currentDiscount*100)}%引`:`割引 ${Math.round(currentDiscount*100)}%`):'割引なし';
+  document.getElementById('breakdown').innerHTML=`<div class="bkrow"><span class="bkkey">⛽ ガソリン代</span><span class="bkval">¥${Math.round(fuelCost).toLocaleString()}</span></div><div class="bkrow"><span class="bkkey">🛣️ 高速料金（元）</span><span class="bkval">¥${Math.round(toll*rt).toLocaleString()}</span></div>${tollDisc>0?`<div class="bkrow"><span class="bkkey">　└ ${dl}</span><span class="bkval disc">-¥${Math.round(tollDisc*rt).toLocaleString()}</span></div>`:''}${park>0?`<div class="bkrow"><span class="bkkey">🅿️ 駐車場代</span><span class="bkval">¥${park.toLocaleString()}</span></div>`:''}${oth>0?`<div class="bkrow"><span class="bkkey">📦 その他</span><span class="bkval">¥${oth.toLocaleString()}</span></div>`:''}<div class="bkrow sep"><span class="bkkey" style="font-weight:700">合計</span><span class="bkval tot">¥${Math.round(total).toLocaleString()}</span></div>`;
+  document.getElementById('memberResults').innerHTML=members.map(m=>{const a=m.driver?drvAmt:pasAmt;return`<div class="memchip"><span class="memname">${m.driver?'🚗':'👤'} ${m.name}${m.driver?'<span class="memdrv">ドライバー</span>':''}</span><span class="memamt">${a===0?'無料':'¥'+a.toLocaleString()}</span></div>`}).join('');
+  const rc=document.getElementById('result');rc.classList.add('show');rc.scrollIntoView({behavior:'smooth',block:'nearest'});
+  tripHistory.unshift(lastResult);if(tripHistory.length>50)tripHistory.pop();Store.set('driveHistory',JSON.stringify(tripHistory))}
+
+// 履歴・統計
+function renderHistory(){const list=document.getElementById('historyList');if(!tripHistory.length){list.innerHTML='<div style="text-align:center;color:var(--muted);font-size:13px;padding:30px 0">まだ計算履歴がありません。<br>計算するたびにここに保存されます。</div>';return}list.innerHTML=tripHistory.map(h=>`<div class="hitem"><div class="htop"><div class="hroute">${h.icLbl?'📍'+h.icLbl+' ':''}${h.members.map(m=>m.name).join(' / ')}</div><div class="hdate">${h.date}</div></div><div class="hmeta"><span class="htag">👥 <strong>${h.members.length}人</strong></span>${h.dist?`<span class="htag">🛣️ <strong>${h.dist}km</strong></span>`:''} ${h.discRate>0?`<span class="htag">🏷️ <strong>${Math.round(h.discRate*100)}%OFF</strong></span>`:''}<span class="htag">合計 <strong>¥${Math.round(h.total).toLocaleString()}</strong></span><span class="htag">一人 <strong>¥${h.perPerson.toLocaleString()}</strong></span></div></div>`).join('')}
+function updateStats(){document.getElementById('statTrips').textContent=tripHistory.length;document.getElementById('statDist').textContent=Math.round(tripHistory.reduce((s,h)=>s+(parseFloat(h.dist)||0),0))+' km';document.getElementById('statTotal').textContent='¥'+Math.round(tripHistory.reduce((s,h)=>s+(h.total||0),0)).toLocaleString();const avg=tripHistory.length?Math.round(tripHistory.reduce((s,h)=>s+h.perPerson,0)/tripHistory.length):0;document.getElementById('statAvg').textContent='¥'+avg.toLocaleString()}
+function clearHistory(){if(!confirm('履歴をすべて削除しますか？'))return;tripHistory=[];Store.set('driveHistory','[]');renderHistory();updateStats();toast('🗑️ 履歴を削除しました')}
+
+// シェア
+function shareResult(){if(!lastResult)return;const{members:ms,total,drvAmt,pasAmt,date,icLbl,icTLbl,discLabel}=lastResult;let t=`🚗 割り勘ドライブ (${date})\n`;if(icLbl)t+=`📍 ${icLbl} ${icTLbl}乗車\n`;t+=`🏷️ ${discLabel}\n━━━━━━━━━━━━\n`;ms.forEach(m=>{const a=m.driver?drvAmt:pasAmt;t+=`${m.driver?'🚗':'👤'} ${m.name}：${a===0?'無料':'¥'+a.toLocaleString()}\n`});t+=`━━━━━━━━━━━━\n合計：¥${Math.round(total).toLocaleString()}`;if(navigator.share)navigator.share({text:t}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast('クリップボードにコピーしました ✓'));else toast('コピーできませんでした')}
+
+// 場所の保存・復元
+function saveLoc(){const v=document.getElementById('locSel').value;Store.set('savedLoc',v)}
+(function restoreLoc(){const v=Store.get('savedLoc');if(v&&document.getElementById('locSel')){document.getElementById('locSel').value=v}})();
+
+// ══════════════════════════════════════════════
+// ブログ
+// ══════════════════════════════════════════════
+// Google Sheets 連携
+const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_vOb6ieJLqZgS1tnkTf8Lzse2gZ-zwtpb6o2gF-QXlIZBWCvFx_wO1b_r42HYLjDaT6BoQS3G0wpS/pub?output=csv';
+let sheetPosts = [];
+let sheetLoading = false;
+
+function parseCSV(text) {
+  const rows = []; let row = [], cell = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"' && text[i+1] === '"') { cell += '"'; i++; }
+      else if (c === '"') inQ = false;
+      else cell += c;
+    } else {
+      if (c === '"') inQ = true;
+      else if (c === ',') { row.push(cell); cell = ''; }
+      else if (c === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+      else if (c !== '\r') cell += c;
+    }
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+
+async function fetchSheetPosts() {
+  if (sheetLoading) return;
+  sheetLoading = true;
+  const statusEl = document.getElementById('sheetStatus');
+  statusEl.textContent = '🔄 読み込み中…';
+  try {
+    const res = await fetch(SHEET_CSV + '&t=' + Date.now());
+    if (!res.ok) throw new Error('fetch failed');
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if (rows.length < 2) { sheetPosts = []; statusEl.textContent = '📊 データなし'; return; }
+    const headers = rows[0].map(h => h.trim());
+    sheetPosts = rows.slice(1)
+      .filter(r => r.some(c => c.trim()))
+      .map((row, i) => {
+        const obj = { _sheet: true, _idx: i };
+        headers.forEach((h, j) => { obj[h] = (row[j] || '').trim(); });
+        return obj;
+      });
+    statusEl.textContent = `📊 シート連携：${sheetPosts.length}件`;
+    blogRenderList();
+  } catch(e) {
+    statusEl.textContent = '⚠️ シートの取得に失敗しました';
+    console.warn('Sheet fetch error:', e);
+  } finally {
+    sheetLoading = false;
+  }
+}
+
+function renderSheetCard(obj) {
+  const ts    = obj['タイムスタンプ'] || '';
+  const name  = obj['名前'] || '';
+  const how   = obj['釣り方'] || '';
+  const nth   = obj['その魚種何匹目'] || '';
+  const fish  = obj['魚種'] || '';
+  const size  = obj['サイズ'] ? obj['サイズ'] + 'cm' : '';
+  const pt    = obj['ポイント'] ? '⭐'.repeat(Math.min(Number(obj['ポイント']),5)) : '';
+
+  const title = fish ? `🐟 ${name}が ${fish} を釣った！` : `釣果記録 #${obj._idx + 1}`;
+  const lines = [
+    how   && `🎣 釣り方：${how}`,
+    nth   && `📌 ${nth}`,
+    size  && `📏 サイズ：${size}`,
+    pt    && `評価：${pt}`,
+    ts    && `🕐 ${ts}`,
+  ].filter(Boolean).join('\n');
+
+  const fishHtml = fish ? `<div class="post-fish"><span class="fish-tag">${fish}</span></div>` : '';
+
+  return `<div class="post-card type-report" style="border-left-color:#a78bfa">
+    <div class="post-meta">
+      <span class="post-type post-type-sheet">📊 シート連携</span>
+    </div>
+    <div class="post-title">${title}</div>
+    <div class="post-body" style="font-size:12px;white-space:pre-line">${lines}</div>
+    ${fishHtml}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════
+const BLOG_PW = 'fishing2025'; // ← パスワードはここを変更
+let blogAdmin = false;
+let blogPosts = [];
+let blogCurrentType = 'report';
+let blogFilter_ = 'all';
+let blogEditId = null;
+let blogFishTags = [];
+
+try { blogPosts = JSON.parse(Store.get('blogPosts') || '[]'); } catch(e) { blogPosts = []; }
+
+// ブログトップサブタブ切替
+let _rpChartsInited = false;
+function blogTopGo(name, btn) {
+  document.querySelectorAll('.blog-sub').forEach(el => el.classList.remove('on'));
+  document.querySelectorAll('.bttab').forEach(b => b.classList.remove('on'));
+  document.getElementById('bsub-' + name).classList.add('on');
+  btn.classList.add('on');
+  if (name === 'report' && !_rpChartsInited) { _rpChartsInited = true; initReportCharts(); }
+}
+
+function initReportCharts() {
+  if (typeof Chart === 'undefined') return;
+  const amber = '#f59e0b', seafoam = '#0ea5a0', rust = '#c84b11', mist = '#8fa3b1';
+  Chart.defaults.color = 'rgba(226,238,249,0.6)';
+  Chart.defaults.borderColor = 'rgba(56,189,248,0.12)';
+  // メンバー別釣果
+  new Chart(document.getElementById('rpMemberChart'), {
+    type: 'bar',
+    data: {
+      labels: ['NAGANUMA', '勇者ヨシヒコ', 'ガキオヤRin'],
+      datasets: [
+        { label: 'アジ',   data: [2,0,0], backgroundColor: amber,   borderWidth:0 },
+        { label: 'メバル', data: [0,0,1], backgroundColor: seafoam, borderWidth:0 },
+        { label: 'カサゴ', data: [0,0,3], backgroundColor: rust,    borderWidth:0 },
+        { label: 'メゴチ', data: [1,0,0], backgroundColor: mist,    borderWidth:0 },
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, padding:10, font:{size:10} } } },
+      scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, ticks:{ stepSize:1 } } }
+    }
+  });
+  // 魚種ドーナツ
+  new Chart(document.getElementById('rpSpeciesChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['アジ','メバル','カサゴ','メゴチ'],
+      datasets: [{ data:[2,1,3,1], backgroundColor:[amber,seafoam,rust,mist], borderWidth:2, borderColor:'#1a3252' }]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, padding:10, font:{size:10} } } }
+    }
+  });
+}
+
+function blogAdminToggle() {
+  if (blogAdmin) {
+    blogAdmin = false;
+    document.getElementById('adminStatus').textContent = '👤 閲覧モード';
+    document.getElementById('adminToggleBtn').textContent = '管理者ログイン';
+    document.getElementById('postForm').style.display = 'none';
+    toast('🔓 ログアウトしました');
+  } else {
+    document.getElementById('pwInp').value = '';
+    document.getElementById('pwErr').classList.remove('show');
+    document.getElementById('pwModal').classList.add('on');
+    setTimeout(() => document.getElementById('pwInp').focus(), 100);
+  }
+}
+function blogClosePw() { document.getElementById('pwModal').classList.remove('on'); }
+function blogCheckPw() {
+  const v = document.getElementById('pwInp').value;
+  if (v === BLOG_PW) {
+    blogAdmin = true;
+    document.getElementById('adminStatus').textContent = '🔑 管理者モード';
+    document.getElementById('adminToggleBtn').textContent = 'ログアウト';
+    document.getElementById('postForm').style.display = 'block';
+    blogClosePw();
+    toast('✅ 管理者としてログインしました');
+  } else {
+    document.getElementById('pwErr').classList.add('show');
+    document.getElementById('pwInp').value = '';
+    document.getElementById('pwInp').focus();
+  }
+}
+document.getElementById('pwInp').addEventListener('keydown', e => { if (e.key === 'Enter') blogCheckPw(); });
+
+function blogSetType(type, btn) {
+  blogCurrentType = type;
+  document.querySelectorAll('.tsel-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('fishSection').style.display = type === 'report' ? 'block' : 'none';
+}
+
+function blogAddFish() {
+  const inp = document.getElementById('fishInput');
+  const name = inp.value.trim();
+  if (!name || blogFishTags.includes(name)) { inp.value = ''; return; }
+  blogFishTags.push(name);
+  inp.value = '';
+  blogRenderFishPreview();
+}
+document.getElementById('fishInput').addEventListener('keydown', e => { if (e.key === 'Enter') blogAddFish(); });
+function blogRenderFishPreview() {
+  document.getElementById('fishTagsPreview').innerHTML = blogFishTags.map((f, i) =>
+    `<span class="fish-tag">${f} <span onclick="blogRemoveFish(${i})" style="cursor:pointer;opacity:.7">✕</span></span>`).join('');
+}
+function blogRemoveFish(i) { blogFishTags.splice(i, 1); blogRenderFishPreview(); }
+
+function blogPreviewImg(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const prev = document.getElementById('imgPreview');
+    prev.src = e.target.result;
+    prev.classList.add('show');
+  };
+  reader.readAsDataURL(file);
+}
+
+function blogSubmit() {
+  const title = document.getElementById('postTitle').value.trim();
+  const body  = document.getElementById('postBody').value.trim();
+  if (!title) { toast('タイトルを入力してください'); return; }
+  if (!body)  { toast('内容を入力してください'); return; }
+  const imgSrc = document.getElementById('imgPreview').src;
+  const hasImg = document.getElementById('imgPreview').classList.contains('show');
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('ja-JP', {year:'numeric', month:'long', day:'numeric'}) + ' ' +
+                  String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  if (blogEditId !== null) {
+    const idx = blogPosts.findIndex(p => p.id === blogEditId);
+    if (idx !== -1) {
+      blogPosts[idx] = { ...blogPosts[idx], title, body, fish: [...blogFishTags], img: hasImg ? imgSrc : '', date: dateStr + '（編集）' };
+    }
+    blogEditId = null;
+    document.querySelector('.post-btn').textContent = '📝 投稿する';
+    document.querySelector('.form-title').textContent = '✏️ 新規投稿';
+    toast('✅ 投稿を編集しました');
+  } else {
+    const post = {
+      id: Date.now(), type: blogCurrentType, title, body,
+      fish: [...blogFishTags], img: hasImg ? imgSrc : '', date: dateStr
+    };
+    blogPosts.unshift(post);
+    toast('✅ 投稿しました！');
+  }
+  Store.set('blogPosts', JSON.stringify(blogPosts));
+  // フォームリセット
+  document.getElementById('postTitle').value = '';
+  document.getElementById('postBody').value = '';
+  document.getElementById('imgPreview').src = '';
+  document.getElementById('imgPreview').classList.remove('show');
+  document.getElementById('postImg').value = '';
+  blogFishTags = [];
+  blogRenderFishPreview();
+  blogRenderList();
+}
+
+function blogDeletePost(id) {
+  if (!confirm('この投稿を削除しますか？')) return;
+  blogPosts = blogPosts.filter(p => p.id !== id);
+  Store.set('blogPosts', JSON.stringify(blogPosts));
+  blogRenderList();
+  toast('🗑️ 削除しました');
+}
+
+function blogEditPost(id) {
+  const p = blogPosts.find(p => p.id === id);
+  if (!p) return;
+  blogEditId = id;
+  blogCurrentType = p.type;
+  document.getElementById('postTitle').value = p.title;
+  document.getElementById('postBody').value = p.body;
+  blogFishTags = [...(p.fish || [])];
+  blogRenderFishPreview();
+  // タイプ切替
+  document.querySelectorAll('.tsel-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('tsel-' + p.type).classList.add('on');
+  document.getElementById('fishSection').style.display = p.type === 'report' ? 'block' : 'none';
+  if (p.img) {
+    const prev = document.getElementById('imgPreview');
+    prev.src = p.img;
+    prev.classList.add('show');
+  } else {
+    document.getElementById('imgPreview').classList.remove('show');
+  }
+  document.querySelector('.post-btn').textContent = '💾 更新する';
+  document.querySelector('.form-title').textContent = '✏️ 投稿を編集';
+  document.getElementById('postForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  toast('✏️ 編集モードです');
+}
+
+function blogFilter(type, btn) {
+  blogFilter_ = type;
+  document.querySelectorAll('.btab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  blogRenderList();
+}
+
+function blogRenderList() {
+  const list = document.getElementById('blogList');
+  const filtered = blogFilter_ === 'all' ? blogPosts : blogPosts.filter(p => p.type === blogFilter_);
+
+  // シートデータHTML（絞り込みが'notice'の場合は非表示）
+  let sheetHtml = '';
+  if (blogFilter_ !== 'notice' && sheetPosts.length) {
+    sheetHtml = sheetPosts.map(obj => renderSheetCard(obj)).join('');
+  }
+
+  if (!filtered.length && !sheetHtml) {
+    list.innerHTML = `<div class="empty-blog">まだ投稿がありません 🎣<br><span style="font-size:11px">管理者がログインして投稿できます</span></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(p => {
+    const typeLbl = p.type === 'report'
+      ? '<span class="post-type type-label-report">🐟 釣果報告</span>'
+      : '<span class="post-type type-label-notice">📢 お知らせ</span>';
+    const fishHtml = (p.fish && p.fish.length)
+      ? `<div class="post-fish">${p.fish.map(f => `<span class="fish-tag">${f}</span>`).join('')}</div>` : '';
+    const imgHtml = p.img ? `<img class="post-img" src="${p.img}" alt="釣果写真">` : '';
+    const adminBtns = blogAdmin
+      ? `<div class="post-actions">
+           <button class="act-btn" onclick="blogEditPost(${p.id})">✏️ 編集</button>
+           <button class="act-btn del" onclick="blogDeletePost(${p.id})">🗑️ 削除</button>
+         </div>` : '';
+    return `<div class="post-card type-${p.type}">
+      <div class="post-meta">${typeLbl}<span class="post-date">${p.date}</span></div>
+      <div class="post-title">${p.title}</div>
+      <div class="post-body">${p.body}</div>
+      ${fishHtml}${imgHtml}${adminBtns}
+    </div>`;
+  }).join('') + sheetHtml;
+}
+
+// ブログタブ表示時にレンダリング（go関数に統合済み）
+
+// 初期化
+setTimeout(()=>{updateTide();renderCal();fetchSheetPosts()},200);
+setInterval(()=>{if(document.getElementById('panel-tide').classList.contains('on'))updateTide()},60000);
+</script>
+</body>
+</html>
