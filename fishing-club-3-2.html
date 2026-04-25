@@ -1423,7 +1423,7 @@ function saveLoc(){const v=document.getElementById('locSel').value;Store.set('sa
 // ブログ
 // ══════════════════════════════════════════════
 // Google Sheets 連携
-const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_vOb6ieJLqZgS1tnkTf8Lzse2gZ-zwtpb6o2gF-QXlIZBWCvFx_wO1b_r42HYLjDaT6BoQS3G0wpS/pub?output=csv';
+const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_v0b6ieJLqZgS1tnkTf8Lzse2gZ-zwtpb6o2gF-QXlIZBWCvFx_wO1b_r42HYLjDaT6BoQS3G0wpS/pub?gid=336479346&single=true&output=csv';
 let sheetPosts = [];
 let sheetLoading = false;
 
@@ -1452,9 +1452,11 @@ async function fetchSheetPosts() {
   const statusEl = document.getElementById('sheetStatus');
   statusEl.textContent = '🔄 読み込み中…';
   try {
-    const res = await fetch(SHEET_CSV + '&t=' + Date.now());
-    if (!res.ok) throw new Error('fetch failed');
+    // キャッシュバスター無しでまず試す
+    const res = await fetch(SHEET_CSV, { mode: 'cors', cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
+    if (!text || text.length < 10) throw new Error('空データ');
     const rows = parseCSV(text);
     if (rows.length < 2) { sheetPosts = []; statusEl.textContent = '📊 データなし'; return; }
     const headers = rows[0].map(h => h.trim());
@@ -1468,8 +1470,10 @@ async function fetchSheetPosts() {
     statusEl.textContent = `📊 シート連携：${sheetPosts.length}件`;
     blogRenderList();
   } catch(e) {
-    statusEl.textContent = '⚠️ シートの取得に失敗しました';
-    console.warn('Sheet fetch error:', e);
+    // エラー詳細をUIに表示
+    const msg = (e && e.message) ? e.message : String(e);
+    statusEl.textContent = '⚠️ 取得失敗: ' + msg.substring(0, 40);
+    console.error('Sheet fetch error:', e);
   } finally {
     sheetLoading = false;
   }
