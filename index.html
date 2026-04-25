@@ -689,11 +689,19 @@ select{
         <option value="okinawa">沖縄（那覇）</option>
       </optgroup>
       <optgroup label="── 茨城県 ──">
+        <option value="taira">平潟港（北茨城市）</option>
+        <option value="otsu">大津漁港（北茨城市）⭐</option>
+        <option value="isohama">磯浜漁港（北茨城）</option>
+        <option value="kawajiri">川尻港（高萩市）</option>
+        <option value="kuji">久慈漁港・赤灯台（日立市）</option>
+        <option value="ose">会瀬漁港（日立市）</option>
+        <option value="kawarako">河原子漁港（日立市）</option>
+        <option value="hitachi_ko">日立港（常陸那珂港）</option>
+        <option value="hiraiso">平磯漁港（ひたちなか）</option>
+        <option value="isozaki">磯崎漁港（ひたちなか）</option>
         <option value="nakaminato">那珂湊漁港</option>
         <option value="oarai">大洗港・大洗磯前</option>
-        <option value="hitachi_ko">日立港（常陸那珂港）</option>
-        <option value="taira">平潟港（北茨城市）</option>
-        <option value="isohama">磯浜漁港（北茨城）</option>
+        <option value="kashima_nada">鹿島灘漁港（鉾田市）</option>
         <option value="kashima">鹿島港（神栖・鹿嶋）</option>
         <option value="hasaki">波崎漁港（神栖市）</option>
         <option value="kamisu">神栖漁港（息栖）</option>
@@ -1017,18 +1025,26 @@ const LOC={
   hiroshima:{name:'広島湾',                  ph:2.5,  amp:2.1,  pref:'広島'},
   kochi:    {name:'土佐湾（高知）',           ph:1.0,  amp:1.5,  pref:'高知'},
   okinawa:  {name:'沖縄（那覇）',             ph:-0.5, amp:0.8,  pref:'沖縄'},
-  // ── 茨城県 ──
-  oarai:       {name:'大洗港・大洗磯前',       ph:0.20, amp:1.25, pref:'茨城', fish:'アジ・サバ・ヒラメ・カレイ'},
-  nakaminato:  {name:'那珂湊漁港',             ph:0.20, amp:1.25, pref:'茨城', fish:'アジ・サバ・コウイカ・ヒラメ'},
-  hitachi_ko:  {name:'日立港（常陸那珂港）',   ph:0.15, amp:1.20, pref:'茨城', fish:'アジ・サバ・イワシ・ヒラメ'},
-  taira:       {name:'平潟港（北茨城市）',     ph:0.10, amp:1.15, pref:'茨城', fish:'アジ・ヒラメ・根魚'},
-  isohama:     {name:'磯浜漁港（北茨城）',     ph:0.10, amp:1.15, pref:'茨城', fish:'アイナメ・メバル・ソイ'},
-  kashima:     {name:'鹿島港（神栖・鹿嶋）',   ph:0.35, amp:1.30, pref:'茨城', fish:'青物・ヒラメ・シーバス'},
-  hasaki:      {name:'波崎漁港（神栖市）',     ph:0.45, amp:1.35, pref:'茨城', fish:'ヒラメ・イシモチ・シーバス'},
-  kamisu:      {name:'神栖漁港（息栖）',       ph:0.40, amp:1.30, pref:'茨城', fish:'ヒラメ・マゴチ・キス'},
-  kashima_beach:{name:'鹿島灘（海岸一帯）',   ph:0.35, amp:1.30, pref:'茨城', fish:'キス・カレイ・イシモチ'},
-  hikata:      {name:'涸沼（涸沼川・汽水湖）', ph:0.15, amp:0.60, pref:'茨城', fish:'シーバス・ウナギ・ハゼ'},
-  kitaura:     {name:'北浦（霞ヶ浦北）',       ph:0.10, amp:0.50, pref:'茨城', fish:'バス・ヘラブナ・ワカサギ'},
+  // ── 茨城県（北→南順）──
+  taira:        {name:'平潟港（北茨城市）',     ph:0.10, amp:1.15, pref:'茨城', fish:'アジ・ヒラメ・根魚'},
+  otsu:         {name:'大津漁港（北茨城市）',   ph:0.10, amp:1.15, pref:'茨城', fish:'アジ・サバ・イシモチ・カレイ・ヒラメ・クロダイ・ウミタナゴ'},
+  isohama:      {name:'磯浜漁港（北茨城）',     ph:0.10, amp:1.15, pref:'茨城', fish:'アイナメ・メバル・ソイ'},
+  kawajiri:     {name:'川尻港（高萩市）',       ph:0.12, amp:1.18, pref:'茨城', fish:'アジ・サバ・カレイ・アイナメ'},
+  kuji:         {name:'久慈漁港・赤灯台（日立）',ph:0.15, amp:1.20, pref:'茨城', fish:'アジ・サバ・イワシ・カレイ・シーバス'},
+  ose:          {name:'会瀬漁港（日立市）',     ph:0.15, amp:1.20, pref:'茨城', fish:'アジ・サバ・メバル・カサゴ'},
+  kawarako:     {name:'河原子漁港（日立市）',   ph:0.18, amp:1.22, pref:'茨城', fish:'アジ・サバ・カレイ・キス'},
+  hitachi_ko:   {name:'日立港（常陸那珂港）',   ph:0.15, amp:1.20, pref:'茨城', fish:'アジ・サバ・イワシ・ヒラメ'},
+  hiraiso:      {name:'平磯漁港（ひたちなか）', ph:0.20, amp:1.25, pref:'茨城', fish:'アジ・サバ・メバル・カサゴ・クロダイ'},
+  isozaki:      {name:'磯崎漁港（ひたちなか）', ph:0.20, amp:1.25, pref:'茨城', fish:'アジ・サバ・メバル・カサゴ'},
+  nakaminato:   {name:'那珂湊漁港',             ph:0.20, amp:1.25, pref:'茨城', fish:'アジ・サバ・コウイカ・ヒラメ'},
+  oarai:        {name:'大洗港・大洗磯前',       ph:0.20, amp:1.25, pref:'茨城', fish:'アジ・サバ・ヒラメ・カレイ'},
+  kashima_nada: {name:'鹿島灘漁港（鉾田市）',   ph:0.30, amp:1.28, pref:'茨城', fish:'シーバス・ヒラメ・イシモチ'},
+  kashima:      {name:'鹿島港（神栖・鹿嶋）',   ph:0.35, amp:1.30, pref:'茨城', fish:'青物・ヒラメ・シーバス'},
+  hasaki:       {name:'波崎漁港（神栖市）',     ph:0.45, amp:1.35, pref:'茨城', fish:'ヒラメ・イシモチ・シーバス'},
+  kamisu:       {name:'神栖漁港（息栖）',       ph:0.40, amp:1.30, pref:'茨城', fish:'ヒラメ・マゴチ・キス'},
+  kashima_beach:{name:'鹿島灘（海岸一帯）',     ph:0.35, amp:1.30, pref:'茨城', fish:'キス・カレイ・イシモチ'},
+  hikata:       {name:'涸沼（涸沼川・汽水湖）', ph:0.15, amp:0.60, pref:'茨城', fish:'シーバス・ウナギ・ハゼ'},
+  kitaura:      {name:'北浦（霞ヶ浦北）',       ph:0.10, amp:0.50, pref:'茨城', fish:'バス・ヘラブナ・ワカサギ'},
   // ── 福島県 ──
   onahama:     {name:'小名浜港（いわき市）',   ph:0.75, amp:1.20, pref:'福島', fish:'アジ・サバ・イカ・ヒラメ'},
   onahama_dike:{name:'小名浜港 新防波堤',      ph:0.75, amp:1.20, pref:'福島', fish:'青物・回遊魚'},
