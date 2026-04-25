@@ -160,6 +160,13 @@ select{
 
 .empty-blog{text-align:center;color:var(--muted);font-size:13px;padding:40px 0;line-height:1.8}
 
+/* シート連携バー */
+.sheet-bar{display:flex;align-items:center;justify-content:space-between;background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:8px 12px;margin-bottom:10px;gap:8px}
+.sheet-status{font-size:11px;color:#a78bfa;font-weight:700;flex:1}
+.sheet-btn{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);border-radius:8px;color:#a78bfa;font-family:inherit;font-size:11px;font-weight:700;padding:5px 11px;cursor:pointer;white-space:nowrap}
+.sheet-btn:active{transform:scale(.96)}
+.post-type-sheet{background:rgba(167,139,250,.12);color:#a78bfa;border:1px solid rgba(167,139,250,.25)}
+
 /* 管理者パスワードモーダル */
 .pw-modal{display:none;position:fixed;inset:0;z-index:600;align-items:center;justify-content:center;background:rgba(10,20,35,.9);backdrop-filter:blur(8px)}
 .pw-modal.on{display:flex}
@@ -480,6 +487,12 @@ select{
 
   <!-- ─── 投稿一覧 ─── -->
   <div id="bsub-posts" class="blog-sub on">
+
+  <!-- シート連携バー -->
+  <div class="sheet-bar">
+    <span class="sheet-status" id="sheetStatus">📊 釣果データ読み込み中…</span>
+    <button class="sheet-btn" onclick="fetchSheetPosts()">🔄 更新</button>
+  </div>
 
   <!-- 管理者バー -->
   <div class="admin-bar">
@@ -1159,25 +1172,46 @@ const IC_DATA=[
   {n:'碇ケ関IC',r:'東北道',la:40.3586,lo:140.5714},{n:'大鰐弘前IC',r:'東北道',la:40.4697,lo:140.4928},
   {n:'津軽SA',r:'東北道',la:40.5500,lo:140.4800},{n:'黒石IC',r:'東北道',la:40.5956,lo:140.5428},
   {n:'青森中央IC',r:'東北道',la:40.7697,lo:140.7261},{n:'青森IC',r:'東北道',la:40.7890,lo:140.7628},
-  // ━━ 常磐自動車道 ━━
-  {n:'三郷JCT',r:'常磐道',la:35.8369,lo:139.8281},{n:'三郷IC',r:'常磐道',la:35.8342,lo:139.8372},
-  {n:'流山IC',r:'常磐道',la:35.8589,lo:139.9022},{n:'柏IC',r:'常磐道',la:35.8889,lo:139.9506},
-  {n:'柏JCT',r:'常磐道',la:35.8986,lo:139.9986},{n:'流山おおたかの森IC',r:'常磐道',la:35.8800,lo:139.9300},
-  {n:'柏TG',r:'常磐道',la:35.9003,lo:139.9764},{n:'我孫子IC',r:'常磐道',la:35.8775,lo:140.0261},
-  {n:'千代田石岡IC',r:'常磐道',la:36.1572,lo:140.2022},{n:'石岡小美玉スマートIC',r:'常磐道',la:36.2047,lo:140.2556},
-  {n:'水戸IC',r:'常磐道',la:36.3663,lo:140.4639},{n:'水戸北スマートIC',r:'常磐道',la:36.4181,lo:140.4572},
-  {n:'那珂IC',r:'常磐道',la:36.4583,lo:140.4986},{n:'東海PA',r:'常磐道',la:36.4900,lo:140.5800},
-  {n:'日立南太田IC',r:'常磐道',la:36.5358,lo:140.6072},{n:'日立中央IC',r:'常磐道',la:36.5811,lo:140.6422},
-  {n:'日立北IC',r:'常磐道',la:36.6378,lo:140.6714},{n:'高萩IC',r:'常磐道',la:36.7019,lo:140.7178},
-  {n:'北茨城IC',r:'常磐道',la:36.7858,lo:140.7528},{n:'いわきJCT',r:'常磐道',la:36.9656,lo:140.8128},
-  {n:'いわき四倉IC',r:'常磐道',la:37.0797,lo:140.9147},{n:'いわき中央IC',r:'常磐道',la:36.9847,lo:140.8578},
-  {n:'いわき湯本IC',r:'常磐道',la:36.9322,lo:140.8131},{n:'いわき勿来IC',r:'常磐道',la:36.8678,lo:140.7853},
-  {n:'広野IC',r:'常磐道',la:37.2067,lo:141.0211},{n:'富岡IC',r:'常磐道',la:37.3294,lo:141.0303},
-  {n:'常磐富岡IC',r:'常磐道',la:37.3294,lo:141.0303},{n:'浪江IC',r:'常磐道',la:37.4731,lo:141.0769},
-  {n:'南相馬IC',r:'常磐道',la:37.6258,lo:140.9539},{n:'南相馬鹿島SA',r:'常磐道',la:37.6600,lo:140.9700},
-  {n:'相馬IC',r:'常磐道',la:37.7942,lo:140.8625},{n:'山元IC',r:'常磐道',la:37.9444,lo:140.8528},
-  {n:'亘理IC',r:'常磐道',la:37.9981,lo:140.8578},{n:'岩沼IC',r:'常磐道',la:38.0961,lo:140.8719},
-  {n:'仙台東IC',r:'常磐道',la:38.2128,lo:140.9367},{n:'仙台港IC',r:'常磐道',la:38.2608,lo:140.9753},
+  // ━━ 常磐自動車道 ━━（全IC網羅・修正済み）
+  {n:'三郷JCT',r:'常磐道',la:35.8369,lo:139.8281},
+  {n:'三郷IC',r:'常磐道',la:35.8342,lo:139.8372},
+  {n:'流山IC',r:'常磐道',la:35.8589,lo:139.9022},
+  {n:'流山おおたかの森スマートIC',r:'常磐道',la:35.8800,lo:139.9300},
+  {n:'柏JCT',r:'常磐道',la:35.8986,lo:139.9986},
+  {n:'柏IC',r:'常磐道',la:35.8889,lo:139.9506},
+  {n:'柏TG',r:'常磐道',la:35.9003,lo:139.9764},
+  {n:'我孫子IC',r:'常磐道',la:35.8775,lo:140.0261},
+  {n:'谷和原IC',r:'常磐道',la:35.9617,lo:140.0314},
+  {n:'守谷スマートIC',r:'常磐道',la:35.9756,lo:140.0539},
+  {n:'谷田部IC',r:'常磐道',la:35.9978,lo:140.0906},
+  {n:'桜土浦IC',r:'常磐道',la:36.0756,lo:140.1517},
+  {n:'土浦北IC',r:'常磐道',la:36.1189,lo:140.1814},
+  {n:'千代田石岡IC',r:'常磐道',la:36.1572,lo:140.2022},
+  {n:'石岡小美玉スマートIC',r:'常磐道',la:36.2047,lo:140.2556},
+  {n:'水戸IC',r:'常磐道',la:36.3663,lo:140.4639},
+  {n:'水戸北スマートIC',r:'常磐道',la:36.4181,lo:140.4572},
+  {n:'那珂IC',r:'常磐道',la:36.4583,lo:140.4986},
+  {n:'東海スマートIC',r:'常磐道',la:36.4900,lo:140.5800},
+  {n:'日立南太田IC',r:'常磐道',la:36.5358,lo:140.6072},
+  {n:'日立中央IC',r:'常磐道',la:36.5811,lo:140.6422},
+  {n:'日立北IC',r:'常磐道',la:36.6378,lo:140.6714},
+  {n:'高萩IC',r:'常磐道',la:36.7019,lo:140.7178},
+  {n:'北茨城IC',r:'常磐道',la:36.7858,lo:140.7528},
+  {n:'いわきJCT',r:'常磐道',la:36.9656,lo:140.8128},
+  {n:'いわき勿来IC',r:'常磐道',la:36.8678,lo:140.7853},
+  {n:'いわき湯本IC',r:'常磐道',la:36.9322,lo:140.8131},
+  {n:'いわき中央IC',r:'常磐道',la:36.9847,lo:140.8578},
+  {n:'いわき四倉IC',r:'常磐道',la:37.0797,lo:140.9147},
+  {n:'広野IC',r:'常磐道',la:37.2067,lo:141.0211},
+  {n:'常磐富岡IC',r:'常磐道',la:37.3294,lo:141.0303},
+  {n:'浪江IC',r:'常磐道',la:37.4731,lo:141.0769},
+  {n:'南相馬IC',r:'常磐道',la:37.6258,lo:140.9539},
+  {n:'相馬IC',r:'常磐道',la:37.7942,lo:140.8625},
+  {n:'山元IC',r:'常磐道',la:37.9444,lo:140.8528},
+  {n:'亘理IC',r:'常磐道',la:37.9981,lo:140.8578},
+  {n:'岩沼IC',r:'常磐道',la:38.0961,lo:140.8719},
+  {n:'仙台東IC',r:'常磐道',la:38.2128,lo:140.9367},
+  {n:'仙台港IC',r:'常磐道',la:38.2608,lo:140.9753},
   // ━━ 北関東自動車道 ━━
   {n:'岩舟JCT',r:'北関東道',la:36.3267,lo:139.6256},{n:'都賀JCT',r:'北関東道',la:36.4172,lo:139.8172},
   {n:'栃木都賀JCT',r:'北関東道',la:36.4172,lo:139.8172},{n:'壬生IC',r:'北関東道',la:36.3856,lo:139.8114},
@@ -1388,6 +1422,94 @@ function saveLoc(){const v=document.getElementById('locSel').value;Store.set('sa
 // ══════════════════════════════════════════════
 // ブログ
 // ══════════════════════════════════════════════
+// Google Sheets 連携
+const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR_v0b6ieJLqZgS1tnkTf8Lzse2gZ-zwtpb6o2gF-QXlIZBWCvFx_wO1b_r42HYLjDaT6BoQS3G0wpS/pub?gid=336479346&single=true&output=csv';
+let sheetPosts = [];
+let sheetLoading = false;
+
+function parseCSV(text) {
+  const rows = []; let row = [], cell = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"' && text[i+1] === '"') { cell += '"'; i++; }
+      else if (c === '"') inQ = false;
+      else cell += c;
+    } else {
+      if (c === '"') inQ = true;
+      else if (c === ',') { row.push(cell); cell = ''; }
+      else if (c === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+      else if (c !== '\r') cell += c;
+    }
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+
+async function fetchSheetPosts() {
+  if (sheetLoading) return;
+  sheetLoading = true;
+  const statusEl = document.getElementById('sheetStatus');
+  statusEl.textContent = '🔄 読み込み中…';
+  try {
+    // キャッシュバスター無しでまず試す
+    const res = await fetch(SHEET_CSV, { mode: 'cors', cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    if (!text || text.length < 10) throw new Error('空データ');
+    const rows = parseCSV(text);
+    if (rows.length < 2) { sheetPosts = []; statusEl.textContent = '📊 データなし'; return; }
+    const headers = rows[0].map(h => h.trim());
+    sheetPosts = rows.slice(1)
+      .filter(r => r.some(c => c.trim()))
+      .map((row, i) => {
+        const obj = { _sheet: true, _idx: i };
+        headers.forEach((h, j) => { obj[h] = (row[j] || '').trim(); });
+        return obj;
+      });
+    statusEl.textContent = `📊 シート連携：${sheetPosts.length}件`;
+    blogRenderList();
+  } catch(e) {
+    // エラー詳細をUIに表示
+    const msg = (e && e.message) ? e.message : String(e);
+    statusEl.textContent = '⚠️ 取得失敗: ' + msg.substring(0, 40);
+    console.error('Sheet fetch error:', e);
+  } finally {
+    sheetLoading = false;
+  }
+}
+
+function renderSheetCard(obj) {
+  const ts    = obj['タイムスタンプ'] || '';
+  const name  = obj['名前'] || '';
+  const how   = obj['釣り方'] || '';
+  const nth   = obj['その魚種何匹目'] || '';
+  const fish  = obj['魚種'] || '';
+  const size  = obj['サイズ'] ? obj['サイズ'] + 'cm' : '';
+  const pt    = obj['ポイント'] ? '⭐'.repeat(Math.min(Number(obj['ポイント']),5)) : '';
+
+  const title = fish ? `🐟 ${name}が ${fish} を釣った！` : `釣果記録 #${obj._idx + 1}`;
+  const lines = [
+    how   && `🎣 釣り方：${how}`,
+    nth   && `📌 ${nth}`,
+    size  && `📏 サイズ：${size}`,
+    pt    && `評価：${pt}`,
+    ts    && `🕐 ${ts}`,
+  ].filter(Boolean).join('\n');
+
+  const fishHtml = fish ? `<div class="post-fish"><span class="fish-tag">${fish}</span></div>` : '';
+
+  return `<div class="post-card type-report" style="border-left-color:#a78bfa">
+    <div class="post-meta">
+      <span class="post-type post-type-sheet">📊 シート連携</span>
+    </div>
+    <div class="post-title">${title}</div>
+    <div class="post-body" style="font-size:12px;white-space:pre-line">${lines}</div>
+    ${fishHtml}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════
 const BLOG_PW = 'fishing2025'; // ← パスワードはここを変更
 let blogAdmin = false;
 let blogPosts = [];
@@ -1592,7 +1714,14 @@ function blogFilter(type, btn) {
 function blogRenderList() {
   const list = document.getElementById('blogList');
   const filtered = blogFilter_ === 'all' ? blogPosts : blogPosts.filter(p => p.type === blogFilter_);
-  if (!filtered.length) {
+
+  // シートデータHTML（絞り込みが'notice'の場合は非表示）
+  let sheetHtml = '';
+  if (blogFilter_ !== 'notice' && sheetPosts.length) {
+    sheetHtml = sheetPosts.map(obj => renderSheetCard(obj)).join('');
+  }
+
+  if (!filtered.length && !sheetHtml) {
     list.innerHTML = `<div class="empty-blog">まだ投稿がありません 🎣<br><span style="font-size:11px">管理者がログインして投稿できます</span></div>`;
     return;
   }
@@ -1614,13 +1743,13 @@ function blogRenderList() {
       <div class="post-body">${p.body}</div>
       ${fishHtml}${imgHtml}${adminBtns}
     </div>`;
-  }).join('');
+  }).join('') + sheetHtml;
 }
 
 // ブログタブ表示時にレンダリング（go関数に統合済み）
 
 // 初期化
-setTimeout(()=>{updateTide();renderCal()},200);
+setTimeout(()=>{updateTide();renderCal();fetchSheetPosts()},200);
 setInterval(()=>{if(document.getElementById('panel-tide').classList.contains('on'))updateTide()},60000);
 </script>
 </body>
