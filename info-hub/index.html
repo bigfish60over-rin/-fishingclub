@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0a1422" />
+<title>NAGAYOSHIRIN INFO HUB v2 — ナガヨシリン fishing club</title>
+<meta name="description" content="ナガヨシリン fishing club 公式情報ハブ — リアルタイム釣果情報・YouTube・AI検索" />
+<link rel="preconnect" href="https://api.rss2json.com" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://www.googleapis.com" />
+<link rel="preconnect" href="https://api.anthropic.com" />
+<style>
+  html,body { margin:0; padding:0; background:#0a1422; min-height:100vh; }
+  #boot { 
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center; 
+    flex-direction:column; gap:14px; background:#0a1422; color:#5cc4eb;
+    font-family:system-ui,sans-serif; z-index:9999; transition:opacity 0.4s;
+  }
+  #boot.hide { opacity:0; pointer-events:none; }
+  .b-spin { width:36px; height:36px; border:3px solid rgba(92,196,235,0.2); border-top-color:#5cc4eb; border-radius:50%; animation:bs 0.9s linear infinite; }
+  @keyframes bs { to { transform: rotate(360deg); } }
+  .b-text { font-size:13px; letter-spacing:2px; opacity:0.7; }
+  .b-logo { font-size:24px; letter-spacing:3px; font-weight:900; }
+  .b-logo span { color:#f0a500; }
+</style>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+<div id="boot">
+  <div class="b-logo">NAGAYOSHIRIN <span>INFO HUB</span></div>
+  <div class="b-spin"></div>
+  <div class="b-text">SYSTEM BOOTING...</div>
+</div>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
+// ════════════════════════════════════════════════════════════
+//   NAGAYOSHIRIN INFO HUB v2 — 超高品質版
+//   構造化データ釣り情報アグリゲーター
+// ════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════
+//   設定データ — 全網羅・検証済み
+// ════════════════════════════════════════════════════════════
+
+// 主要釣具店RSSフィード（全国主要チェーン網羅）
+const DEFAULT_RSS_FEEDS = [
+  // ========= 大手釣具店チェーン =========
+  { id: "joshuya",    name: "上州屋",            url: "https://www.johshuya.co.jp/blog/feed/",    type: "shop",  region: "全国",   active: true  },
+  { id: "casting",    name: "キャスティング",       url: "https://blog.casting.jp/?xml",             type: "shop",  region: "全国",   active: true  },
+  { id: "ishiguro",   name: "釣り具のイシグロ",     url: "https://ishiguro-gr.com/feed/",            type: "shop",  region: "中部",   active: true  },
+  { id: "point",      name: "釣具のポイント",       url: "https://www.point-i.jp/blog/feed",         type: "shop",  region: "全国",   active: true  },
+  { id: "tobinuke",   name: "トビヌケ",           url: "https://tobinuke.jp/feed/",                type: "shop",  region: "関東",   active: true  },
+  { id: "sansui",     name: "サンスイ",           url: "https://www.sansuinet.com/blog/feed/",     type: "shop",  region: "関東",   active: true  },
+  { id: "tackleberry",name: "タックルベリー",       url: "https://www.tackleberry.co.jp/blog/feed/", type: "shop",  region: "全国",   active: false },
+  { id: "fishingmax", name: "フィッシングマックス",   url: "https://fishingmax-webshop.jp/blog/feed/", type: "shop",  region: "関西",   active: false },
+
+  // ========= 釣りメディア =========
+  { id: "tsurihack",  name: "釣りハック",          url: "https://tsurihack.com/feed",               type: "media", region: "全国",   active: true  },
+  { id: "luremag",    name: "ルアーマガジン",       url: "https://lure-mag.com/feed/",               type: "media", region: "全国",   active: true  },
+  { id: "fishingjapan",name:"フィッシングジャパン",  url: "https://fishingjapan.jp/feed",             type: "media", region: "全国",   active: true  },
+  { id: "lurenewsr",  name: "ルアーニュースR",     url: "https://www.lurenewsr.com/feed/",          type: "media", region: "全国",   active: true  },
+  { id: "tsurimaru",  name: "つりまる",           url: "https://tsurimaru.jp/feed/",               type: "media", region: "全国",   active: false },
+  { id: "fishinglabo",name: "フィッシングラボ",     url: "https://fishinglabo.jp/feed/",             type: "media", region: "全国",   active: false },
+];
+
+// YouTubeチャンネル（検証済みID）
+const DEFAULT_YT_CHANNELS = [
+  { id: "tsurihack-tv",name:"TSURIHACK TV",                 channelId: "UC_00iJzrPXaPp9lbf1Ya_-A", icon: "🎣", active: true,  note: "釣りハック公式" },
+  { id: "tsurichicchi",name:"釣りチッチ",                    channelId: "",                         icon: "🐟", active: true,  note: "※チャンネルID未設定（管理画面で追加）" },
+  { id: "tsuriame",    name:"ツリアメ -釣りの日はいつも雨-",    channelId: "UCrTDRm40CrEFleDyrXS9hlg", icon: "🌧️", active: true,  note: "釣りキチ・マチャ" },
+  { id: "tsuriyoka",   name:"釣りよかでしょう。",              channelId: "UC4QadOSsJu54Qs8z99shRiQ", icon: "🦈", active: true,  note: "佐賀よかでしょう" },
+  { id: "fishingvision",name:"釣りビジョン",                 channelId: "UCt4dJmcXYSEsMKNVBC1mDyg", icon: "📺", active: false, note: "" },
+  { id: "yoshua",      name:"ちゃんねるよしゅあ",              channelId: "UCI2bi8TexoYK4uLDwZrrrzQ", icon: "🚤", active: false, note: "関東の海釣り" },
+  { id: "tsuribito",   name:"TSURIBITO-CHANNEL",             channelId: "UCOsyeHNb_Y2VOHqEiV-6dGQ", icon: "📚", active: false, note: "" },
+];
+
+// AI検索プリセット
+const AI_SEARCH_PRESETS = [
+  "茨城 鹿島 釣果 最新",
+  "関東 海釣り 釣果",
+  "メバル カサゴ 釣果",
+  "アジング ポイント",
+  "鹿島公共埠頭 釣り",
+  "Twitter 釣り 今日",
+];
+
+// 主要魚種辞書（AI抽出用ヒント）
+const SPECIES_LIST = [
+  "アジ","サバ","イワシ","メバル","カサゴ","ソイ","シーバス","スズキ","ヒラメ","マゴチ",
+  "クロダイ","チヌ","マダイ","真鯛","タチウオ","太刀魚","アオリイカ","コウイカ","タコ","アナゴ",
+  "キス","ハゼ","カレイ","アイナメ","メゴチ","カワハギ","ベラ","フグ","アコウ","キジハタ",
+  "ブリ","ハマチ","ワラサ","イナダ","ヒラマサ","カンパチ","サワラ","サゴシ","エソ","ウルメイワシ",
+  "ニジマス","ヤマメ","イワナ","ブラックバス","バス","ナマズ","ウナギ","ライギョ","ワカサギ"
+];
+
+// 都道府県（場所抽出用）
+const PREFECTURES = [
+  "北海道","青森","岩手","宮城","秋田","山形","福島",
+  "茨城","栃木","群馬","埼玉","千葉","東京","神奈川",
+  "新潟","富山","石川","福井","山梨","長野","岐阜","静岡","愛知",
+  "三重","滋賀","京都","大阪","兵庫","奈良","和歌山",
+  "鳥取","島根","岡山","広島","山口","徳島","香川","愛媛","高知",
+  "福岡","佐賀","長崎","熊本","大分","宮崎","鹿児島","沖縄"
+];
+
+// 釣り方辞書
+const METHODS_LIST = [
+  "ジグヘッド","ワーム","プラグ","メタルジグ","ジギング","ショアジギ","ライトショアジギ",
+  "アジング","メバリング","エギング","タイラバ","タチウオジギング","スピニング","ベイト",
+  "サビキ","胴突き","フカセ","カゴ釣り","ぶっこみ","泳がせ","落とし込み","ヘチ釣り",
+  "投げ釣り","ちょい投げ","ウキ釣り","エサ釣り","ルアー","フライ"
+];
+
+// ════════════════════════════════════════════════════════════
+//   ユーティリティ
+// ════════════════════════════════════════════════════════════
+
+const RSS2JSON = "https://api.rss2json.com/v1/api.json?rss_url=";
+const STORAGE_KEYS = {
+  YT_API: "nyrn_yt_api_key",
+  FEEDS: "nyrn_feeds",
+  CHANNELS: "nyrn_channels",
+  REPORTS_CACHE: "nyrn_reports_cache",
+  FAVORITES: "nyrn_favorites",
+  AI_API: "nyrn_anthropic_key",
+};
+
+const ls = {
+  get: (k, fb) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; } catch { return fb; } },
+  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+const timeAgo = (d) => {
+  if (!d) return "";
+  const diff = Date.now() - new Date(d).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "たった今";
+  if (mins < 60) return `${mins}分前`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}時間前`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}日前`;
+  return new Date(d).toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" });
+};
+
+const fmtDate = (d) => {
+  if (!d) return "";
+  return new Date(d).toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" });
+};
+
+const stripHtml = (html) => {
+  if (!html) return "";
+  return html.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').trim();
+};
+
+// ヒューリスティック抽出（AIなしのフォールバック）
+const heuristicExtract = (title, desc) => {
+  const text = `${title} ${desc}`;
+  const found_species = SPECIES_LIST.filter(s => text.includes(s));
+  const found_methods = METHODS_LIST.filter(m => text.includes(m));
+  const found_pref = PREFECTURES.find(p => text.includes(p));
+  // 場所抽出（都道府県＋具体地名）
+  const locMatch = text.match(/([\u4e00-\u9faf]+(?:港|埠頭|堤防|磯|海岸|河口|湾|川|湖|ダム|池|沖|島))/);
+  return {
+    species: [...new Set(found_species)],
+    methods: [...new Set(found_methods)],
+    prefecture: found_pref || "",
+    location: locMatch ? locMatch[1] : (found_pref || ""),
+  };
+};
+
+// ════════════════════════════════════════════════════════════
+//   スタイル — Anti-Gravity Light Navy
+// ════════════════════════════════════════════════════════════
+
+const STYLES = `
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy-1:#0a1422; --navy-2:#0f1d30; --navy-3:#172a44; --navy-4:#1f3a5c; --steel:#2d4a73;
+  --ocean:#1e7aa8; --sea:#2b9bd1; --sky:#5cc4eb; --foam:#a3e0f3;
+  --gold:#f0a500; --gold-l:#ffcd6b; --gold-d:#c08400;
+  --coral:#ff6b5b; --mint:#2dd4b8; --emerald:#10b981; --amber:#fbbf24;
+  --white:#eef4fb; --gray-1:#9eb5cd; --gray-2:#6b8aab; --gray-3:#4a6584;
+  --dim:rgba(255,255,255,0.04); --dim-2:rgba(255,255,255,0.08);
+  --border:rgba(92,196,235,0.18); --border-2:rgba(92,196,235,0.35);
+  --glow:0 0 24px rgba(92,196,235,0.25); --glow-gold:0 0 18px rgba(240,165,0,0.3);
+  --shadow-1:0 4px 16px rgba(0,0,0,0.3); --shadow-2:0 8px 32px rgba(0,0,0,0.4);
+}
+
+body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans JP', sans-serif; -webkit-font-smoothing: antialiased; }
+
+.app {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 800px 600px at 15% -10%, rgba(30,122,168,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 600px 800px at 110% 60%, rgba(45,212,184,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 400px 400px at 50% 100%, rgba(240,165,0,0.08) 0%, transparent 60%),
+    var(--navy-1);
+  position: relative;
+}
+.app::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; opacity: 0.4; z-index: 0;
+  background-image:
+    repeating-linear-gradient(45deg, transparent 0, transparent 40px, rgba(92,196,235,0.015) 40px, rgba(92,196,235,0.015) 41px);
+}
+
+/* ═══ ヘッダー ═══ */
+.hdr {
+  position: sticky; top: 0; z-index: 100;
+  background: linear-gradient(180deg, rgba(10,20,34,0.98) 0%, rgba(10,20,34,0.92) 100%);
+  backdrop-filter: blur(24px) saturate(150%);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 18px;
+}
+.hdr-row { display: flex; align-items: center; gap: 14px; max-width: 1400px; margin: 0 auto; }
+.brand { display: flex; flex-direction: column; }
+.brand-1 { font-family: 'Bebas Neue', cursive; font-size: 22px; letter-spacing: 2.5px; color: var(--sky); line-height: 1; }
+.brand-1 .ac { color: var(--gold); }
+.brand-2 { font-size: 9px; color: var(--gray-2); letter-spacing: 1.5px; margin-top: 3px; font-weight: 500; }
+.live {
+  margin-left: auto; display: flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, rgba(240,165,0,0.18), rgba(240,165,0,0.08));
+  border: 1px solid rgba(240,165,0,0.45); border-radius: 100px; padding: 4px 12px;
+  font-size: 10px; color: var(--gold-l); font-weight: 700; letter-spacing: 1px;
+}
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); animation: pulse 1.8s ease-in-out infinite; box-shadow: 0 0 8px var(--gold); }
+@keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
+
+/* ═══ ナビ ═══ */
+.nav {
+  display: flex; gap: 4px; padding: 12px 18px 0; max-width: 1400px; margin: 0 auto;
+  overflow-x: auto; scrollbar-width: none; position: relative; z-index: 1;
+}
+.nav::-webkit-scrollbar { display: none; }
+.nav-tab {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 18px; border-radius: 10px 10px 0 0; cursor: pointer;
+  background: var(--dim); border: 1px solid var(--border); border-bottom: none;
+  color: var(--gray-1); font-size: 12px; font-weight: 700; font-family: 'Noto Sans JP', sans-serif;
+  transition: all 0.2s; white-space: nowrap; position: relative;
+}
+.nav-tab:hover { color: var(--sky); background: rgba(92,196,235,0.08); }
+.nav-tab.active {
+  background: linear-gradient(180deg, rgba(92,196,235,0.18), rgba(92,196,235,0.08));
+  color: var(--sky); border-color: var(--border-2);
+}
+.nav-tab.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 10%; right: 10%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--sky), transparent);
+}
+.nav-tab-cnt {
+  background: rgba(30,122,168,0.85); color: white; border-radius: 100px;
+  padding: 1px 7px; font-size: 10px; font-weight: 900;
+}
+
+/* ═══ メインコンテンツ ═══ */
+.main {
+  max-width: 1400px; margin: 0 auto; padding: 0 18px 24px;
+  position: relative; z-index: 1;
+}
+.panel {
+  background: linear-gradient(180deg, rgba(92,196,235,0.04), rgba(92,196,235,0.02));
+  border: 1px solid var(--border); border-top: none;
+  border-radius: 0 12px 12px 12px; padding: 20px;
+  min-height: 480px; box-shadow: var(--shadow-1);
+}
+
+/* ═══ セクションヘッダー ═══ */
+.sec-h {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.sec-t { font-size: 14px; font-weight: 900; color: var(--sky); letter-spacing: 1.5px; }
+.sec-t-sub { font-size: 11px; color: var(--gray-2); margin-left: 8px; font-weight: 500; }
+.sec-act-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.btn {
+  background: rgba(92,196,235,0.12); border: 1px solid var(--border-2); color: var(--sky);
+  padding: 6px 12px; border-radius: 7px; font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all 0.15s; font-family: 'Noto Sans JP', sans-serif; white-space: nowrap;
+}
+.btn:hover:not(:disabled) { background: rgba(92,196,235,0.22); border-color: var(--sky); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--ocean), var(--sea));
+  color: white; border: none;
+  box-shadow: 0 2px 8px rgba(30,122,168,0.4);
+}
+.btn-primary:hover:not(:disabled) { background: linear-gradient(135deg, var(--sea), var(--sky)); transform: translateY(-1px); }
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold-d), var(--gold));
+  color: white; border: none; font-weight: 700;
+  box-shadow: 0 2px 8px rgba(240,165,0,0.35);
+}
+.btn-gold:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 3px 12px rgba(240,165,0,0.5); }
+.btn-danger { background: rgba(255,107,91,0.15); border-color: rgba(255,107,91,0.4); color: var(--coral); }
+.btn-danger:hover { background: rgba(255,107,91,0.3); }
+
+/* ═══ ダッシュボード ═══ */
+.dash-grid {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: linear-gradient(135deg, rgba(92,196,235,0.10), rgba(92,196,235,0.03));
+  border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px;
+  position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: -20px; right: -20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(92,196,235,0.15) 0%, transparent 70%);
+}
+.stat-icon { font-size: 28px; margin-bottom: 8px; }
+.stat-num { font-family: 'Bebas Neue', cursive; font-size: 32px; color: var(--sky); line-height: 1; letter-spacing: 1.5px; }
+.stat-label { font-size: 10px; color: var(--gray-1); margin-top: 4px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.stat-card.gold .stat-num { color: var(--gold-l); }
+.stat-card.gold::before { background: radial-gradient(circle, rgba(240,165,0,0.2) 0%, transparent 70%); }
+.stat-card.mint .stat-num { color: var(--mint); }
+.stat-card.mint::before { background: radial-gradient(circle, rgba(45,212,184,0.2) 0%, transparent 70%); }
+.stat-card.coral .stat-num { color: var(--coral); }
+
+.rank-list {
+  background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));
+  border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+}
+.rank-h { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.rank-h-icon { font-size: 16px; }
+.rank-h-text { font-size: 12px; font-weight: 700; color: var(--sky); letter-spacing: 1px; }
+.rank-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+.rank-row:last-child { border-bottom: none; }
+.rank-num { font-family: 'Bebas Neue', cursive; font-size: 16px; color: var(--gold-l); width: 22px; }
+.rank-name { font-size: 12px; flex: 1; color: var(--white); font-weight: 500; }
+.rank-bar-wrap { flex: 1; max-width: 100px; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+.rank-bar { height: 100%; background: linear-gradient(90deg, var(--ocean), var(--sky)); border-radius: 2px; }
+.rank-cnt { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--sky); font-weight: 700; min-width: 32px; text-align: right; }
+
+/* ═══ フィルタバー ═══ */
+.filter-bar {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));
+  border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
+  margin-bottom: 14px;
+}
+.filter-search {
+  flex: 1; min-width: 200px; background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.08); color: var(--white);
+  padding: 8px 12px; border-radius: 7px; font-size: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.filter-search:focus { outline: none; border-color: var(--sky); box-shadow: 0 0 0 3px rgba(92,196,235,0.15); }
+.filter-sel {
+  background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08);
+  color: var(--white); padding: 7px 10px; border-radius: 7px; font-size: 11px;
+  font-family: 'Noto Sans JP', sans-serif; cursor: pointer; min-width: 90px;
+}
+.filter-sel:focus { outline: none; border-color: var(--sky); }
+.filter-sel option { background: var(--navy-2); color: var(--white); }
+.filter-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(92,196,235,0.18); border: 1px solid var(--border-2);
+  color: var(--sky); padding: 3px 9px; border-radius: 100px;
+  font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+}
+.filter-chip:hover { background: rgba(92,196,235,0.3); }
+.filter-chip-x { font-size: 11px; opacity: 0.7; }
+.filter-clear {
+  font-size: 10px; color: var(--coral); background: none; border: none;
+  cursor: pointer; padding: 4px 8px; font-family: inherit;
+}
+
+/* ═══ レポートカード ═══ */
+.reports-grid {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+}
+.report-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+  border: 1px solid var(--border); border-radius: 10px;
+  overflow: hidden; transition: all 0.2s; cursor: pointer;
+  position: relative;
+}
+.report-card:hover { border-color: var(--border-2); transform: translateY(-2px); box-shadow: var(--shadow-2); }
+.report-card.ai-extracted::before {
+  content: '✨ AI'; position: absolute; top: 8px; right: 8px; z-index: 2;
+  background: linear-gradient(135deg, var(--mint), var(--emerald));
+  color: white; font-size: 9px; font-weight: 900; padding: 2px 7px; border-radius: 100px;
+  letter-spacing: 1px;
+}
+.report-card.fav::after {
+  content: '⭐'; position: absolute; top: 8px; left: 8px; z-index: 2;
+  font-size: 14px; filter: drop-shadow(0 0 4px var(--gold));
+}
+.rc-thumb {
+  width: 100%; aspect-ratio: 16/9; object-fit: cover;
+  background: linear-gradient(135deg, var(--navy-3), var(--steel));
+}
+.rc-thumb-ph {
+  width: 100%; aspect-ratio: 16/9;
+  background: linear-gradient(135deg, var(--navy-3), var(--steel));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; opacity: 0.6;
+}
+.rc-body { padding: 12px 14px; }
+.rc-source-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.rc-source-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 100px;
+}
+.rc-source-shop { background: rgba(240,165,0,0.18); color: var(--gold-l); border: 1px solid rgba(240,165,0,0.3); }
+.rc-source-media { background: rgba(92,196,235,0.18); color: var(--sky); border: 1px solid rgba(92,196,235,0.3); }
+.rc-source-yt { background: rgba(255,0,0,0.18); color: #ff5050; border: 1px solid rgba(255,0,0,0.3); }
+.rc-date-meta { font-size: 10px; color: var(--gray-2); margin-left: auto; font-family: 'JetBrains Mono', monospace; }
+.rc-title {
+  font-size: 13px; font-weight: 700; color: var(--white); line-height: 1.45;
+  margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* 構造化データ表示 */
+.rc-data {
+  background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 7px;
+  padding: 8px 10px; margin-bottom: 8px; font-size: 11px;
+  display: grid; gap: 4px; grid-template-columns: auto 1fr;
+}
+.rc-data-label { color: var(--gray-1); font-weight: 700; font-size: 10px; }
+.rc-data-val { color: var(--foam); font-weight: 500; }
+.rc-data-val.empty { color: var(--gray-3); font-style: italic; }
+.rc-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+.rc-tag {
+  font-size: 9px; padding: 1px 6px; border-radius: 100px; font-weight: 700;
+}
+.rc-tag-fish { background: rgba(45,212,184,0.18); color: var(--mint); border: 1px solid rgba(45,212,184,0.3); }
+.rc-tag-method { background: rgba(251,191,36,0.18); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+.rc-tag-loc { background: rgba(92,196,235,0.18); color: var(--sky); border: 1px solid rgba(92,196,235,0.3); }
+
+.rc-comment {
+  font-size: 11px; color: var(--gray-1); line-height: 1.55;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.rc-actions {
+  display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+  border-top: 1px solid var(--border); background: rgba(0,0,0,0.2);
+}
+.rc-act-btn {
+  background: none; border: none; color: var(--gray-1); cursor: pointer;
+  padding: 3px 6px; font-size: 11px; transition: color 0.15s;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.rc-act-btn:hover { color: var(--sky); }
+.rc-act-btn.fav-on { color: var(--gold); }
+.rc-act-link {
+  margin-left: auto; font-size: 10px; color: var(--sea); text-decoration: none;
+  font-weight: 700; letter-spacing: 0.5px;
+}
+.rc-act-link:hover { color: var(--sky); }
+
+/* ═══ AI抽出パネル ═══ */
+.ai-extract-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, rgba(45,212,184,0.10), rgba(16,185,129,0.05));
+  border: 1px solid rgba(45,212,184,0.3); border-radius: 10px;
+  padding: 10px 14px; margin-bottom: 14px;
+}
+.ai-extract-icon { font-size: 20px; }
+.ai-extract-info { flex: 1; }
+.ai-extract-t { font-size: 12px; color: var(--mint); font-weight: 700; margin-bottom: 2px; }
+.ai-extract-d { font-size: 10px; color: var(--gray-1); }
+
+.ai-extract-progress {
+  width: 100%; height: 4px; background: rgba(255,255,255,0.08);
+  border-radius: 2px; overflow: hidden; margin-top: 8px;
+}
+.ai-extract-progress-bar {
+  height: 100%; background: linear-gradient(90deg, var(--mint), var(--emerald));
+  transition: width 0.3s; border-radius: 2px;
+}
+
+/* ═══ APIキー入力 ═══ */
+.api-key-box {
+  background: linear-gradient(135deg, rgba(240,165,0,0.10), rgba(240,165,0,0.03));
+  border: 1px solid rgba(240,165,0,0.4); border-radius: 12px;
+  padding: 18px; margin-bottom: 18px;
+}
+.api-key-h { font-size: 12px; color: var(--gold-l); font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.api-key-help { font-size: 11px; color: var(--gray-1); line-height: 1.7; margin-bottom: 12px; }
+.api-key-help strong { color: var(--gold-l); }
+.api-key-help a { color: var(--sky); text-decoration: underline; }
+.api-key-row { display: flex; gap: 8px; }
+.api-key-input {
+  flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12);
+  color: var(--white); padding: 9px 13px; border-radius: 7px; font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.api-key-input:focus { outline: none; border-color: var(--gold); }
+
+/* ═══ YouTube ═══ */
+.yt-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.yt-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01));
+  border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+  cursor: pointer; transition: all 0.2s; text-decoration: none; display: block;
+}
+.yt-card:hover { border-color: var(--border-2); transform: translateY(-2px); box-shadow: var(--glow); }
+.yt-thumb { position: relative; aspect-ratio: 16/9; overflow: hidden; }
+.yt-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.yt-card:hover .yt-thumb img { transform: scale(1.05); }
+.yt-overlay {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0); transition: background 0.2s;
+}
+.yt-card:hover .yt-overlay { background: rgba(0,0,0,0.4); }
+.yt-play {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(255,0,0,0.9); display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+.yt-card:hover .yt-play { opacity: 1; }
+.yt-info { padding: 10px 12px; }
+.yt-ch-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.yt-ch-name { font-size: 10px; color: var(--sky); font-weight: 700; letter-spacing: 0.5px; }
+.yt-title {
+  font-size: 12px; font-weight: 700; color: var(--white); line-height: 1.45;
+  margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.yt-meta { font-size: 10px; color: var(--gray-2); font-family: 'JetBrains Mono', monospace; }
+
+/* ═══ AI検索 ═══ */
+.ai-search-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.ai-search-input {
+  flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border-2);
+  color: var(--white); padding: 11px 14px; border-radius: 9px; font-size: 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.ai-search-input:focus { outline: none; border-color: var(--sky); box-shadow: 0 0 0 3px rgba(92,196,235,0.15); }
+.ai-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.ai-preset {
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--gray-1); padding: 4px 10px; border-radius: 100px; font-size: 10px;
+  cursor: pointer; transition: all 0.15s; font-family: 'Noto Sans JP', sans-serif;
+}
+.ai-preset:hover { background: rgba(92,196,235,0.15); border-color: var(--sky); color: var(--sky); }
+
+.ai-result {
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border: 1px solid var(--border); border-radius: 10px;
+  margin-top: 14px; overflow: hidden;
+}
+.ai-result-h {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(92,196,235,0.10), rgba(92,196,235,0.04));
+  border-bottom: 1px solid var(--border); font-size: 11px; color: var(--sky);
+}
+.ai-result-c {
+  padding: 16px; font-size: 13px; line-height: 1.85;
+  color: var(--white); white-space: pre-wrap;
+  max-height: 500px; overflow-y: auto;
+}
+.ai-result-c::-webkit-scrollbar { width: 5px; }
+.ai-result-c::-webkit-scrollbar-thumb { background: var(--steel); border-radius: 4px; }
+.ai-typing { display: inline-block; animation: blink 1s infinite; color: var(--sky); }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ═══ 管理画面 ═══ */
+.manage-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.m-card {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.025); border: 1px solid var(--border);
+  border-radius: 9px; padding: 10px 14px;
+}
+.m-tog {
+  width: 38px; height: 22px; border-radius: 12px; border: none;
+  cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0;
+}
+.m-tog.on { background: linear-gradient(135deg, var(--ocean), var(--sea)); }
+.m-tog.off { background: var(--gray-3); }
+.m-tog::after {
+  content: ''; position: absolute; top: 2px;
+  width: 18px; height: 18px; border-radius: 50%; background: white;
+  transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.m-tog.on::after { left: 18px; }
+.m-tog.off::after { left: 2px; }
+.m-info { flex: 1; min-width: 0; }
+.m-info-name { font-size: 13px; color: var(--white); font-weight: 700; margin-bottom: 2px; }
+.m-info-url { font-size: 10px; color: var(--gray-2); font-family: 'JetBrains Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px; }
+.m-info-note { font-size: 10px; color: var(--gold-l); margin-top: 2px; }
+.m-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.m-meta-tag { font-size: 9px; padding: 1px 7px; border-radius: 100px; font-weight: 700; }
+
+.add-form {
+  border-top: 1px solid var(--border); padding-top: 14px; margin-top: 8px;
+  background: rgba(255,255,255,0.02); border-radius: 9px; padding: 14px;
+}
+.add-form-h { font-size: 12px; color: var(--mint); font-weight: 700; margin-bottom: 10px; }
+.add-form-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.f-inp {
+  background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--white); padding: 7px 10px; border-radius: 6px; font-size: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.f-inp:focus { outline: none; border-color: var(--sky); }
+.f-inp.f { flex: 1; min-width: 140px; }
+
+/* ═══ ローディング・空状態 ═══ */
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(92,196,235,0.2); border-top-color: var(--sky);
+  border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 40px 20px; color: var(--gray-1); font-size: 13px;
+}
+.empty {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 60px 20px; color: var(--gray-1); text-align: center;
+}
+.empty-i { font-size: 48px; opacity: 0.4; }
+.empty-t { font-size: 13px; font-weight: 700; color: var(--white); }
+.empty-d { font-size: 11px; color: var(--gray-2); line-height: 1.7; max-width: 320px; }
+
+.skel {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%);
+  background-size: 200% 100%; border-radius: 4px; animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+/* ═══ モーダル ═══ */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+  padding: 20px; animation: fadein 0.15s;
+}
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+.modal {
+  background: linear-gradient(180deg, var(--navy-2), var(--navy-1));
+  border: 1px solid var(--border-2); border-radius: 14px;
+  max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto;
+  box-shadow: var(--shadow-2); animation: slideup 0.2s;
+}
+@keyframes slideup { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-h {
+  display: flex; align-items: center; padding: 14px 18px;
+  border-bottom: 1px solid var(--border); position: sticky; top: 0;
+  background: var(--navy-2); z-index: 1;
+}
+.modal-t { font-size: 14px; font-weight: 700; color: var(--sky); flex: 1; }
+.modal-close {
+  background: none; border: none; color: var(--gray-1); font-size: 22px;
+  cursor: pointer; padding: 0 6px; line-height: 1;
+}
+.modal-close:hover { color: var(--coral); }
+.modal-b { padding: 18px; }
+
+/* レスポンシブ */
+@media (max-width: 640px) {
+  .nav { padding: 12px 12px 0; }
+  .main { padding: 0 12px 18px; }
+  .panel { padding: 14px; border-radius: 0 8px 8px 8px; }
+  .reports-grid { grid-template-columns: 1fr; gap: 10px; }
+  .yt-grid { grid-template-columns: 1fr; gap: 10px; }
+  .dash-grid { grid-template-columns: repeat(2, 1fr); }
+  .filter-bar { padding: 10px; gap: 6px; }
+  .filter-search { min-width: 100%; }
+  .stat-card { padding: 12px 14px; }
+  .stat-num { font-size: 26px; }
+  .nav-tab { padding: 8px 12px; font-size: 11px; }
+  .brand-1 { font-size: 18px; }
+  .brand-2 { font-size: 8px; }
+}
+
+* { scrollbar-width: thin; scrollbar-color: var(--steel) transparent; }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-thumb { background: var(--steel); border-radius: 3px; }
+*::-webkit-scrollbar-track { background: transparent; }
+`;
+
+// ════════════════════════════════════════════════════════════
+//   コンポーネント: Stat Card
+// ════════════════════════════════════════════════════════════
+const StatCard = ({ icon, num, label, variant = "default" }) => (
+  <div className={`stat-card ${variant}`}>
+    <div className="stat-icon">{icon}</div>
+    <div className="stat-num">{num}</div>
+    <div className="stat-label">{label}</div>
+  </div>
+);
+
+// ════════════════════════════════════════════════════════════
+//   コンポーネント: Rank List
+// ════════════════════════════════════════════════════════════
+const RankList = ({ icon, title, items, max = 5 }) => {
+  const top = items.slice(0, max);
+  const maxVal = top[0]?.count || 1;
+  return (
+    <div className="rank-list">
+      <div className="rank-h">
+        <span className="rank-h-icon">{icon}</span>
+        <span className="rank-h-text">{title}</span>
+      </div>
+      {top.length === 0 && <div style={{ fontSize: 11, color: 'var(--gray-2)', padding: '8px 0' }}>データがありません</div>}
+      {top.map((item, i) => (
+        <div className="rank-row" key={i}>
+          <div className="rank-num">#{i + 1}</div>
+          <div className="rank-name">{item.name}</div>
+          <div className="rank-bar-wrap"><div className="rank-bar" style={{ width: `${(item.count / maxVal) * 100}%` }} /></div>
+          <div className="rank-cnt">{item.count}</div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// ════════════════════════════════════════════════════════════
+//   コンポーネント: Report Card (構造化データ表示)
+// ════════════════════════════════════════════════════════════
+const ReportCard = ({ report, onToggleFav, isFav, onClick }) => {
+  const sourceClass = `rc-source-${report.sourceType}`;
+  const hasStructured = report.aiProcessed || report.species?.length > 0 || report.location;
+
+  return (
+    <div
+      className={`report-card ${report.aiProcessed ? 'ai-extracted' : ''} ${isFav ? 'fav' : ''}`}
+      onClick={() => onClick(report)}
+    >
+      {report.thumbnail
+        ? <img src={report.thumbnail} className="rc-thumb" alt="" onError={e => { e.target.outerHTML = '<div class="rc-thumb-ph">🐟</div>'; }} />
+        : <div className="rc-thumb-ph">🐟</div>}
+      <div className="rc-body">
+        <div className="rc-source-row">
+          <span className={`rc-source-badge ${sourceClass}`}>{report.sourceName}</span>
+          <span className="rc-date-meta">{timeAgo(report.publishedAt)}</span>
+        </div>
+        <div className="rc-title">{report.title}</div>
+        {hasStructured && (
+          <div className="rc-data">
+            <div className="rc-data-label">📅 日付:</div>
+            <div className={`rc-data-val ${!report.date ? 'empty' : ''}`}>{report.date ? fmtDate(report.date) : '不明'}</div>
+
+            <div className="rc-data-label">📍 場所:</div>
+            <div className={`rc-data-val ${!report.location ? 'empty' : ''}`}>
+              {report.location || '不明'}{report.prefecture && report.prefecture !== report.location ? ` (${report.prefecture})` : ''}
+            </div>
+
+            <div className="rc-data-label">🐟 魚種:</div>
+            <div className="rc-data-val">
+              {report.species?.length ? (
+                <div className="rc-tags">{report.species.map((s, i) => <span key={i} className="rc-tag rc-tag-fish">{s}</span>)}</div>
+              ) : <span className="empty">未抽出</span>}
+            </div>
+
+            <div className="rc-data-label">🎣 釣り方:</div>
+            <div className="rc-data-val">
+              {report.methods?.length ? (
+                <div className="rc-tags">{report.methods.map((m, i) => <span key={i} className="rc-tag rc-tag-method">{m}</span>)}</div>
+              ) : <span className="empty">未抽出</span>}
+            </div>
+          </div>
+        )}
+        <div className="rc-comment">{report.comment || stripHtml(report.description).slice(0, 120)}</div>
+      </div>
+      <div className="rc-actions" onClick={e => e.stopPropagation()}>
+        <button className={`rc-act-btn ${isFav ? 'fav-on' : ''}`} onClick={() => onToggleFav(report.id)} title={isFav ? "お気に入り解除" : "お気に入り"}>
+          {isFav ? '⭐' : '☆'} {isFav ? '保存済' : '保存'}
+        </button>
+        <a href={report.link} target="_blank" rel="noopener noreferrer" className="rc-act-link" onClick={e => e.stopPropagation()}>記事を開く →</a>
+      </div>
+    </div>
+  );
+};
+
+// ════════════════════════════════════════════════════════════
+//   コンポーネント: Modal Detail
+// ════════════════════════════════════════════════════════════
+const ReportDetailModal = ({ report, onClose, onToggleFav, isFav, onAiExtract, aiKey }) => {
+  const [extracting, setExtracting] = useState(false);
+  if (!report) return null;
+  const handleAiExtract = async () => {
+    if (!aiKey) { alert("Anthropic APIキーを設定してください"); return; }
+    setExtracting(true);
+    try { await onAiExtract(report); } finally { setExtracting(false); }
+  };
+
+  return (
+    <div className="modal-bg" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-h">
+          <span className="modal-t">📋 釣果レポート詳細</span>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-b">
+          {report.thumbnail && <img src={report.thumbnail} alt="" style={{ width: '100%', borderRadius: 8, marginBottom: 12 }} onError={e => e.target.style.display = 'none'} />}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 10 }}>
+            <span className={`rc-source-badge rc-source-${report.sourceType}`}>{report.sourceName}</span>
+            <span style={{ fontSize: 11, color: 'var(--gray-2)' }}>{fmtDate(report.publishedAt)} ({timeAgo(report.publishedAt)})</span>
+          </div>
+          <h3 style={{ fontSize: 16, marginBottom: 12, color: 'var(--white)' }}>{report.title}</h3>
+
+          <div className="rc-data" style={{ marginBottom: 14 }}>
+            <div className="rc-data-label">📅 釣行日:</div>
+            <div className={`rc-data-val ${!report.date ? 'empty' : ''}`}>{report.date ? fmtDate(report.date) : '未抽出'}</div>
+            <div className="rc-data-label">📍 場所:</div>
+            <div className={`rc-data-val ${!report.location ? 'empty' : ''}`}>{report.location || '未抽出'}</div>
+            <div className="rc-data-label">🗾 都道府県:</div>
+            <div className={`rc-data-val ${!report.prefecture ? 'empty' : ''}`}>{report.prefecture || '未抽出'}</div>
+            <div className="rc-data-label">🐟 魚種:</div>
+            <div className="rc-data-val">{report.species?.length ? <div className="rc-tags">{report.species.map((s, i) => <span key={i} className="rc-tag rc-tag-fish">{s}</span>)}</div> : <span className="empty">未抽出</span>}</div>
+            <div className="rc-data-label">🎣 釣り方:</div>
+            <div className="rc-data-val">{report.methods?.length ? <div className="rc-tags">{report.methods.map((m, i) => <span key={i} className="rc-tag rc-tag-method">{m}</span>)}</div> : <span className="empty">未抽出</span>}</div>
+          </div>
+
+          <div style={{ fontSize: 12, color: 'var(--gray-1)', lineHeight: 1.7, marginBottom: 16, padding: 12, background: 'rgba(0,0,0,0.2)', borderRadius: 7 }}>
+            <strong style={{ color: 'var(--sky)' }}>📝 内容/コメント:</strong><br/>
+            {report.comment || stripHtml(report.description) || '（内容なし）'}
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button className="btn btn-gold" onClick={() => onToggleFav(report.id)}>{isFav ? '⭐ お気に入り解除' : '☆ お気に入り'}</button>
+            {!report.aiProcessed && (
+              <button className="btn btn-primary" onClick={handleAiExtract} disabled={extracting}>
+                {extracting ? '🔄 AI解析中...' : '✨ AIで詳細抽出'}
+              </button>
+            )}
+            <a href={report.link} target="_blank" rel="noopener noreferrer" className="btn" style={{ textDecoration: 'none', textAlign: 'center' }}>📰 元記事を開く</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ════════════════════════════════════════════════════════════
+//   FETCH: RSS取得 + 並列処理
+// ════════════════════════════════════════════════════════════
+const fetchRss = async (feed) => {
+  try {
+    const res = await fetch(`${RSS2JSON}${encodeURIComponent(feed.url)}&count=10`);
+    const data = await res.json();
+    if (data.status !== "ok") throw new Error(data.message || "RSS取得失敗");
+    return (data.items || []).map((item, idx) => {
+      const description = stripHtml(item.description || item.content || "");
+      const heur = heuristicExtract(item.title, description);
+      return {
+        id: `${feed.id}-${item.guid || item.link || idx}`,
+        title: item.title,
+        link: item.link,
+        description: description,
+        thumbnail: item.thumbnail || item.enclosure?.link || "",
+        publishedAt: item.pubDate,
+        // 構造化データ初期値（ヒューリスティック抽出）
+        date: item.pubDate ? new Date(item.pubDate).toISOString() : null,
+        location: heur.location,
+        prefecture: heur.prefecture,
+        species: heur.species,
+        methods: heur.methods,
+        comment: description.slice(0, 200),
+        aiProcessed: false,
+        // メタ
+        sourceName: feed.name,
+        sourceType: feed.type,
+        sourceId: feed.id,
+        feedRegion: feed.region,
+      };
+    });
+  } catch (e) {
+    return { error: e.message, feedId: feed.id };
+  }
+};
+
+// ════════════════════════════════════════════════════════════
+//   AI抽出: Claude API で構造化データを抽出
+// ════════════════════════════════════════════════════════════
+const aiExtractReport = async (report, apiKey) => {
+  const prompt = `以下の釣り記事から構造化データをJSON形式で抽出してください。
+
+タイトル: ${report.title}
+内容: ${report.description}
+
+以下のJSON形式のみで出力（マークダウン記号やコメント不要）:
+{
+  "date": "YYYY-MM-DD形式の釣行日（記事内に明記がある場合のみ、なければnull）",
+  "location": "具体的な釣り場（例: 鹿島港、〇〇堤防、〇〇川河口）",
+  "prefecture": "都道府県名（例: 茨城県、東京都）",
+  "species": ["釣れた魚種の配列、例: メバル、カサゴ"],
+  "methods": ["使用した釣り方の配列、例: ジグヘッド、ワーム、サビキ"],
+  "comment": "記事の核心を120字以内で要約"
+}`;
+
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 600,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
+  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+  const data = await res.json();
+  const text = data.content?.[0]?.text || "";
+  const json = text.replace(/```json|```/g, "").trim();
+  return JSON.parse(json);
+};
+
+// ════════════════════════════════════════════════════════════
+//   TAB: ダッシュボード
+// ════════════════════════════════════════════════════════════
+function DashboardTab({ reports, onJumpToReports }) {
+  const stats = useMemo(() => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const todayCnt = reports.filter(r => new Date(r.publishedAt) >= today).length;
+    const week = new Date(today); week.setDate(week.getDate() - 7);
+    const weekCnt = reports.filter(r => new Date(r.publishedAt) >= week).length;
+    const aiCnt = reports.filter(r => r.aiProcessed).length;
+
+    // 魚種ランキング
+    const sp = {};
+    reports.forEach(r => (r.species || []).forEach(s => { sp[s] = (sp[s] || 0) + 1; }));
+    const topSp = Object.entries(sp).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+
+    // 場所ランキング
+    const loc = {};
+    reports.forEach(r => { if (r.prefecture) loc[r.prefecture] = (loc[r.prefecture] || 0) + 1; });
+    const topLoc = Object.entries(loc).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+
+    // 釣具店ランキング
+    const sh = {};
+    reports.forEach(r => { sh[r.sourceName] = (sh[r.sourceName] || 0) + 1; });
+    const topSh = Object.entries(sh).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+
+    return { todayCnt, weekCnt, aiCnt, total: reports.length, topSp, topLoc, topSh };
+  }, [reports]);
+
+  return (
+    <div>
+      <div className="sec-h">
+        <div><span className="sec-t">📊 釣果ダッシュボード</span><span className="sec-t-sub">全データ統計</span></div>
+        <button className="btn btn-primary" onClick={onJumpToReports}>📋 全レポート一覧 →</button>
+      </div>
+
+      <div className="dash-grid">
+        <StatCard icon="🎣" num={stats.total} label="総レポート数" />
+        <StatCard icon="📅" num={stats.todayCnt} label="本日の新着" variant="gold" />
+        <StatCard icon="📆" num={stats.weekCnt} label="今週の新着" variant="mint" />
+        <StatCard icon="✨" num={stats.aiCnt} label="AI解析済" variant="coral" />
+      </div>
+
+      <div style={{ display: 'grid', gap: 14, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+        <RankList icon="🐟" title="魚種ランキング" items={stats.topSp} />
+        <RankList icon="📍" title="エリアランキング" items={stats.topLoc} />
+        <RankList icon="🏪" title="情報ソースランキング" items={stats.topSh} />
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════
+//   TAB: 釣果レポート (メイン機能)
+// ════════════════════════════════════════════════════════════
+function ReportsTab({ feeds, setFeeds, reports, setReports, favorites, setFavorites, aiKey, setAiKey, onUpdateReport }) {
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [showManage, setShowManage] = useState(false);
+  const [showApiSetup, setShowApiSetup] = useState(false);
+  const [search, setSearch] = useState("");
+  const [filterSpecies, setFilterSpecies] = useState("");
+  const [filterPref, setFilterPref] = useState("");
+  const [filterShop, setFilterShop] = useState("");
+  const [filterPeriod, setFilterPeriod] = useState("all");
+  const [sort, setSort] = useState("newest");
+  const [detail, setDetail] = useState(null);
+  const [aiBatch, setAiBatch] = useState({ running: false, done: 0, total: 0 });
+
+  // フィード管理用
+  const [newName, setNewName] = useState(""); const [newUrl, setNewUrl] = useState(""); const [newType, setNewType] = useState("shop");
+  // APIキー入力用
+  const [apiKeyInput, setApiKeyInput] = useState("");
+
+  const activeFeeds = feeds.filter(f => f.active);
+
+  // 全フィード並列取得
+  const reloadAll = useCallback(async () => {
+    if (activeFeeds.length === 0) return;
+    setLoading(true); setErrors({});
+    const results = await Promise.all(activeFeeds.map(f => fetchRss(f)));
+    const all = []; const errs = {};
+    results.forEach((r, i) => {
+      if (Array.isArray(r)) all.push(...r);
+      else if (r?.error) errs[r.feedId] = r.error;
+    });
+    // マージ: 既存のAI解析済データを保持
+    setReports(prev => {
+      const prevMap = new Map(prev.map(r => [r.id, r]));
+      const merged = all.map(n => {
+        const old = prevMap.get(n.id);
+        return old?.aiProcessed ? { ...n, ...old } : n;
+      });
+      // 重複排除（URLベース）
+      const seen = new Set();
+      const dedup = merged.filter(r => {
+        if (seen.has(r.link)) return false;
+        seen.add(r.link); return true;
+      });
+      return dedup;
+    });
+    setErrors(errs); setLoading(false);
+  }, [activeFeeds, setReports]);
+
+  useEffect(() => {
+    if (reports.length === 0) reloadAll();
+  }, []);
+
+  // フィルタリング
+  const filtered = useMemo(() => {
+    let out = reports;
+    if (search) {
+      const q = search.toLowerCase();
+      out = out.filter(r => 
+        r.title?.toLowerCase().includes(q) ||
+        r.description?.toLowerCase().includes(q) ||
+        r.location?.includes(search) ||
+        r.species?.some(s => s.includes(search))
+      );
+    }
+    if (filterSpecies) out = out.filter(r => r.species?.includes(filterSpecies));
+    if (filterPref) out = out.filter(r => r.prefecture === filterPref);
+    if (filterShop) out = out.filter(r => r.sourceId === filterShop);
+    if (filterPeriod !== "all") {
+      const now = Date.now(); const days = { "1d": 1, "7d": 7, "30d": 30 }[filterPeriod];
+      const limit = now - days * 86400000;
+      out = out.filter(r => new Date(r.publishedAt).getTime() >= limit);
+    }
+    out = [...out];
+    if (sort === "newest") out.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+    if (sort === "oldest") out.sort((a, b) => new Date(a.publishedAt) - new Date(b.publishedAt));
+    if (sort === "species") out.sort((a, b) => (b.species?.length || 0) - (a.species?.length || 0));
+    return out;
+  }, [reports, search, filterSpecies, filterPref, filterShop, filterPeriod, sort]);
+
+  // 利用可能な選択肢
+  const availSpecies = useMemo(() => [...new Set(reports.flatMap(r => r.species || []))].sort(), [reports]);
+  const availPrefs = useMemo(() => [...new Set(reports.map(r => r.prefecture).filter(Boolean))].sort(), [reports]);
+
+  const toggleFav = (id) => {
+    setFavorites(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const handleAiExtract = async (report) => {
+    if (!aiKey) { setShowApiSetup(true); return; }
+    try {
+      const ext = await aiExtractReport(report, aiKey);
+      const updated = {
+        ...report,
+        date: ext.date || report.date,
+        location: ext.location || report.location,
+        prefecture: ext.prefecture || report.prefecture,
+        species: ext.species?.length ? ext.species : report.species,
+        methods: ext.methods?.length ? ext.methods : report.methods,
+        comment: ext.comment || report.comment,
+        aiProcessed: true,
+      };
+      onUpdateReport(updated);
+      if (detail?.id === report.id) setDetail(updated);
+    } catch (e) { alert(`AI抽出失敗: ${e.message}`); }
+  };
+
+  const handleBatchAi = async () => {
+    if (!aiKey) { setShowApiSetup(true); return; }
+    const todo = filtered.filter(r => !r.aiProcessed).slice(0, 10);
+    if (todo.length === 0) { alert("AI解析対象がありません"); return; }
+    setAiBatch({ running: true, done: 0, total: todo.length });
+    for (let i = 0; i < todo.length; i++) {
+      try {
+        const ext = await aiExtractReport(todo[i], aiKey);
+        onUpdateReport({
+          ...todo[i],
+          date: ext.date || todo[i].date,
+          location: ext.location || todo[i].location,
+          prefecture: ext.prefecture || todo[i].prefecture,
+          species: ext.species?.length ? ext.species : todo[i].species,
+          methods: ext.methods?.length ? ext.methods : todo[i].methods,
+          comment: ext.comment || todo[i].comment,
+          aiProcessed: true,
+        });
+      } catch (e) { console.warn(e); }
+      setAiBatch(b => ({ ...b, done: b.done + 1 }));
+    }
+    setAiBatch({ running: false, done: 0, total: 0 });
+  };
+
+  const clearFilters = () => { setSearch(""); setFilterSpecies(""); setFilterPref(""); setFilterShop(""); setFilterPeriod("all"); };
+  const hasFilters = search || filterSpecies || filterPref || filterShop || filterPeriod !== "all";
+
+  // ===== 管理画面 =====
+  if (showManage) {
+    const toggle = (id) => setFeeds(feeds.map(f => f.id === id ? { ...f, active: !f.active } : f));
+    const del = (id) => setFeeds(feeds.filter(f => f.id !== id));
+    const add = () => {
+      if (!newName.trim() || !newUrl.trim()) return;
+      setFeeds([...feeds, { id: `c${Date.now()}`, name: newName, url: newUrl, type: newType, region: "", active: true }]);
+      setNewName(""); setNewUrl("");
+    };
+    return (
+      <div>
+        <div className="sec-h">
+          <span className="sec-t">⚙ フィード管理</span>
+          <button className="btn" onClick={() => setShowManage(false)}>← 戻る</button>
+        </div>
+        <div className="manage-grid">
+          {feeds.map(f => (
+            <div className="m-card" key={f.id}>
+              <button className={`m-tog ${f.active ? 'on' : 'off'}`} onClick={() => toggle(f.id)} aria-label="切替" />
+              <div className="m-info">
+                <div className="m-info-name">{f.type === 'shop' ? '🏪' : '📰'} {f.name}</div>
+                <div className="m-info-url">{f.url}</div>
+              </div>
+              <div className="m-meta">
+                <span className={`m-meta-tag ${f.type === 'shop' ? 'rc-source-shop' : 'rc-source-media'}`}>{f.type === 'shop' ? '釣具店' : 'メディア'}</span>
+                {f.region && <span style={{ fontSize: 9, color: 'var(--gray-2)' }}>{f.region}</span>}
+              </div>
+              <button className="btn btn-danger" onClick={() => del(f.id)}>削除</button>
+            </div>
+          ))}
+        </div>
+        <div className="add-form">
+          <div className="add-form-h">＋ カスタムRSSフィードを追加</div>
+          <div className="add-form-row">
+            <input className="f-inp f" placeholder="サイト名" value={newName} onChange={e => setNewName(e.target.value)} />
+            <input className="f-inp f" placeholder="RSS URL (https://...)" value={newUrl} onChange={e => setNewUrl(e.target.value)} />
+            <select className="f-inp" value={newType} onChange={e => setNewType(e.target.value)}>
+              <option value="shop">釣具店</option><option value="media">メディア</option>
+            </select>
+            <button className="btn btn-primary" onClick={add}>追加</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ===== APIキー設定画面 =====
+  if (showApiSetup) {
+    return (
+      <div>
+        <div className="sec-h">
+          <span className="sec-t">🔑 Anthropic APIキー設定</span>
+          <button className="btn" onClick={() => setShowApiSetup(false)}>← 戻る</button>
+        </div>
+        <div className="api-key-box">
+          <div className="api-key-h">✨ AI構造化抽出機能の有効化</div>
+          <div className="api-key-help">
+            記事から<strong>日付・場所・魚種・釣り方</strong>を自動抽出するためにClaude APIキーが必要です。<br/>
+            1. <a href="https://console.anthropic.com/" target="_blank" rel="noopener noreferrer">console.anthropic.com</a> でアカウント作成<br/>
+            2. API Keys → Create Keyでキーを生成<br/>
+            3. 下記に貼り付けて保存（ブラウザに保存されます）<br/>
+            ※ 1記事の解析コスト約0.001ドル（10記事=約0.01ドル）
+          </div>
+          <div className="api-key-row">
+            <input type="password" className="api-key-input" placeholder="sk-ant-api03-..." value={apiKeyInput} onChange={e => setApiKeyInput(e.target.value)} />
+            <button className="btn btn-gold" onClick={() => { setAiKey(apiKeyInput); setShowApiSetup(false); }} disabled={!apiKeyInput.trim()}>保存</button>
+          </div>
+          {aiKey && <div style={{ fontSize: 11, color: 'var(--mint)', marginTop: 12 }}>✓ APIキー設定済み</div>}
+        </div>
+      </div>
+    );
+  }
+
+  // ===== メイン画面 =====
+  return (
+    <div>
+      <div className="sec-h">
+        <div>
+          <span className="sec-t">📋 釣果レポート</span>
+          <span className="sec-t-sub">{filtered.length}件 / 全{reports.length}件</span>
+        </div>
+        <div className="sec-act-row">
+          <button className="btn" onClick={() => setShowApiSetup(true)}>{aiKey ? '🔑 設定済' : '🔑 APIキー'}</button>
+          <button className="btn" onClick={() => setShowManage(true)}>⚙ 管理</button>
+          <button className="btn" onClick={reloadAll} disabled={loading}>{loading ? '...' : '↻ 更新'}</button>
+          <button className="btn btn-primary" onClick={handleBatchAi} disabled={aiBatch.running || !aiKey}>{aiBatch.running ? `AI解析 ${aiBatch.done}/${aiBatch.total}` : '✨ AI一括解析(10件)'}</button>
+        </div>
+      </div>
+
+      {!aiKey && (
+        <div className="ai-extract-bar">
+          <span className="ai-extract-icon">💡</span>
+          <div className="ai-extract-info">
+            <div className="ai-extract-t">AI解析でデータ価値を最大化</div>
+            <div className="ai-extract-d">Anthropic APIキーを設定すると、記事から自動で日付・場所・魚種・釣り方を抽出できます</div>
+          </div>
+          <button className="btn btn-gold" onClick={() => setShowApiSetup(true)}>設定する →</button>
+        </div>
+      )}
+
+      {aiBatch.running && (
+        <div className="ai-extract-bar">
+          <span className="ai-extract-icon">🔄</span>
+          <div className="ai-extract-info" style={{ width: '100%' }}>
+            <div className="ai-extract-t">AI解析実行中... {aiBatch.done} / {aiBatch.total}</div>
+            <div className="ai-extract-progress"><div className="ai-extract-progress-bar" style={{ width: `${(aiBatch.done / aiBatch.total) * 100}%` }} /></div>
+          </div>
+        </div>
+      )}
+
+      {/* フィルタバー */}
+      <div className="filter-bar">
+        <input className="filter-search" placeholder="🔍 タイトル・場所・魚種で検索..." value={search} onChange={e => setSearch(e.target.value)} />
+        <select className="filter-sel" value={filterSpecies} onChange={e => setFilterSpecies(e.target.value)}>
+          <option value="">魚種(全て)</option>{availSpecies.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select className="filter-sel" value={filterPref} onChange={e => setFilterPref(e.target.value)}>
+          <option value="">都道府県(全て)</option>{availPrefs.map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+        <select className="filter-sel" value={filterShop} onChange={e => setFilterShop(e.target.value)}>
+          <option value="">ソース(全て)</option>{feeds.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+        </select>
+        <select className="filter-sel" value={filterPeriod} onChange={e => setFilterPeriod(e.target.value)}>
+          <option value="all">期間(全て)</option><option value="1d">本日</option><option value="7d">1週間</option><option value="30d">1ヶ月</option>
+        </select>
+        <select className="filter-sel" value={sort} onChange={e => setSort(e.target.value)}>
+          <option value="newest">新着順</option><option value="oldest">古い順</option><option value="species">魚種多い順</option>
+        </select>
+        {hasFilters && <button className="filter-clear" onClick={clearFilters}>× フィルタクリア</button>}
+      </div>
+
+      {/* エラー表示 */}
+      {Object.keys(errors).length > 0 && (
+        <div style={{ background: 'rgba(255,107,91,0.08)', border: '1px solid rgba(255,107,91,0.3)', borderRadius: 8, padding: 10, marginBottom: 12, fontSize: 11, color: 'var(--coral)' }}>
+          ⚠ 一部フィードの取得に失敗: {Object.entries(errors).map(([id, msg]) => `${feeds.find(f => f.id === id)?.name || id}`).join('、')} (管理画面で無効化可能)
+        </div>
+      )}
+
+      {/* レポート一覧 */}
+      {loading && reports.length === 0 && <div className="loading"><div className="spinner" /><span>{activeFeeds.length}件のフィードを並列取得中...</span></div>}
+      {!loading && filtered.length === 0 && (
+        <div className="empty">
+          <div className="empty-i">🎣</div>
+          <div className="empty-t">レポートが見つかりません</div>
+          <div className="empty-d">{hasFilters ? "フィルタを変更してみてください" : "フィードを更新するか、管理画面でフィードを追加してください"}</div>
+        </div>
+      )}
+      <div className="reports-grid">
+        {filtered.map(r => (
+          <ReportCard
+            key={r.id}
+            report={r}
+            isFav={favorites.includes(r.id)}
+            onToggleFav={toggleFav}
+            onClick={setDetail}
+          />
+        ))}
+      </div>
+
+      {detail && (
+        <ReportDetailModal
+          report={detail}
+          onClose={() => setDetail(null)}
+          onToggleFav={toggleFav}
+          isFav={favorites.includes(detail.id)}
+          onAiExtract={handleAiExtract}
+          aiKey={aiKey}
+        />
+      )}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════
+//   TAB: YouTube
+// ════════════════════════════════════════════════════════════
+function YouTubeTab({ channels, setChannels, ytKey, setYtKey }) {
+  const [videos, setVideos] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showManage, setShowManage] = useState(false);
+  const [keyInput, setKeyInput] = useState("");
+  const [newName, setNewName] = useState(""); const [newId, setNewId] = useState(""); const [newIcon, setNewIcon] = useState("🎣");
+
+  const active = channels.filter(c => c.active && c.channelId);
+
+  const fetchVids = useCallback(async () => {
+    if (!ytKey || active.length === 0) return;
+    setLoading(true); setError(""); const all = [];
+    for (const ch of active) {
+      try {
+        const r = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${ytKey}&channelId=${ch.channelId}&part=snippet&order=date&maxResults=4&type=video`);
+        const d = await r.json();
+        if (d.error) throw new Error(d.error.message);
+        if (d.items) all.push(...d.items.map(v => ({ ...v, channelName: ch.name, channelIcon: ch.icon })));
+      } catch (e) { console.warn(`${ch.name}: ${e.message}`); }
+    }
+    all.sort((a, b) => new Date(b.snippet.publishedAt) - new Date(a.snippet.publishedAt));
+    setVideos(all); setLoading(false);
+  }, [ytKey, active]);
+
+  useEffect(() => { if (ytKey) fetchVids(); }, [channels, ytKey]);
+
+  if (showManage) {
+    const toggle = (id) => setChannels(channels.map(c => c.id === id ? { ...c, active: !c.active } : c));
+    const del = (id) => setChannels(channels.filter(c => c.id !== id));
+    const add = () => {
+      if (!newName || !newId) return;
+      setChannels([...channels, { id: `c${Date.now()}`, name: newName, channelId: newId, icon: newIcon, active: true, note: "" }]);
+      setNewName(""); setNewId("");
+    };
+    return (
+      <div>
+        <div className="sec-h">
+          <span className="sec-t">⚙ チャンネル管理</span>
+          <button className="btn" onClick={() => setShowManage(false)}>← 戻る</button>
+        </div>
+        <div className="manage-grid">
+          {channels.map(c => (
+            <div className="m-card" key={c.id}>
+              <button className={`m-tog ${c.active ? 'on' : 'off'}`} onClick={() => toggle(c.id)} />
+              <div className="m-info">
+                <div className="m-info-name">{c.icon} {c.name}</div>
+                <div className="m-info-url">{c.channelId || '⚠ チャンネルID未設定'}</div>
+                {c.note && <div className="m-info-note">{c.note}</div>}
+              </div>
+              <button className="btn btn-danger" onClick={() => del(c.id)}>削除</button>
+            </div>
+          ))}
+        </div>
+        <div className="add-form">
+          <div className="add-form-h">＋ チャンネルを追加</div>
+          <div className="add-form-row">
+            <input className="f-inp" style={{ width: 50, textAlign: 'center' }} value={newIcon} onChange={e => setNewIcon(e.target.value)} placeholder="🎣" />
+            <input className="f-inp f" placeholder="チャンネル名" value={newName} onChange={e => setNewName(e.target.value)} />
+            <input className="f-inp f" placeholder="チャンネルID (UC...)" value={newId} onChange={e => setNewId(e.target.value)} />
+            <button className="btn btn-primary" onClick={add}>追加</button>
+          </div>
+          <div style={{ fontSize: 10, color: 'var(--gray-2)', marginTop: 10, lineHeight: 1.7 }}>
+            💡 <strong>チャンネルIDの取得方法</strong>:<br/>
+            ① YouTubeでチャンネルページを開く<br/>
+            ② URLが<code style={{ color: 'var(--sky)' }}>youtube.com/channel/UCxxxxxxxx</code>形式ならその<code style={{ color: 'var(--sky)' }}>UC...</code>がID<br/>
+            ③ <code>@ユーザー名</code>形式の場合は <a href="https://commentpicker.com/youtube-channel-id.php" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--sky)' }}>commentpicker.com/youtube-channel-id.php</a> で変換可能
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!ytKey) {
+    return (
+      <div>
+        <div className="sec-h"><span className="sec-t">🎬 YouTube 最新動画</span></div>
+        <div className="api-key-box">
+          <div className="api-key-h">🔑 YouTube Data API v3 キー設定</div>
+          <div className="api-key-help">
+            <strong>無料取得手順:</strong><br/>
+            1. <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer">console.cloud.google.com</a> にアクセス<br/>
+            2. プロジェクト作成 → 「YouTube Data API v3」を有効化<br/>
+            3. 認証情報 → APIキーを作成<br/>
+            ※ 無料枠1日10,000ユニット
+          </div>
+          <div className="api-key-row">
+            <input type="password" className="api-key-input" placeholder="AIza..." value={keyInput} onChange={e => setKeyInput(e.target.value)} />
+            <button className="btn btn-gold" onClick={() => { setYtKey(keyInput); }} disabled={!keyInput.trim()}>保存</button>
+          </div>
+        </div>
+        <div style={{ textAlign: 'center', padding: 20, fontSize: 11, color: 'var(--gray-1)', lineHeight: 1.8 }}>
+          設定後に取得するチャンネル: <br/>
+          <span style={{ color: 'var(--sky)' }}>{active.map(c => `${c.icon} ${c.name}`).join('・')}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="sec-h">
+        <div><span className="sec-t">🎬 YouTube 最新動画</span><span className="sec-t-sub">{videos.length}件</span></div>
+        <div className="sec-act-row">
+          <button className="btn" onClick={() => setShowManage(true)}>⚙ チャンネル</button>
+          <button className="btn" onClick={fetchVids} disabled={loading}>{loading ? '...' : '↻ 更新'}</button>
+        </div>
+      </div>
+      {loading && <div className="loading"><div className="spinner" /><span>YouTube取得中...</span></div>}
+      {error && <div style={{ color: 'var(--coral)', fontSize: 12, marginBottom: 12 }}>⚠ {error}</div>}
+      {!loading && videos.length === 0 && (
+        <div className="empty"><div className="empty-i">📺</div><div className="empty-t">動画がありません</div><div className="empty-d">チャンネルIDが正しいか管理画面で確認してください</div></div>
+      )}
+      <div className="yt-grid">
+        {videos.map((v, i) => (
+          <a key={i} href={`https://www.youtube.com/watch?v=${v.id.videoId}`} target="_blank" rel="noopener noreferrer" className="yt-card">
+            <div className="yt-thumb">
+              <img src={v.snippet.thumbnails?.medium?.url || v.snippet.thumbnails?.default?.url} alt={v.snippet.title} />
+              <div className="yt-overlay"><div className="yt-play"><svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z" /></svg></div></div>
+            </div>
+            <div className="yt-info">
+              <div className="yt-ch-row"><span>{v.channelIcon}</span><span className="yt-ch-name">{v.channelName}</span></div>
+              <div className="yt-title">{v.snippet.title}</div>
+              <div className="yt-meta">{timeAgo(v.snippet.publishedAt)}</div>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════
+//   TAB: AI検索
+// ════════════════════════════════════════════════════════════
+function AiSearchTab({ aiKey }) {
+  const [q, setQ] = useState("");
+  const [result, setResult] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState("");
+  const ref = useRef("");
+
+  const search = async (qq) => {
+    const sq = qq || q;
+    if (!sq.trim()) return;
+    setLoading(true); setResult(""); ref.current = ""; setSearched(sq);
+    try {
+      const headers = { "Content-Type": "application/json" };
+      if (aiKey) {
+        headers["x-api-key"] = aiKey;
+        headers["anthropic-version"] = "2023-06-01";
+        headers["anthropic-dangerous-direct-browser-access"] = "true";
+      }
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST", headers,
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514", max_tokens: 1500, stream: true,
+          tools: [{ type: "web_search_20250305", name: "web_search" }],
+          system: `あなたは「ナガヨシリン fishing club」の釣り情報アシスタントです。
+ユーザーの検索クエリに対し、web_searchで最新の釣果情報・SNS投稿・ブログ記事を検索し、以下の形式で日本語で構造的にまとめてください：
+
+【🎣 最新釣果情報】
+- 場所・日付・魚種・釣り方を明記したレポート
+
+【📱 SNS・ブログ情報】
+- Twitter/X・Instagram・ブログからの最新投稿
+
+【💡 ポイント・タックル情報】
+- 効果的なルアー・タックル・ポイント情報
+
+【🔗 参考リンク】
+- 関連URL（あれば）
+
+実用的かつ構造的な情報を提供してください。`,
+          messages: [{ role: "user", content: sq }],
+        }),
+      });
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "";
+      while (true) {
+        const { done, value } = await reader.read(); if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split("\n"); buf = lines.pop();
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6); if (data === "[DONE]") continue;
+          try {
+            const evt = JSON.parse(data);
+            if (evt.type === "content_block_delta" && evt.delta?.type === "text_delta") {
+              ref.current += evt.delta.text; setResult(ref.current);
+            }
+          } catch (_) {}
+        }
+      }
+    } catch (e) { setResult(`エラー: ${e.message}\n\nAnthropic APIキーをダッシュボードで設定してください。`); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <div>
+      <div className="sec-h"><span className="sec-t">🤖 AIリアルタイム釣り情報検索</span><span className="sec-t-sub">SNS・ブログ・ニュース横断</span></div>
+      <div style={{ paddingBottom: 14 }}>
+        <div className="ai-search-input-row">
+          <input className="ai-search-input" placeholder="例: 茨城 鹿島 今日の釣果、メバル釣れてる場所..." value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => e.key === 'Enter' && search()} />
+          <button className="btn btn-primary" onClick={() => search()} disabled={loading || !q}>{loading ? '検索中…' : '🔍 検索'}</button>
+        </div>
+        <div className="ai-presets">
+          <span style={{ fontSize: 10, color: 'var(--gray-2)', marginRight: 4 }}>🏷 プリセット:</span>
+          {AI_SEARCH_PRESETS.map(p => <button key={p} className="ai-preset" onClick={() => { setQ(p); search(p); }}>{p}</button>)}
+        </div>
+      </div>
+      {(loading || result) && (
+        <div className="ai-result">
+          <div className="ai-result-h">
+            <span>🔍</span><span style={{ fontWeight: 700 }}>「{searched}」</span>
+            {loading && <div className="spinner" style={{ width: 14, height: 14, marginLeft: 'auto' }} />}
+          </div>
+          <div className="ai-result-c">
+            {result || <span style={{ color: 'var(--gray-2)' }}>Web検索を実行中...</span>}
+            {loading && <span className="ai-typing">▋</span>}
+          </div>
+        </div>
+      )}
+      {!loading && !result && (
+        <div className="empty">
+          <div className="empty-i">🎣</div>
+          <div className="empty-t">キーワードを入力してAI検索</div>
+          <div className="empty-d">SNS・ブログ・ニュースをClaude AIがリアルタイム横断検索<br/>釣果情報・ポイント・タックル何でもOK</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════
+//   メインアプリ
+// ════════════════════════════════════════════════════════════
+function NagayoshirinInfoHubV2() {
+  const [tab, setTab] = useState("dashboard");
+  const [feeds, setFeeds] = useState(() => ls.get(STORAGE_KEYS.FEEDS, DEFAULT_RSS_FEEDS));
+  const [channels, setChannels] = useState(() => ls.get(STORAGE_KEYS.CHANNELS, DEFAULT_YT_CHANNELS));
+  const [reports, setReports] = useState(() => ls.get(STORAGE_KEYS.REPORTS_CACHE, []));
+  const [favorites, setFavorites] = useState(() => ls.get(STORAGE_KEYS.FAVORITES, []));
+  const [ytKey, setYtKey] = useState(() => ls.get(STORAGE_KEYS.YT_API, ""));
+  const [aiKey, setAiKey] = useState(() => ls.get(STORAGE_KEYS.AI_API, ""));
+  const [now, setNow] = useState(new Date());
+
+  // 永続化
+  useEffect(() => ls.set(STORAGE_KEYS.FEEDS, feeds), [feeds]);
+  useEffect(() => ls.set(STORAGE_KEYS.CHANNELS, channels), [channels]);
+  useEffect(() => ls.set(STORAGE_KEYS.REPORTS_CACHE, reports.slice(0, 200)), [reports]);
+  useEffect(() => ls.set(STORAGE_KEYS.FAVORITES, favorites), [favorites]);
+  useEffect(() => ls.set(STORAGE_KEYS.YT_API, ytKey), [ytKey]);
+  useEffect(() => ls.set(STORAGE_KEYS.AI_API, aiKey), [aiKey]);
+
+  // 時刻更新
+  useEffect(() => { const t = setInterval(() => setNow(new Date()), 30000); return () => clearInterval(t); }, []);
+
+  const updateReport = (updated) => {
+    setReports(prev => prev.map(r => r.id === updated.id ? updated : r));
+  };
+
+  const tabs = [
+    { id: "dashboard", icon: "📊", label: "ダッシュボード", count: null },
+    { id: "reports",   icon: "📋", label: "釣果レポート",     count: reports.length },
+    { id: "youtube",   icon: "🎬", label: "YouTube",        count: channels.filter(c => c.active && c.channelId).length },
+    { id: "ai",        icon: "🤖", label: "AIリアルタイム検索", count: null },
+  ];
+
+  return (
+    <>
+      <style>{STYLES}</style>
+      <div className="app">
+        <div className="hdr">
+          <div className="hdr-row">
+            <div className="brand">
+              <div className="brand-1">NAGAYOSHIRIN <span className="ac">INFO HUB</span></div>
+              <div className="brand-2">ナガヨシリン FISHING CLUB — REAL-TIME INTELLIGENCE</div>
+            </div>
+            <div className="live">
+              <span className="live-dot" />LIVE {now.getHours().toString().padStart(2,'0')}:{now.getMinutes().toString().padStart(2,'0')}
+            </div>
+          </div>
+        </div>
+
+        <div className="nav">
+          {tabs.map(t => (
+            <button key={t.id} className={`nav-tab ${tab === t.id ? 'active' : ''}`} onClick={() => setTab(t.id)}>
+              <span>{t.icon}</span>{t.label}
+              {t.count !== null && <span className="nav-tab-cnt">{t.count}</span>}
+            </button>
+          ))}
+        </div>
+
+        <div className="main">
+          <div className="panel">
+            {tab === "dashboard" && <DashboardTab reports={reports} onJumpToReports={() => setTab("reports")} />}
+            {tab === "reports" && <ReportsTab feeds={feeds} setFeeds={setFeeds} reports={reports} setReports={setReports} favorites={favorites} setFavorites={setFavorites} aiKey={aiKey} setAiKey={setAiKey} onUpdateReport={updateReport} />}
+            {tab === "youtube" && <YouTubeTab channels={channels} setChannels={setChannels} ytKey={ytKey} setYtKey={setYtKey} />}
+            {tab === "ai" && <AiSearchTab aiKey={aiKey} />}
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'center', padding: '8px 0 20px', fontSize: 9, color: 'rgba(158,181,205,0.3)', letterSpacing: 1 }}>
+          NAGAYOSHIRIN FISHING CLUB © INFO HUB v2 — POWERED BY RSS · YOUTUBE API · CLAUDE AI
+        </div>
+      </div>
+    </>
+  );
+}
+
+
+// ━━━ アプリ起動 ━━━
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<NagayoshirinInfoHubV2 />);
+
+
+// boot 画面を非表示に
+setTimeout(() => {
+  const boot = document.getElementById("boot");
+  if (boot) {
+    boot.classList.add("hide");
+    setTimeout(() => boot.remove(), 400);
+  }
+}, 600);
+</script>
+</body>
+</html>
