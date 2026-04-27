@@ -644,67 +644,69 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 //   設定データ — 全網羅・検証済み
 // ════════════════════════════════════════════════════════════
 
-// 主要釣具店RSSフィード（全国主要チェーン網羅）
+// ════════════════════════════════════════════════════════════
+//   釣りRSSフィード - 検証済み動作するソースのみ
+// ════════════════════════════════════════════════════════════
 const DEFAULT_RSS_FEEDS = [
-// ========= 大手釣具店チェーン =========
+// ========= Google News RSS (キーワード横断・確実に動作) =========
 {
-  id: "joshuya",
-  name: "上州屋",
-  url: "https://www.johshuya.co.jp/blog/feed/",
+  id: "gnews-tsurigu",
+  name: "Google News - 釣具店",
+  url: "https://news.google.com/rss/search?q=%E9%87%A3%E5%85%B7%E5%BA%97+%E3%83%96%E3%83%AD%E3%82%B0&hl=ja&gl=JP&ceid=JP:ja",
   type: "shop",
   region: "全国",
   active: true
 }, {
-  id: "casting",
-  name: "キャスティング",
-  url: "https://blog.casting.jp/?xml",
-  type: "shop",
+  id: "gnews-tsuriho",
+  name: "Google News - 釣果情報",
+  url: "https://news.google.com/rss/search?q=%E9%87%A3%E6%9E%9C+%E6%83%85%E5%A0%B1&hl=ja&gl=JP&ceid=JP:ja",
+  type: "media",
   region: "全国",
   active: true
 }, {
-  id: "ishiguro",
-  name: "釣り具のイシグロ",
-  url: "https://ishiguro-gr.com/feed/",
-  type: "shop",
-  region: "中部",
+  id: "gnews-kashima",
+  name: "Google News - 鹿島釣り",
+  url: "https://news.google.com/rss/search?q=%E9%B9%BF%E5%B3%B6+%E9%87%A3%E3%82%8A&hl=ja&gl=JP&ceid=JP:ja",
+  type: "media",
+  region: "茨城",
   active: true
 }, {
-  id: "point",
-  name: "釣具のポイント",
-  url: "https://www.point-i.jp/blog/feed",
-  type: "shop",
+  id: "gnews-ibaraki",
+  name: "Google News - 茨城釣り",
+  url: "https://news.google.com/rss/search?q=%E8%8C%A8%E5%9F%8E+%E9%87%A3%E3%82%8A&hl=ja&gl=JP&ceid=JP:ja",
+  type: "media",
+  region: "茨城",
+  active: true
+}, {
+  id: "gnews-mebaru",
+  name: "Google News - メバリング",
+  url: "https://news.google.com/rss/search?q=%E3%83%A1%E3%83%90%E3%83%AB+%E9%87%A3%E6%9E%9C&hl=ja&gl=JP&ceid=JP:ja",
+  type: "media",
   region: "全国",
   active: true
 }, {
-  id: "tobinuke",
-  name: "トビヌケ",
-  url: "https://tobinuke.jp/feed/",
-  type: "shop",
-  region: "関東",
+  id: "gnews-aji",
+  name: "Google News - アジング",
+  url: "https://news.google.com/rss/search?q=%E3%82%A2%E3%82%B8%E3%83%B3%E3%82%B0+%E9%87%A3%E6%9E%9C&hl=ja&gl=JP&ceid=JP:ja",
+  type: "media",
+  region: "全国",
   active: true
 }, {
-  id: "sansui",
-  name: "サンスイ",
-  url: "https://www.sansuinet.com/blog/feed/",
-  type: "shop",
-  region: "関東",
-  active: true
-}, {
-  id: "tackleberry",
-  name: "タックルベリー",
-  url: "https://www.tackleberry.co.jp/blog/feed/",
-  type: "shop",
+  id: "gnews-egging",
+  name: "Google News - エギング",
+  url: "https://news.google.com/rss/search?q=%E3%82%A8%E3%82%AE%E3%83%B3%E3%82%B0&hl=ja&gl=JP&ceid=JP:ja",
+  type: "media",
   region: "全国",
   active: false
 }, {
-  id: "fishingmax",
-  name: "フィッシングマックス",
-  url: "https://fishingmax-webshop.jp/blog/feed/",
-  type: "shop",
-  region: "関西",
+  id: "gnews-shore",
+  name: "Google News - ショアジギ",
+  url: "https://news.google.com/rss/search?q=%E3%82%B7%E3%83%A7%E3%82%A2%E3%82%B8%E3%82%AE&hl=ja&gl=JP&ceid=JP:ja",
+  type: "media",
+  region: "全国",
   active: false
 },
-// ========= 釣りメディア =========
+// ========= 公式サイト・直接RSS =========
 {
   id: "tsurihack",
   name: "釣りハック",
@@ -715,36 +717,15 @@ const DEFAULT_RSS_FEEDS = [
 }, {
   id: "luremag",
   name: "ルアーマガジン",
-  url: "https://lure-mag.com/feed/",
+  url: "https://lure-mag.com/feed",
   type: "media",
   region: "全国",
   active: true
 }, {
-  id: "fishingjapan",
-  name: "フィッシングジャパン",
-  url: "https://fishingjapan.jp/feed",
-  type: "media",
-  region: "全国",
-  active: true
-}, {
-  id: "lurenewsr",
-  name: "ルアーニュースR",
-  url: "https://www.lurenewsr.com/feed/",
-  type: "media",
-  region: "全国",
-  active: true
-}, {
-  id: "tsurimaru",
-  name: "つりまる",
-  url: "https://tsurimaru.jp/feed/",
-  type: "media",
-  region: "全国",
-  active: false
-}, {
-  id: "fishinglabo",
-  name: "フィッシングラボ",
-  url: "https://fishinglabo.jp/feed/",
-  type: "media",
+  id: "joshuya-info",
+  name: "上州屋 ニュース",
+  url: "https://www.johshuya.co.jp/news/feed",
+  type: "shop",
   region: "全国",
   active: false
 }];
@@ -920,7 +901,7 @@ const fetchRssWithFallback = async (url, count = 10) => {
 const STORAGE_KEYS = {
   YT_API: "nyrn_yt_api_key",
   // FEEDS と CHANNELS は v3 にバンプ - デフォルト網羅店舗の追加を反映
-  FEEDS: "nyrn_feeds_v3",
+  FEEDS: "nyrn_feeds_v4",
   CHANNELS: "nyrn_channels_v3",
   REPORTS_CACHE: "nyrn_reports_cache",
   FAVORITES: "nyrn_favorites",
