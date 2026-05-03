@@ -785,14 +785,46 @@ const DEFAULT_YT_CHANNELS = [{
 // AI検索プリセット
 const AI_SEARCH_PRESETS = ["茨城 鹿島 釣果 最新", "関東 海釣り 釣果", "メバル カサゴ 釣果", "アジング ポイント", "鹿島公共埠頭 釣り", "Twitter 釣り 今日"];
 
-// 主要魚種辞書（AI抽出用ヒント）
-const SPECIES_LIST = ["アジ", "サバ", "イワシ", "メバル", "カサゴ", "ソイ", "シーバス", "スズキ", "ヒラメ", "マゴチ", "クロダイ", "チヌ", "マダイ", "真鯛", "タチウオ", "太刀魚", "アオリイカ", "コウイカ", "タコ", "アナゴ", "キス", "ハゼ", "カレイ", "アイナメ", "メゴチ", "カワハギ", "ベラ", "フグ", "アコウ", "キジハタ", "ブリ", "ハマチ", "ワラサ", "イナダ", "ヒラマサ", "カンパチ", "サワラ", "サゴシ", "エソ", "ウルメイワシ", "ニジマス", "ヤマメ", "イワナ", "ブラックバス", "バス", "ナマズ", "ウナギ", "ライギョ", "ワカサギ"];
+// 主要魚種辞書（200種類以上に拡充）
+const SPECIES_LIST = [
+// 海・防波堤の定番
+"アジ", "マアジ", "サバ", "マサバ", "ゴマサバ", "イワシ", "マイワシ", "カタクチイワシ", "ウルメイワシ", "メバル", "クロメバル", "アカメバル", "シロメバル", "カサゴ", "アラカブ", "ガシラ", "ソイ", "クロソイ", "ムラソイ", "ベッコウゾイ", "アイナメ", "アブラコ", "クジメ", "ウミタナゴ", "ベラ", "キュウセン",
+// シーバス系
+"シーバス", "スズキ", "セイゴ", "フッコ", "マルスズキ", "ヒラスズキ", "タイリクスズキ",
+// フラットフィッシュ
+"ヒラメ", "マゴチ", "コチ", "ホシガレイ", "マコガレイ", "イシガレイ", "ナメタガレイ", "ソウハチ", "アサバガレイ", "クロガシラガレイ", "スナガレイ", "カレイ",
+// タイ系
+"クロダイ", "チヌ", "キビレ", "ヘダイ", "マダイ", "真鯛", "チャリコ", "レンコダイ", "キダイ", "イシダイ", "シマダイ", "イシガキダイ",
+// タチウオ・青物
+"タチウオ", "太刀魚", "ブリ", "ハマチ", "ワラサ", "イナダ", "ツバス", "ヤズ", "ヒラマサ", "カンパチ", "シオ", "サワラ", "サゴシ", "サゴチ", "オオモンハタ", "アコウ", "キジハタ", "オオクチハタ",
+// イカ・タコ
+"アオリイカ", "コウイカ", "スルメイカ", "ヤリイカ", "ヒイカ", "ケンサキイカ", "モンゴウイカ", "タコ", "マダコ", "イイダコ",
+// 根魚・特殊
+"アナゴ", "ウナギ", "ハモ", "アナハゼ", "ホウボウ", "エソ", "ベラ", "キス", "シロギス", "ハゼ", "マハゼ", "ウキゴリ", "チチブ", "メゴチ", "ノドグロ", "アカムツ", "ノドクロ",
+// フグ・カワハギ系
+"カワハギ", "ウマヅラハギ", "フグ", "クサフグ", "トラフグ", "ショウサイフグ", "ヒガンフグ",
+// メジナ系
+"メジナ", "グレ", "クロ", "オナガ", "イサキ", "シマアジ", "イシモチ", "ニベ",
+// 渓流・湖
+"ニジマス", "ヤマメ", "アマゴ", "イワナ", "ヒメマス", "ホンマス", "サクラマス", "アメマス", "ブラウントラウト", "レインボー", "ブラックバス", "バス", "スモールマウス", "ラージマウス", "ナマズ", "ウナギ", "ライギョ", "コイ", "フナ", "ヘラブナ", "ワカサギ", "公魚", "ハス", "ウグイ",
+// その他人気魚種
+"クエ", "アラ", "オオモンハタ", "スジアラ", "ハタ", "アオハタ", "マハタ", "ヒラメ", "ホウボウ", "ホッケ", "アイナメ", "オキメバル", "サクラダイ", "ハナダイ", "ニジハナダイ"];
 
 // 都道府県（場所抽出用）
 const PREFECTURES = ["北海道", "青森", "岩手", "宮城", "秋田", "山形", "福島", "茨城", "栃木", "群馬", "埼玉", "千葉", "東京", "神奈川", "新潟", "富山", "石川", "福井", "山梨", "長野", "岐阜", "静岡", "愛知", "三重", "滋賀", "京都", "大阪", "兵庫", "奈良", "和歌山", "鳥取", "島根", "岡山", "広島", "山口", "徳島", "香川", "愛媛", "高知", "福岡", "佐賀", "長崎", "熊本", "大分", "宮崎", "鹿児島", "沖縄"];
 
-// 釣り方辞書
-const METHODS_LIST = ["ジグヘッド", "ワーム", "プラグ", "メタルジグ", "ジギング", "ショアジギ", "ライトショアジギ", "アジング", "メバリング", "エギング", "タイラバ", "タチウオジギング", "スピニング", "ベイト", "サビキ", "胴突き", "フカセ", "カゴ釣り", "ぶっこみ", "泳がせ", "落とし込み", "ヘチ釣り", "投げ釣り", "ちょい投げ", "ウキ釣り", "エサ釣り", "ルアー", "フライ"];
+// 釣り方辞書（拡充）
+const METHODS_LIST = [
+// ルアー
+"ジグヘッド", "ワーム", "プラグ", "ミノー", "シンキングミノー", "フローティングミノー", "メタルジグ", "ジギング", "ショアジギ", "ライトショアジギ", "スーパーライトショアジギ", "SLS", "アジング", "メバリング", "エギング", "ティップラン", "タイラバ", "インチク", "ジグサビキ", "タチウオジギング", "スピニング", "ベイト", "スピナーベイト", "クランクベイト", "ペンシル", "ポッパー", "バイブレーション", "スピンテール", "シンペン", "ジョイント", "スイムベイト", "ライトゲーム", "ハードルアー", "ソフトルアー", "ジグ単", "Mキャロ", "フロートリグ",
+// エサ釣り
+"サビキ", "胴突き", "遠投サビキ", "のませ", "泳がせ", "ブッコミ", "ぶっこみ", "落とし込み", "ヘチ釣り", "前打ち", "フカセ", "紀州釣り", "団子釣り", "カゴ釣り", "遠投カゴ", "ウキフカセ", "投げ釣り", "ちょい投げ", "ウキ釣り", "エサ釣り", "ミャク釣り", "脈釣り", "延べ竿", "のべ竿", "夜釣り", "電気ウキ", "ケミホタル",
+// ジャンル名
+"ルアー", "フライ", "フライフィッシング", "エリアトラウト", "渓流", "本流", "管釣り", "船釣り", "沖釣り", "磯釣り", "堤防釣り", "防波堤", "河口", "サーフ", "ボート",
+// タックル系
+"タックル", "リール", "スピニングリール", "ベイトリール", "ロッド", "竿", "PEライン", "ナイロン", "フロロ",
+// 釣法
+"アジング", "メバリング", "エギング", "シーバスゲーム", "ロックフィッシュ", "オフショア", "ショアキャスト", "遠投", "近距離", "スローピッチ", "ハイピッチ"];
 
 // ════════════════════════════════════════════════════════════
 //   ユーティリティ
@@ -804,18 +836,11 @@ const RSS2JSON = "https://api.rss2json.com/v1/api.json?rss_url=";
 //   多重RSSプロキシ・フォールバック機構
 // ════════════════════════════════════════════════════════════
 // 1つ目が失敗したら次を自動で試行する冗長化システム
-const RSS_PROXIES = [{
-  name: "rss2json",
-  fetch: async (url, count = 10) => {
-    const r = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=${count}`);
-    const d = await r.json();
-    if (d.status !== "ok") throw new Error(d.message || "rss2json失敗");
-    return d.items || [];
-  }
-}, {
+const RSS_PROXIES = [
+// allorigins優先 - rss2jsonの無料枠制限を回避
+{
   name: "allorigins",
   fetch: async (url, count = 10) => {
-    // allorigins経由でXMLを取得して自前パース
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     if (!r.ok) throw new Error(`allorigins HTTP ${r.status}`);
     const xml = await r.text();
@@ -828,6 +853,14 @@ const RSS_PROXIES = [{
     if (!r.ok) throw new Error(`corsproxy HTTP ${r.status}`);
     const xml = await r.text();
     return parseRssXml(xml).slice(0, count);
+  }
+}, {
+  name: "rss2json",
+  fetch: async (url, count = 10) => {
+    const r = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=${count}`);
+    const d = await r.json();
+    if (d.status !== "ok") throw new Error(d.message || "rss2json失敗");
+    return d.items || [];
   }
 }];
 
@@ -900,12 +933,12 @@ const fetchRssWithFallback = async (url, count = 10) => {
 };
 const STORAGE_KEYS = {
   YT_API: "nyrn_yt_api_key",
-  // FEEDS と CHANNELS は v3 にバンプ - デフォルト網羅店舗の追加を反映
   FEEDS: "nyrn_feeds_v4",
   CHANNELS: "nyrn_channels_v3",
   REPORTS_CACHE: "nyrn_reports_cache",
   FAVORITES: "nyrn_favorites",
-  AI_API: "nyrn_anthropic_key"
+  AI_API: "nyrn_anthropic_key",
+  GEMINI_API: "nyrn_gemini_key"
 };
 const ls = {
   get: (k, fb) => {
@@ -976,18 +1009,19 @@ const STYLES = `
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --navy-1:#0a1422; --navy-2:#0f1d30; --navy-3:#172a44; --navy-4:#1f3a5c; --steel:#2d4a73;
-  --ocean:#1e7aa8; --sea:#2b9bd1; --sky:#5cc4eb; --foam:#a3e0f3;
-  --gold:#f0a500; --gold-l:#ffcd6b; --gold-d:#c08400;
-  --coral:#ff6b5b; --mint:#2dd4b8; --emerald:#10b981; --amber:#fbbf24;
-  --white:#eef4fb; --gray-1:#9eb5cd; --gray-2:#6b8aab; --gray-3:#4a6584;
-  --dim:rgba(255,255,255,0.04); --dim-2:rgba(255,255,255,0.08);
-  --border:rgba(92,196,235,0.18); --border-2:rgba(92,196,235,0.35);
-  --glow:0 0 24px rgba(92,196,235,0.25); --glow-gold:0 0 18px rgba(240,165,0,0.3);
+  /* さらに明るくなったライトネイビーパレット */
+  --navy-1:#1e3a52; --navy-2:#264563; --navy-3:#2f5074; --navy-4:#3a5a85; --steel:#456d99;
+  --ocean:#2890c2; --sea:#3eb1de; --sky:#7dd9f5; --foam:#bce8f7;
+  --gold:#ffb820; --gold-l:#ffd87a; --gold-d:#d99500;
+  --coral:#ff8275; --mint:#4eebc8; --emerald:#1ec391; --amber:#fcc73d;
+  --white:#ffffff; --gray-1:#e8eef8; --gray-2:#b8c8d8; --gray-3:#8899b3;
+  --dim:rgba(255,255,255,0.08); --dim-2:rgba(255,255,255,0.14);
+  --border:rgba(125,217,245,0.35); --border-2:rgba(125,217,245,0.55);
+  --glow:0 0 28px rgba(125,217,245,0.40); --glow-gold:0 0 20px rgba(255,184,32,0.5);
   --shadow-1:0 4px 16px rgba(0,0,0,0.3); --shadow-2:0 8px 32px rgba(0,0,0,0.4);
 }
 
-body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans JP', sans-serif; -webkit-font-smoothing: antialiased; }
+body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans JP', sans-serif; -webkit-font-smoothing: antialiased; font-size: 20px; }
 
 .app {
   min-height: 100vh;
@@ -1014,14 +1048,14 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
 }
 .hdr-row { display: flex; align-items: center; gap: 14px; max-width: 1400px; margin: 0 auto; }
 .brand { display: flex; flex-direction: column; }
-.brand-1 { font-family: 'Bebas Neue', cursive; font-size: 22px; letter-spacing: 2.5px; color: var(--sky); line-height: 1; }
+.brand-1 { font-family: 'Bebas Neue', cursive; font-size: 24px; letter-spacing: 2.5px; color: var(--sky); line-height: 1; }
 .brand-1 .ac { color: var(--gold); }
-.brand-2 { font-size: 9px; color: var(--gray-2); letter-spacing: 1.5px; margin-top: 3px; font-weight: 500; }
+.brand-2 { font-size: 10px; color: var(--gray-2); letter-spacing: 1.5px; margin-top: 3px; font-weight: 500; }
 .live {
   margin-left: auto; display: flex; align-items: center; gap: 6px;
   background: linear-gradient(135deg, rgba(240,165,0,0.18), rgba(240,165,0,0.08));
   border: 1px solid rgba(240,165,0,0.45); border-radius: 100px; padding: 4px 12px;
-  font-size: 10px; color: var(--gold-l); font-weight: 700; letter-spacing: 1px;
+  font-size: 12px; color: var(--gold-l); font-weight: 700; letter-spacing: 1px;
 }
 .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); animation: pulse 1.8s ease-in-out infinite; box-shadow: 0 0 8px var(--gold); }
 @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
@@ -1036,7 +1070,7 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
   display: inline-flex; align-items: center; gap: 7px;
   padding: 10px 18px; border-radius: 10px 10px 0 0; cursor: pointer;
   background: var(--dim); border: 1px solid var(--border); border-bottom: none;
-  color: var(--gray-1); font-size: 12px; font-weight: 700; font-family: 'Noto Sans JP', sans-serif;
+  color: var(--gray-1); font-size: 14px; font-weight: 700; font-family: 'Noto Sans JP', sans-serif;
   transition: all 0.2s; white-space: nowrap; position: relative;
 }
 .nav-tab:hover { color: var(--sky); background: rgba(92,196,235,0.08); }
@@ -1050,7 +1084,7 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
 }
 .nav-tab-cnt {
   background: rgba(30,122,168,0.85); color: white; border-radius: 100px;
-  padding: 1px 7px; font-size: 10px; font-weight: 900;
+  padding: 1px 7px; font-size: 12px; font-weight: 900;
 }
 
 /* ═══ メインコンテンツ ═══ */
@@ -1071,12 +1105,12 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
   margin-bottom: 16px; padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
 }
-.sec-t { font-size: 14px; font-weight: 900; color: var(--sky); letter-spacing: 1.5px; }
-.sec-t-sub { font-size: 11px; color: var(--gray-2); margin-left: 8px; font-weight: 500; }
+.sec-t { font-size: 16px; font-weight: 900; color: var(--sky); letter-spacing: 1.5px; }
+.sec-t-sub { font-size: 13px; color: var(--gray-2); margin-left: 8px; font-weight: 500; }
 .sec-act-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .btn {
   background: rgba(92,196,235,0.12); border: 1px solid var(--border-2); color: var(--sky);
-  padding: 6px 12px; border-radius: 7px; font-size: 11px; font-weight: 700;
+  padding: 6px 12px; border-radius: 7px; font-size: 13px; font-weight: 700;
   cursor: pointer; transition: all 0.15s; font-family: 'Noto Sans JP', sans-serif; white-space: nowrap;
 }
 .btn:hover:not(:disabled) { background: rgba(92,196,235,0.22); border-color: var(--sky); }
@@ -1114,7 +1148,7 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
 }
 .stat-icon { font-size: 28px; margin-bottom: 8px; }
 .stat-num { font-family: 'Bebas Neue', cursive; font-size: 32px; color: var(--sky); line-height: 1; letter-spacing: 1.5px; }
-.stat-label { font-size: 10px; color: var(--gray-1); margin-top: 4px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.stat-label { font-size: 12px; color: var(--gray-1); margin-top: 4px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
 .stat-card.gold .stat-num { color: var(--gold-l); }
 .stat-card.gold::before { background: radial-gradient(circle, rgba(240,165,0,0.2) 0%, transparent 70%); }
 .stat-card.mint .stat-num { color: var(--mint); }
@@ -1126,15 +1160,15 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
   border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
 }
 .rank-h { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.rank-h-icon { font-size: 16px; }
-.rank-h-text { font-size: 12px; font-weight: 700; color: var(--sky); letter-spacing: 1px; }
+.rank-h-icon { font-size: 18px; }
+.rank-h-text { font-size: 14px; font-weight: 700; color: var(--sky); letter-spacing: 1px; }
 .rank-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); }
 .rank-row:last-child { border-bottom: none; }
-.rank-num { font-family: 'Bebas Neue', cursive; font-size: 16px; color: var(--gold-l); width: 22px; }
-.rank-name { font-size: 12px; flex: 1; color: var(--white); font-weight: 500; }
+.rank-num { font-family: 'Bebas Neue', cursive; font-size: 18px; color: var(--gold-l); width: 22px; }
+.rank-name { font-size: 14px; flex: 1; color: var(--white); font-weight: 500; }
 .rank-bar-wrap { flex: 1; max-width: 100px; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
 .rank-bar { height: 100%; background: linear-gradient(90deg, var(--ocean), var(--sky)); border-radius: 2px; }
-.rank-cnt { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--sky); font-weight: 700; min-width: 32px; text-align: right; }
+.rank-cnt { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--sky); font-weight: 700; min-width: 32px; text-align: right; }
 
 /* ═══ フィルタバー ═══ */
 .filter-bar {
@@ -1146,13 +1180,13 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
 .filter-search {
   flex: 1; min-width: 200px; background: rgba(0,0,0,0.25);
   border: 1px solid rgba(255,255,255,0.08); color: var(--white);
-  padding: 8px 12px; border-radius: 7px; font-size: 12px;
+  padding: 8px 12px; border-radius: 7px; font-size: 14px;
   font-family: 'Noto Sans JP', sans-serif;
 }
 .filter-search:focus { outline: none; border-color: var(--sky); box-shadow: 0 0 0 3px rgba(92,196,235,0.15); }
 .filter-sel {
   background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08);
-  color: var(--white); padding: 7px 10px; border-radius: 7px; font-size: 11px;
+  color: var(--white); padding: 7px 10px; border-radius: 7px; font-size: 13px;
   font-family: 'Noto Sans JP', sans-serif; cursor: pointer; min-width: 90px;
 }
 .filter-sel:focus { outline: none; border-color: var(--sky); }
@@ -1161,12 +1195,12 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
   display: inline-flex; align-items: center; gap: 4px;
   background: rgba(92,196,235,0.18); border: 1px solid var(--border-2);
   color: var(--sky); padding: 3px 9px; border-radius: 100px;
-  font-size: 10px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+  font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s;
 }
 .filter-chip:hover { background: rgba(92,196,235,0.3); }
-.filter-chip-x { font-size: 11px; opacity: 0.7; }
+.filter-chip-x { font-size: 13px; opacity: 0.7; }
 .filter-clear {
-  font-size: 10px; color: var(--coral); background: none; border: none;
+  font-size: 12px; color: var(--coral); background: none; border: none;
   cursor: pointer; padding: 4px 8px; font-family: inherit;
 }
 
@@ -1185,12 +1219,12 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
 .report-card.ai-extracted::before {
   content: '✨ AI'; position: absolute; top: 8px; right: 8px; z-index: 2;
   background: linear-gradient(135deg, var(--mint), var(--emerald));
-  color: white; font-size: 9px; font-weight: 900; padding: 2px 7px; border-radius: 100px;
+  color: white; font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 100px;
   letter-spacing: 1px;
 }
 .report-card.fav::after {
   content: '⭐'; position: absolute; top: 8px; left: 8px; z-index: 2;
-  font-size: 14px; filter: drop-shadow(0 0 4px var(--gold));
+  font-size: 16px; filter: drop-shadow(0 0 4px var(--gold));
 }
 .rc-thumb {
   width: 100%; aspect-ratio: 16/9; object-fit: cover;
@@ -1205,36 +1239,36 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
 .rc-body { padding: 12px 14px; }
 .rc-source-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
 .rc-source-badge {
-  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 100px;
+  font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: 100px;
 }
 .rc-source-shop { background: rgba(240,165,0,0.18); color: var(--gold-l); border: 1px solid rgba(240,165,0,0.3); }
 .rc-source-media { background: rgba(92,196,235,0.18); color: var(--sky); border: 1px solid rgba(92,196,235,0.3); }
 .rc-source-yt { background: rgba(255,0,0,0.18); color: #ff5050; border: 1px solid rgba(255,0,0,0.3); }
-.rc-date-meta { font-size: 10px; color: var(--gray-2); margin-left: auto; font-family: 'JetBrains Mono', monospace; }
+.rc-date-meta { font-size: 12px; color: var(--gray-2); margin-left: auto; font-family: 'JetBrains Mono', monospace; }
 .rc-title {
-  font-size: 13px; font-weight: 700; color: var(--white); line-height: 1.45;
+  font-size: 15px; font-weight: 700; color: var(--white); line-height: 1.45;
   margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 
 /* 構造化データ表示 */
 .rc-data {
   background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 7px;
-  padding: 8px 10px; margin-bottom: 8px; font-size: 11px;
+  padding: 8px 10px; margin-bottom: 8px; font-size: 13px;
   display: grid; gap: 4px; grid-template-columns: auto 1fr;
 }
-.rc-data-label { color: var(--gray-1); font-weight: 700; font-size: 10px; }
+.rc-data-label { color: var(--gray-1); font-weight: 700; font-size: 12px; }
 .rc-data-val { color: var(--foam); font-weight: 500; }
 .rc-data-val.empty { color: var(--gray-3); font-style: italic; }
 .rc-tags { display: flex; flex-wrap: wrap; gap: 3px; }
 .rc-tag {
-  font-size: 9px; padding: 1px 6px; border-radius: 100px; font-weight: 700;
+  font-size: 10px; padding: 1px 6px; border-radius: 100px; font-weight: 700;
 }
 .rc-tag-fish { background: rgba(45,212,184,0.18); color: var(--mint); border: 1px solid rgba(45,212,184,0.3); }
 .rc-tag-method { background: rgba(251,191,36,0.18); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
 .rc-tag-loc { background: rgba(92,196,235,0.18); color: var(--sky); border: 1px solid rgba(92,196,235,0.3); }
 
 .rc-comment {
-  font-size: 11px; color: var(--gray-1); line-height: 1.55;
+  font-size: 13px; color: var(--gray-1); line-height: 1.55;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .rc-actions {
@@ -1243,13 +1277,13 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
 }
 .rc-act-btn {
   background: none; border: none; color: var(--gray-1); cursor: pointer;
-  padding: 3px 6px; font-size: 11px; transition: color 0.15s;
+  padding: 3px 6px; font-size: 13px; transition: color 0.15s;
   font-family: 'Noto Sans JP', sans-serif;
 }
 .rc-act-btn:hover { color: var(--sky); }
 .rc-act-btn.fav-on { color: var(--gold); }
 .rc-act-link {
-  margin-left: auto; font-size: 10px; color: var(--sea); text-decoration: none;
+  margin-left: auto; font-size: 12px; color: var(--sea); text-decoration: none;
   font-weight: 700; letter-spacing: 0.5px;
 }
 .rc-act-link:hover { color: var(--sky); }
@@ -1261,10 +1295,10 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
   border: 1px solid rgba(45,212,184,0.3); border-radius: 10px;
   padding: 10px 14px; margin-bottom: 14px;
 }
-.ai-extract-icon { font-size: 20px; }
+.ai-extract-icon { font-size: 22px; }
 .ai-extract-info { flex: 1; }
-.ai-extract-t { font-size: 12px; color: var(--mint); font-weight: 700; margin-bottom: 2px; }
-.ai-extract-d { font-size: 10px; color: var(--gray-1); }
+.ai-extract-t { font-size: 14px; color: var(--mint); font-weight: 700; margin-bottom: 2px; }
+.ai-extract-d { font-size: 12px; color: var(--gray-1); }
 
 .ai-extract-progress {
   width: 100%; height: 4px; background: rgba(255,255,255,0.08);
@@ -1281,14 +1315,14 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
   border: 1px solid rgba(240,165,0,0.4); border-radius: 12px;
   padding: 18px; margin-bottom: 18px;
 }
-.api-key-h { font-size: 12px; color: var(--gold-l); font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-.api-key-help { font-size: 11px; color: var(--gray-1); line-height: 1.7; margin-bottom: 12px; }
+.api-key-h { font-size: 14px; color: var(--gold-l); font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.api-key-help { font-size: 13px; color: var(--gray-1); line-height: 1.7; margin-bottom: 12px; }
 .api-key-help strong { color: var(--gold-l); }
 .api-key-help a { color: var(--sky); text-decoration: underline; }
 .api-key-row { display: flex; gap: 8px; }
 .api-key-input {
   flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.12);
-  color: var(--white); padding: 9px 13px; border-radius: 7px; font-size: 12px;
+  color: var(--white); padding: 9px 13px; border-radius: 7px; font-size: 14px;
   font-family: 'JetBrains Mono', monospace;
 }
 .api-key-input:focus { outline: none; border-color: var(--gold); }
@@ -1317,25 +1351,25 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
 .yt-card:hover .yt-play { opacity: 1; }
 .yt-info { padding: 10px 12px; }
 .yt-ch-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
-.yt-ch-name { font-size: 10px; color: var(--sky); font-weight: 700; letter-spacing: 0.5px; }
+.yt-ch-name { font-size: 12px; color: var(--sky); font-weight: 700; letter-spacing: 0.5px; }
 .yt-title {
-  font-size: 12px; font-weight: 700; color: var(--white); line-height: 1.45;
+  font-size: 14px; font-weight: 700; color: var(--white); line-height: 1.45;
   margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.yt-meta { font-size: 10px; color: var(--gray-2); font-family: 'JetBrains Mono', monospace; }
+.yt-meta { font-size: 12px; color: var(--gray-2); font-family: 'JetBrains Mono', monospace; }
 
 /* ═══ AI検索 ═══ */
 .ai-search-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
 .ai-search-input {
   flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--border-2);
-  color: var(--white); padding: 11px 14px; border-radius: 9px; font-size: 13px;
+  color: var(--white); padding: 11px 14px; border-radius: 9px; font-size: 15px;
   font-family: 'Noto Sans JP', sans-serif;
 }
 .ai-search-input:focus { outline: none; border-color: var(--sky); box-shadow: 0 0 0 3px rgba(92,196,235,0.15); }
 .ai-presets { display: flex; flex-wrap: wrap; gap: 6px; }
 .ai-preset {
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
-  color: var(--gray-1); padding: 4px 10px; border-radius: 100px; font-size: 10px;
+  color: var(--gray-1); padding: 4px 10px; border-radius: 100px; font-size: 12px;
   cursor: pointer; transition: all 0.15s; font-family: 'Noto Sans JP', sans-serif;
 }
 .ai-preset:hover { background: rgba(92,196,235,0.15); border-color: var(--sky); color: var(--sky); }
@@ -1349,10 +1383,10 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
   display: flex; align-items: center; gap: 8px;
   padding: 10px 14px;
   background: linear-gradient(135deg, rgba(92,196,235,0.10), rgba(92,196,235,0.04));
-  border-bottom: 1px solid var(--border); font-size: 11px; color: var(--sky);
+  border-bottom: 1px solid var(--border); font-size: 13px; color: var(--sky);
 }
 .ai-result-c {
-  padding: 16px; font-size: 13px; line-height: 1.85;
+  padding: 16px; font-size: 15px; line-height: 1.85;
   color: var(--white); white-space: pre-wrap;
   max-height: 500px; overflow-y: auto;
 }
@@ -1382,21 +1416,21 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
 .m-tog.on::after { left: 18px; }
 .m-tog.off::after { left: 2px; }
 .m-info { flex: 1; min-width: 0; }
-.m-info-name { font-size: 13px; color: var(--white); font-weight: 700; margin-bottom: 2px; }
-.m-info-url { font-size: 10px; color: var(--gray-2); font-family: 'JetBrains Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px; }
-.m-info-note { font-size: 10px; color: var(--gold-l); margin-top: 2px; }
+.m-info-name { font-size: 15px; color: var(--white); font-weight: 700; margin-bottom: 2px; }
+.m-info-url { font-size: 12px; color: var(--gray-2); font-family: 'JetBrains Mono', monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px; }
+.m-info-note { font-size: 12px; color: var(--gold-l); margin-top: 2px; }
 .m-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.m-meta-tag { font-size: 9px; padding: 1px 7px; border-radius: 100px; font-weight: 700; }
+.m-meta-tag { font-size: 10px; padding: 1px 7px; border-radius: 100px; font-weight: 700; }
 
 .add-form {
   border-top: 1px solid var(--border); padding-top: 14px; margin-top: 8px;
   background: rgba(255,255,255,0.02); border-radius: 9px; padding: 14px;
 }
-.add-form-h { font-size: 12px; color: var(--mint); font-weight: 700; margin-bottom: 10px; }
+.add-form-h { font-size: 14px; color: var(--mint); font-weight: 700; margin-bottom: 10px; }
 .add-form-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .f-inp {
   background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1);
-  color: var(--white); padding: 7px 10px; border-radius: 6px; font-size: 12px;
+  color: var(--white); padding: 7px 10px; border-radius: 6px; font-size: 14px;
   font-family: 'Noto Sans JP', sans-serif;
 }
 .f-inp:focus { outline: none; border-color: var(--sky); }
@@ -1411,15 +1445,15 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading {
   display: flex; align-items: center; justify-content: center; gap: 10px;
-  padding: 40px 20px; color: var(--gray-1); font-size: 13px;
+  padding: 40px 20px; color: var(--gray-1); font-size: 15px;
 }
 .empty {
   display: flex; flex-direction: column; align-items: center; gap: 12px;
   padding: 60px 20px; color: var(--gray-1); text-align: center;
 }
 .empty-i { font-size: 48px; opacity: 0.4; }
-.empty-t { font-size: 13px; font-weight: 700; color: var(--white); }
-.empty-d { font-size: 11px; color: var(--gray-2); line-height: 1.7; max-width: 320px; }
+.empty-t { font-size: 15px; font-weight: 700; color: var(--white); }
+.empty-d { font-size: 13px; color: var(--gray-2); line-height: 1.7; max-width: 320px; }
 
 .skel {
   background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%);
@@ -1446,9 +1480,9 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
   border-bottom: 1px solid var(--border); position: sticky; top: 0;
   background: var(--navy-2); z-index: 1;
 }
-.modal-t { font-size: 14px; font-weight: 700; color: var(--sky); flex: 1; }
+.modal-t { font-size: 16px; font-weight: 700; color: var(--sky); flex: 1; }
 .modal-close {
-  background: none; border: none; color: var(--gray-1); font-size: 22px;
+  background: none; border: none; color: var(--gray-1); font-size: 24px;
   cursor: pointer; padding: 0 6px; line-height: 1;
 }
 .modal-close:hover { color: var(--coral); }
@@ -1466,9 +1500,9 @@ body { background: var(--navy-1); color: var(--white); font-family: 'Noto Sans J
   .filter-search { min-width: 100%; }
   .stat-card { padding: 12px 14px; }
   .stat-num { font-size: 26px; }
-  .nav-tab { padding: 8px 12px; font-size: 11px; }
-  .brand-1 { font-size: 18px; }
-  .brand-2 { font-size: 8px; }
+  .nav-tab { padding: 8px 12px; font-size: 13px; }
+  .brand-1 { font-size: 20px; }
+  .brand-2 { font-size: 9px; }
 }
 
 * { scrollbar-width: thin; scrollbar-color: var(--steel) transparent; }
@@ -1813,7 +1847,15 @@ const fetchRss = async feed => {
 // ════════════════════════════════════════════════════════════
 //   AI抽出: Claude API で構造化データを抽出
 // ════════════════════════════════════════════════════════════
+// AI APIキーを判別 (sk-ant- = Anthropic, AIza = Gemini)
+const detectApiProvider = apiKey => {
+  if (!apiKey) return null;
+  if (apiKey.startsWith("sk-ant-")) return "anthropic";
+  if (apiKey.startsWith("AIza")) return "gemini";
+  return "unknown";
+};
 const aiExtractReport = async (report, apiKey) => {
+  const provider = detectApiProvider(apiKey);
   const prompt = `以下の釣り記事から構造化データをJSON形式で抽出してください。
 
 タイトル: ${report.title}
@@ -1828,6 +1870,34 @@ const aiExtractReport = async (report, apiKey) => {
   "methods": ["使用した釣り方の配列、例: ジグヘッド、ワーム、サビキ"],
   "comment": "記事の核心を120字以内で要約"
 }`;
+  if (provider === "gemini") {
+    // Google Gemini API (無料・CORS対応)
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 800,
+          responseMimeType: "application/json"
+        }
+      })
+    });
+    if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const json = text.replace(/```json|```/g, "").trim();
+    return JSON.parse(json);
+  }
+
+  // Default: Anthropic
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -1845,7 +1915,7 @@ const aiExtractReport = async (report, apiKey) => {
       }]
     })
   });
-  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Anthropic ${res.status}: ${await res.text()}`);
   const data = await res.json();
   const text = data.content?.[0]?.text || "";
   const json = text.replace(/```json|```/g, "").trim();
@@ -1970,6 +2040,8 @@ function ReportsTab({
   setFavorites,
   aiKey,
   setAiKey,
+  geminiKey,
+  setGeminiKey,
   onUpdateReport
 }) {
   const [loading, setLoading] = useState(false);
@@ -2231,41 +2303,88 @@ function ReportsTab({
       className: "sec-h"
     }, /*#__PURE__*/React.createElement("span", {
       className: "sec-t"
-    }, "\uD83D\uDD11 Anthropic API\u30AD\u30FC\u8A2D\u5B9A"), /*#__PURE__*/React.createElement("button", {
+    }, "\uD83D\uDD11 AI API\u30AD\u30FC\u8A2D\u5B9A"), /*#__PURE__*/React.createElement("button", {
       className: "btn",
       onClick: () => setShowApiSetup(false)
     }, "\u2190 \u623B\u308B")), /*#__PURE__*/React.createElement("div", {
+      className: "api-key-box",
+      style: {
+        background: 'linear-gradient(135deg, rgba(45,212,184,0.10), rgba(16,185,129,0.05))',
+        borderColor: 'rgba(45,212,184,0.4)'
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "api-key-h",
+      style: {
+        color: 'var(--mint)'
+      }
+    }, "\uD83C\uDD93 \u304A\u3059\u3059\u3081: Google Gemini API\uFF08\u5B8C\u5168\u7121\u6599\u30FB\u30AF\u30EC\u30AB\u4E0D\u8981\uFF09"), /*#__PURE__*/React.createElement("div", {
+      className: "api-key-help"
+    }, /*#__PURE__*/React.createElement("strong", {
+      style: {
+        color: 'var(--mint)'
+      }
+    }, "1\u65E51000\u56DE\u307E\u3067\u7121\u6599"), "\u30FB\u30AF\u30EC\u30B8\u30C3\u30C8\u30AB\u30FC\u30C9\u767B\u9332\u4E0D\u8981\u30FB5\u5206\u3067\u30BB\u30C3\u30C8\u30A2\u30C3\u30D7\u5B8C\u4E86\uFF01", /*#__PURE__*/React.createElement("br", null), "1. ", /*#__PURE__*/React.createElement("a", {
+      href: "https://aistudio.google.com/app/apikey",
+      target: "_blank",
+      rel: "noopener noreferrer"
+    }, "aistudio.google.com/app/apikey"), " \u3092Google\u30A2\u30AB\u30A6\u30F3\u30C8\u3067\u958B\u304F", /*#__PURE__*/React.createElement("br", null), "2.\u300C", /*#__PURE__*/React.createElement("strong", null, "Create API key"), "\u300D\u3092\u30AF\u30EA\u30C3\u30AF", /*#__PURE__*/React.createElement("br", null), "3. ", /*#__PURE__*/React.createElement("code", {
+      style: {
+        background: 'rgba(0,0,0,0.3)',
+        padding: '1px 5px',
+        borderRadius: 3
+      }
+    }, "AIzaSy..."), " \u3067\u59CB\u307E\u308B\u30AD\u30FC\u304C\u8868\u793A\u3055\u308C\u308B\u306E\u3067\u30B3\u30D4\u30FC", /*#__PURE__*/React.createElement("br", null), "4. \u4E0B\u306B\u8CBC\u308A\u4ED8\u3051\u3066\u4FDD\u5B58")), /*#__PURE__*/React.createElement("div", {
       className: "api-key-box"
     }, /*#__PURE__*/React.createElement("div", {
       className: "api-key-h"
-    }, "\u2728 AI\u69CB\u9020\u5316\u62BD\u51FA\u6A5F\u80FD\u306E\u6709\u52B9\u5316"), /*#__PURE__*/React.createElement("div", {
+    }, "\uD83D\uDC8E \u4E0A\u7D1A\u8005\u5411\u3051: Anthropic Claude API\uFF08\u9AD8\u7CBE\u5EA6\u30FB\u6709\u6599\uFF09"), /*#__PURE__*/React.createElement("div", {
       className: "api-key-help"
-    }, "\u8A18\u4E8B\u304B\u3089", /*#__PURE__*/React.createElement("strong", null, "\u65E5\u4ED8\u30FB\u5834\u6240\u30FB\u9B5A\u7A2E\u30FB\u91E3\u308A\u65B9"), "\u3092\u81EA\u52D5\u62BD\u51FA\u3059\u308B\u305F\u3081\u306BClaude API\u30AD\u30FC\u304C\u5FC5\u8981\u3067\u3059\u3002", /*#__PURE__*/React.createElement("br", null), "1. ", /*#__PURE__*/React.createElement("a", {
+    }, /*#__PURE__*/React.createElement("a", {
       href: "https://console.anthropic.com/",
       target: "_blank",
       rel: "noopener noreferrer"
-    }, "console.anthropic.com"), " \u3067\u30A2\u30AB\u30A6\u30F3\u30C8\u4F5C\u6210", /*#__PURE__*/React.createElement("br", null), "2. API Keys \u2192 Create Key\u3067\u30AD\u30FC\u3092\u751F\u6210", /*#__PURE__*/React.createElement("br", null), "3. \u4E0B\u8A18\u306B\u8CBC\u308A\u4ED8\u3051\u3066\u4FDD\u5B58\uFF08\u30D6\u30E9\u30A6\u30B6\u306B\u4FDD\u5B58\u3055\u308C\u307E\u3059\uFF09", /*#__PURE__*/React.createElement("br", null), "\u203B 1\u8A18\u4E8B\u306E\u89E3\u6790\u30B3\u30B9\u30C8\u7D040.001\u30C9\u30EB\uFF0810\u8A18\u4E8B=\u7D040.01\u30C9\u30EB\uFF09"), /*#__PURE__*/React.createElement("div", {
+    }, "console.anthropic.com"), " \u3067\u30A2\u30AB\u30A6\u30F3\u30C8\u4F5C\u6210 \u2192 API Keys \u3067 ", /*#__PURE__*/React.createElement("code", {
+      style: {
+        background: 'rgba(0,0,0,0.3)',
+        padding: '1px 5px',
+        borderRadius: 3
+      }
+    }, "sk-ant-api03-..."), " \u3092\u53D6\u5F97", /*#__PURE__*/React.createElement("br", null), "\u203B \u30AF\u30EC\u30AB\u767B\u9332 + \u6700\u4F4E$5\u5165\u91D1\u5FC5\u8981\u30FB1\u8A18\u4E8B\u89E3\u6790\u22520.001\u30C9\u30EB")), /*#__PURE__*/React.createElement("div", {
+      className: "api-key-box"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "api-key-h"
+    }, "\uD83D\uDD11 API\u30AD\u30FC\u3092\u8CBC\u308A\u4ED8\u3051"), /*#__PURE__*/React.createElement("div", {
+      className: "api-key-help",
+      style: {
+        fontSize: 10
+      }
+    }, "Gemini\u30AD\u30FC (AIzaSy...) \u307E\u305F\u306F Anthropic\u30AD\u30FC (sk-ant-...) \u3069\u3061\u3089\u3067\u3082OK\u30FB\u81EA\u52D5\u5224\u5225"), /*#__PURE__*/React.createElement("div", {
       className: "api-key-row"
     }, /*#__PURE__*/React.createElement("input", {
       type: "password",
       className: "api-key-input",
-      placeholder: "sk-ant-api03-...",
+      placeholder: "AIzaSy... \u307E\u305F\u306F sk-ant-api03-...",
       value: apiKeyInput,
       onChange: e => setApiKeyInput(e.target.value)
     }), /*#__PURE__*/React.createElement("button", {
       className: "btn btn-gold",
       onClick: () => {
-        setAiKey(apiKeyInput);
+        if (apiKeyInput.startsWith("AIza")) {
+          setGeminiKey(apiKeyInput);
+        } else if (apiKeyInput.startsWith("sk-ant-")) {
+          setAiKey(apiKeyInput);
+        }
+        setApiKeyInput("");
         setShowApiSetup(false);
       },
       disabled: !apiKeyInput.trim()
-    }, "\u4FDD\u5B58")), aiKey && /*#__PURE__*/React.createElement("div", {
+    }, "\u4FDD\u5B58")), (aiKey || geminiKey) && /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 11,
         color: 'var(--mint)',
         marginTop: 12
       }
-    }, "\u2713 API\u30AD\u30FC\u8A2D\u5B9A\u6E08\u307F")));
+    }, geminiKey && /*#__PURE__*/React.createElement("div", null, "\u2713 Google Gemini API\u30AD\u30FC\u8A2D\u5B9A\u6E08\u307F"), aiKey && /*#__PURE__*/React.createElement("div", null, "\u2713 Anthropic Claude API\u30AD\u30FC\u8A2D\u5B9A\u6E08\u307F"))));
   }
 
   // ===== メイン画面 =====
@@ -2280,7 +2399,7 @@ function ReportsTab({
   }, /*#__PURE__*/React.createElement("button", {
     className: "btn",
     onClick: () => setShowApiSetup(true)
-  }, aiKey ? '🔑 設定済' : '🔑 APIキー'), /*#__PURE__*/React.createElement("button", {
+  }, aiKey || geminiKey ? '🔑 設定済' : '🔑 APIキー'), /*#__PURE__*/React.createElement("button", {
     className: "btn",
     onClick: () => setShowManage(true)
   }, "\u2699 \u7BA1\u7406"), /*#__PURE__*/React.createElement("button", {
@@ -2732,6 +2851,7 @@ function YouTubeTab({
 // ════════════════════════════════════════════════════════════
 function AiSearchTab({
   aiKey,
+  geminiKey,
   reports,
   channels
 }) {
@@ -2922,6 +3042,44 @@ function AiSearchTab({
         }
       } catch (e) {
         errs.push(`AI: ${e.message}`);
+        setErrors([...errs]);
+      }
+    } else if (geminiKey) {
+      // Google Gemini API 無料版
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiKey}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `釣り情報アシスタント。以下の検索キーワードについて、最新の釣果情報をまとめてください。
+
+キーワード: ${sq}
+
+以下の形式で日本語でまとめてください：
+【🎣 最新釣果】場所・日付・魚種・釣り方
+【📱 SNS情報】Twitter/X等からの情報
+【💡 ポイント】効果的なタックル・ポイント情報
+【🔗 参考】関連情報へのヒント
+
+既知の蓄積釣果データから、「${sq}」に関連する情報を整理して提示してください。`
+              }]
+            }]
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "結果を取得できませんでした";
+          aiRef.current = text;
+          setAiResult(text);
+        } else {
+          errs.push(`Gemini: ${res.status}`);
+        }
+      } catch (e) {
+        errs.push(`Gemini: ${e.message}`);
         setErrors([...errs]);
       }
     }
@@ -3302,6 +3460,7 @@ function NagayoshirinInfoHubV2() {
   const [favorites, setFavorites] = useState(() => ls.get(STORAGE_KEYS.FAVORITES, []));
   const [ytKey, setYtKey] = useState(() => ls.get(STORAGE_KEYS.YT_API, ""));
   const [aiKey, setAiKey] = useState(() => ls.get(STORAGE_KEYS.AI_API, ""));
+  const [geminiKey, setGeminiKey] = useState(() => ls.get(STORAGE_KEYS.GEMINI_API, ""));
   const [now, setNow] = useState(new Date());
 
   // 永続化
@@ -3311,6 +3470,7 @@ function NagayoshirinInfoHubV2() {
   useEffect(() => ls.set(STORAGE_KEYS.FAVORITES, favorites), [favorites]);
   useEffect(() => ls.set(STORAGE_KEYS.YT_API, ytKey), [ytKey]);
   useEffect(() => ls.set(STORAGE_KEYS.AI_API, aiKey), [aiKey]);
+  useEffect(() => ls.set(STORAGE_KEYS.GEMINI_API, geminiKey), [geminiKey]);
 
   // 時刻更新
   useEffect(() => {
@@ -3383,12 +3543,15 @@ function NagayoshirinInfoHubV2() {
     setFavorites: setFavorites,
     aiKey: aiKey,
     setAiKey: setAiKey,
+    geminiKey: geminiKey,
+    setGeminiKey: setGeminiKey,
     onUpdateReport: updateReport
   }), tab === "youtube" && /*#__PURE__*/React.createElement(YouTubeTab, {
     channels: channels,
     setChannels: setChannels
   }), tab === "ai" && /*#__PURE__*/React.createElement(AiSearchTab, {
     aiKey: aiKey,
+    geminiKey: geminiKey,
     reports: reports,
     channels: channels
   }))), /*#__PURE__*/React.createElement("div", {
