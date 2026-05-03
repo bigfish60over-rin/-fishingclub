@@ -2052,6 +2052,7 @@ function ReportsTab({
   const [filterSpecies, setFilterSpecies] = useState("");
   const [filterPref, setFilterPref] = useState("");
   const [filterShop, setFilterShop] = useState("");
+  const [filterMethod, setFilterMethod] = useState("");
   const [filterPeriod, setFilterPeriod] = useState("all");
   const [sort, setSort] = useState("newest");
   const [detail, setDetail] = useState(null);
@@ -2115,13 +2116,17 @@ function ReportsTab({
     }
     if (filterSpecies) out = out.filter(r => r.species?.includes(filterSpecies));
     if (filterPref) out = out.filter(r => r.prefecture === filterPref);
+    if (filterMethod) out = out.filter(r => r.methods?.includes(filterMethod));
     if (filterShop) out = out.filter(r => r.sourceId === filterShop);
     if (filterPeriod !== "all") {
       const now = Date.now();
       const days = {
         "1d": 1,
+        "3d": 3,
         "7d": 7,
-        "30d": 30
+        "14d": 14,
+        "30d": 30,
+        "90d": 90
       }[filterPeriod];
       const limit = now - days * 86400000;
       out = out.filter(r => new Date(r.publishedAt).getTime() >= limit);
@@ -2130,12 +2135,42 @@ function ReportsTab({
     if (sort === "newest") out.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
     if (sort === "oldest") out.sort((a, b) => new Date(a.publishedAt) - new Date(b.publishedAt));
     if (sort === "species") out.sort((a, b) => (b.species?.length || 0) - (a.species?.length || 0));
+    if (sort === "methods") out.sort((a, b) => (b.methods?.length || 0) - (a.methods?.length || 0));
     return out;
-  }, [reports, search, filterSpecies, filterPref, filterShop, filterPeriod, sort]);
+  }, [reports, search, filterSpecies, filterPref, filterMethod, filterShop, filterPeriod, sort]);
 
-  // 利用可能な選択肢
-  const availSpecies = useMemo(() => [...new Set(reports.flatMap(r => r.species || []))].sort(), [reports]);
-  const availPrefs = useMemo(() => [...new Set(reports.map(r => r.prefecture).filter(Boolean))].sort(), [reports]);
+  // 利用可能な選択肢（記事にあるものを優先 + 全リストを補完）
+  // 記事に含まれる都道府県・魚種を最初に、その後に47都道府県・主要魚種を全部表示
+  const availSpecies = useMemo(() => {
+    const inReports = [...new Set(reports.flatMap(r => r.species || []))];
+    // 記事に出現している魚種を優先 + 主要魚種リストから全て補完
+    const popular = ["アジ", "メバル", "カサゴ", "シーバス", "クロダイ", "マダイ", "ヒラメ", "マゴチ", "アオリイカ", "コウイカ", "タチウオ", "ブリ", "ハマチ", "ワラサ", "イナダ", "ヒラマサ", "カンパチ", "サバ", "イワシ", "サワラ", "サゴシ", "カマス", "アイナメ", "ソイ", "クジメ", "メジナ", "イサキ", "シマアジ", "ウマヅラハギ", "カワハギ", "キス", "ハゼ", "アナゴ", "メゴチ", "ホウボウ", "サヨリ", "ボラ", "ニベ", "イシモチ", "クロソイ", "アラ", "クエ", "ハタ", "アコウ", "キジハタ", "オオモンハタ", "アコウダイ", "オニカサゴ",
+    // 渓流・湖
+    "ニジマス", "ヤマメ", "アマゴ", "イワナ", "サクラマス", "ヒメマス", "アメマス", "ブラックバス", "スモールマウスバス", "ナマズ", "ライギョ", "ワカサギ", "ヘラブナ", "コイ", "フナ", "ウグイ", "オイカワ", "ハス",
+    // イカ類
+    "ヤリイカ", "スルメイカ", "ヒイカ", "ケンサキイカ", "モンゴウイカ", "タコ", "マダコ", "イイダコ"];
+    const set = new Set([...inReports, ...popular]);
+    return [...set].sort();
+  }, [reports]);
+  const availPrefs = useMemo(() => {
+    // 47都道府県すべて表示（記事にあるものは [N件] を表示）
+    const counts = {};
+    reports.forEach(r => {
+      if (r.prefecture) counts[r.prefecture] = (counts[r.prefecture] || 0) + 1;
+    });
+    return PREFECTURES.map(p => ({
+      name: p,
+      count: counts[p] || 0,
+      hasData: !!counts[p]
+    }));
+  }, [reports]);
+
+  // 釣り方フィルター用
+  const availMethods = useMemo(() => {
+    const inReports = [...new Set(reports.flatMap(r => r.methods || []))];
+    const popular = ["アジング", "メバリング", "エギング", "ジギング", "ショアジギング", "タイラバ", "ティップラン", "シーバスゲーム", "ヒラメ釣り", "サビキ", "投げ釣り", "ちょい投げ", "胴突き", "落とし込み", "ウキフカセ", "カゴ釣り", "ぶっこみ釣り", "穴釣り", "探り釣り", "ライトゲーム", "ロックフィッシュ", "イカメタル", "タチウオ釣り", "ルアー", "ワーム", "ジグヘッド", "メタルジグ", "プラグ", "ミノー", "バイブレーション", "フライ", "テンカラ", "ルアーフィッシング", "餌釣り", "船釣り", "磯釣り", "防波堤", "渓流釣り", "管理釣り場", "バス釣り", "ワカサギ釣り", "鮎釣り"];
+    return [...new Set([...inReports, ...popular])].sort();
+  }, [reports]);
   const toggleFav = id => {
     setFavorites(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
@@ -2208,10 +2243,11 @@ function ReportsTab({
     setSearch("");
     setFilterSpecies("");
     setFilterPref("");
+    setFilterMethod("");
     setFilterShop("");
     setFilterPeriod("all");
   };
-  const hasFilters = search || filterSpecies || filterPref || filterShop || filterPeriod !== "all";
+  const hasFilters = search || filterSpecies || filterPref || filterMethod || filterShop || filterPeriod !== "all";
 
   // ===== 管理画面 =====
   if (showManage) {
@@ -2454,7 +2490,7 @@ function ReportsTab({
     onChange: e => setFilterSpecies(e.target.value)
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, "\u9B5A\u7A2E(\u5168\u3066)"), availSpecies.map(s => /*#__PURE__*/React.createElement("option", {
+  }, "\uD83D\uDC1F \u9B5A\u7A2E(\u5168\u3066)"), availSpecies.map(s => /*#__PURE__*/React.createElement("option", {
     key: s,
     value: s
   }, s))), /*#__PURE__*/React.createElement("select", {
@@ -2463,16 +2499,25 @@ function ReportsTab({
     onChange: e => setFilterPref(e.target.value)
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, "\u90FD\u9053\u5E9C\u770C(\u5168\u3066)"), availPrefs.map(p => /*#__PURE__*/React.createElement("option", {
-    key: p,
-    value: p
-  }, p))), /*#__PURE__*/React.createElement("select", {
+  }, "\uD83D\uDDFE \u90FD\u9053\u5E9C\u770C(\u5168\u3066)"), availPrefs.map(p => /*#__PURE__*/React.createElement("option", {
+    key: p.name,
+    value: p.name
+  }, p.name, p.hasData ? ` (${p.count})` : ''))), /*#__PURE__*/React.createElement("select", {
+    className: "filter-sel",
+    value: filterMethod,
+    onChange: e => setFilterMethod(e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "\uD83C\uDFA3 \u91E3\u308A\u65B9(\u5168\u3066)"), availMethods.map(m => /*#__PURE__*/React.createElement("option", {
+    key: m,
+    value: m
+  }, m))), /*#__PURE__*/React.createElement("select", {
     className: "filter-sel",
     value: filterShop,
     onChange: e => setFilterShop(e.target.value)
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, "\u30BD\u30FC\u30B9(\u5168\u3066)"), feeds.map(f => /*#__PURE__*/React.createElement("option", {
+  }, "\uD83D\uDCF0 \u30BD\u30FC\u30B9(\u5168\u3066)"), feeds.map(f => /*#__PURE__*/React.createElement("option", {
     key: f.id,
     value: f.id
   }, f.name))), /*#__PURE__*/React.createElement("select", {
@@ -2481,26 +2526,34 @@ function ReportsTab({
     onChange: e => setFilterPeriod(e.target.value)
   }, /*#__PURE__*/React.createElement("option", {
     value: "all"
-  }, "\u671F\u9593(\u5168\u3066)"), /*#__PURE__*/React.createElement("option", {
+  }, "\uD83D\uDCC5 \u671F\u9593(\u5168\u3066)"), /*#__PURE__*/React.createElement("option", {
     value: "1d"
   }, "\u672C\u65E5"), /*#__PURE__*/React.createElement("option", {
+    value: "3d"
+  }, "3\u65E5\u4EE5\u5185"), /*#__PURE__*/React.createElement("option", {
     value: "7d"
   }, "1\u9031\u9593"), /*#__PURE__*/React.createElement("option", {
+    value: "14d"
+  }, "2\u9031\u9593"), /*#__PURE__*/React.createElement("option", {
     value: "30d"
-  }, "1\u30F6\u6708")), /*#__PURE__*/React.createElement("select", {
+  }, "1\u30F6\u6708"), /*#__PURE__*/React.createElement("option", {
+    value: "90d"
+  }, "3\u30F6\u6708")), /*#__PURE__*/React.createElement("select", {
     className: "filter-sel",
     value: sort,
     onChange: e => setSort(e.target.value)
   }, /*#__PURE__*/React.createElement("option", {
     value: "newest"
-  }, "\u65B0\u7740\u9806"), /*#__PURE__*/React.createElement("option", {
+  }, "\u23F1 \u65B0\u7740\u9806"), /*#__PURE__*/React.createElement("option", {
     value: "oldest"
   }, "\u53E4\u3044\u9806"), /*#__PURE__*/React.createElement("option", {
     value: "species"
-  }, "\u9B5A\u7A2E\u591A\u3044\u9806")), hasFilters && /*#__PURE__*/React.createElement("button", {
+  }, "\u9B5A\u7A2E\u591A\u3044\u9806"), /*#__PURE__*/React.createElement("option", {
+    value: "methods"
+  }, "\u91E3\u308A\u65B9\u591A\u3044\u9806")), hasFilters && /*#__PURE__*/React.createElement("button", {
     className: "filter-clear",
     onClick: clearFilters
-  }, "\xD7 \u30D5\u30A3\u30EB\u30BF\u30AF\u30EA\u30A2")), Object.keys(errors).length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "\xD7 \u30AF\u30EA\u30A2")), Object.keys(errors).length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       background: 'rgba(255,107,91,0.08)',
       border: '1px solid rgba(255,107,91,0.3)',
