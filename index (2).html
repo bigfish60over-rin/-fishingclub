@@ -188,69 +188,21 @@ select{
 .blog-sub{display:none}.blog-sub.on{display:block}
 
 /* 釣行レポートパネル内スタイル */
-.rp-hero{background:linear-gradient(135deg,rgba(200,75,17,.18),rgba(14,165,160,.1));border:1px solid rgba(200,75,17,.3);border-radius:var(--r);padding:16px 14px;margin-bottom:12px;position:relative;overflow:hidden}
-.rp-hero::before{content:'';position:absolute;top:0;right:0;width:45%;height:100%;background:repeating-linear-gradient(-55deg,transparent,transparent 8px,rgba(200,75,17,.04) 8px,rgba(200,75,17,.04) 9px);pointer-events:none}
-.rp-club{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.25em;color:var(--fish);text-transform:uppercase;margin-bottom:6px}
-.rp-title{font-size:22px;font-weight:900;line-height:1.1;margin-bottom:4px;color:var(--text)}
-.rp-title span{color:#c84b11}
-.rp-date{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
-.rp-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.rp-badge{font-family:'DM Mono',monospace;font-size:10px;padding:3px 9px;border:1px solid rgba(200,75,17,.5);color:#f59e0b;background:rgba(200,75,17,.1);border-radius:4px;letter-spacing:.1em}
-
-.rp-section{margin-bottom:14px}
-.rp-sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(200,75,17,.3)}
-.rp-sec-num{font-family:'DM Mono',monospace;font-size:28px;font-weight:700;color:rgba(200,75,17,.25);line-height:1}
-.rp-sec-title{font-size:14px;font-weight:900;color:var(--text)}
-
-.rp-card{background:rgba(19,36,61,.9);border:1px solid var(--rim);border-radius:var(--r);padding:12px;margin-bottom:8px}
-.rp-text{font-size:13px;line-height:1.9;color:rgba(226,238,249,.85)}
-.rp-text p+p{margin-top:.9em}
-.rp-highlight{border-left:3px solid #c84b11;padding:8px 12px;margin:10px 0;font-size:13px;color:#f59e0b;font-weight:700;line-height:1.6;background:rgba(200,75,17,.06);border-radius:0 8px 8px 0}
-
-/* タイムライン（レポート内） */
-.rp-tl{padding-left:24px;position:relative}
-.rp-tl::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,#c84b11,#0ea5a0,transparent)}
-.rp-tl-item{position:relative;margin-bottom:14px}
-.rp-tl-dot{position:absolute;left:-28px;top:3px;width:10px;height:10px;border-radius:50%;background:#c84b11;border:2px solid var(--ink);box-shadow:0 0 6px #c84b11}
-.rp-tl-time{font-family:'DM Mono',monospace;font-size:11px;color:#0ea5a0;margin-bottom:2px}
-.rp-tl-txt{font-size:13px;line-height:1.7;color:rgba(226,238,249,.85)}
-.rp-tl-txt strong{color:#f59e0b}
-
-/* メンバーカード */
-.rp-members{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-.rp-member{background:rgba(26,50,82,.7);border:1px solid var(--rim);border-radius:10px;padding:11px 10px;text-align:center}
-.rp-member.solo{grid-column:span 2}
-.rp-mem-icon{font-size:28px;margin-bottom:5px}
-.rp-mem-name{font-size:13px;font-weight:700;margin-bottom:3px}
-.rp-mem-role{font-size:10px;color:var(--muted)}
-.rp-mem-fish{margin-top:6px;display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
-.rp-fish-tag{font-size:10px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);color:var(--fish);border-radius:50px;padding:1px 7px}
-
-/* 釣果テーブル */
-.rp-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
-.rp-table th{background:rgba(200,75,17,.15);color:#f59e0b;font-weight:700;padding:7px 8px;text-align:left;border-bottom:1px solid rgba(200,75,17,.3)}
-.rp-table td{padding:7px 8px;border-bottom:1px solid var(--rim);color:rgba(226,238,249,.85);vertical-align:top}
-.rp-table tr:last-child td{border-bottom:none}
-.rp-table tr:hover td{background:rgba(56,189,248,.04)}
-
-/* チャートラッパー */
-.rp-chart-wrap{background:rgba(14,26,43,.8);border:1px solid var(--rim);border-radius:10px;padding:12px;margin-top:8px}
-.rp-chart-label{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
-.rp-chart-wrap canvas{width:100%!important;max-height:160px}
-
-/* スタッツグリッド */
-.rp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:8px}
-.rp-stat{background:rgba(26,50,82,.7);border:1px solid var(--rim);border-radius:10px;padding:10px 7px;text-align:center}
-.rp-stat-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;color:#f59e0b;line-height:1}
-.rp-stat-lbl{font-size:10px;color:var(--muted);margin-top:3px}
-
-/* 反省ボックス */
-.rp-reflection{background:rgba(26,50,82,.5);border:1px solid var(--rim);border-radius:var(--r);padding:12px}
-.rp-ref-title{font-size:12px;font-weight:700;color:var(--sky);margin-bottom:10px;text-transform:uppercase;letter-spacing:1px}
-.rp-ref-item{padding:8px 0;border-bottom:1px solid var(--rim)}
-.rp-ref-item:last-child{border-bottom:none}
-.rp-ref-item h4{font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:3px}
-.rp-ref-item p{font-size:12px;color:rgba(226,238,249,.75);line-height:1.7}
+.blog-intro{font-size:11px;color:var(--muted);line-height:1.7;background:rgba(26,50,82,.45);border:1px solid var(--rim);border-radius:10px;padding:10px 12px;margin-bottom:11px}
+.blink-card{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:rgba(19,36,61,.92);border:1px solid var(--rim);border-left:3px solid var(--sky);border-radius:var(--r);padding:13px 12px;margin-bottom:10px;text-decoration:none;color:var(--text);font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s ease,border-color .2s,background .2s}
+.blink-card:active{transform:scale(.98);background:rgba(26,50,82,.96)}
+.blink-card:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+.blink-icon{font-size:28px;line-height:1;flex-shrink:0;width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:rgba(26,50,82,.6);border-radius:11px}
+.blink-body{flex:1;min-width:0}
+.blink-no{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;color:var(--sky);font-weight:700}
+.blink-title{font-size:14px;font-weight:900;line-height:1.35;margin:3px 0;word-break:break-word}
+.blink-place{font-size:11px;color:var(--muted);line-height:1.4;word-break:break-word}
+.blink-go{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--sky)}
+.blink-go .ar{font-size:19px;font-weight:900;line-height:1}
+.blink-go .tx{font-size:8px;letter-spacing:.06em;color:var(--muted)}
+.blink-card.soon{cursor:default;border-left-color:var(--muted);opacity:.78}
+.blink-card.soon .blink-no{color:var(--muted)}
+.blink-soon-tag{flex-shrink:0;font-size:9px;font-weight:700;color:var(--sun);background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.3);border-radius:50px;padding:3px 9px;white-space:nowrap}
 
 /* ══════════════════════════════════════
    潮見タブ
@@ -482,7 +434,7 @@ select{
   <!-- トップサブタブ -->
   <div class="blog-top-tabs">
     <button class="bttab on" onclick="blogTopGo('posts',this)">📋 投稿一覧</button>
-    <button class="bttab"    onclick="blogTopGo('report',this)">🏆 第1回 鹿島釣行</button>
+    <button class="bttab"    onclick="blogTopGo('blogs',this)">📖 ブログ記事</button>
   </div>
 
   <!-- ─── 投稿一覧 ─── -->
@@ -534,126 +486,11 @@ select{
 
   </div><!-- /bsub-posts -->
 
-  <!-- ─── 第1回 鹿島釣行レポート ─── -->
-  <div id="bsub-report" class="blog-sub">
-
-    <!-- ヒーロー -->
-    <div class="rp-hero">
-      <div class="rp-club">ナガヨシリン fishing club</div>
-      <div class="rp-title">鹿島<span>釣行</span><br>レポート</div>
-      <div class="rp-date">2026.04.11〜12 ／ 茨城県鹿島 公共埠頭</div>
-      <div class="rp-badges">
-        <span class="rp-badge">#01 KASHIMA</span>
-        <span class="rp-badge">総釣果 7本</span>
-        <span class="rp-badge">3名参加</span>
-      </div>
-    </div>
-
-    <!-- 01 ストーリー -->
-    <div class="rp-section">
-      <div class="rp-sec-hdr"><span class="rp-sec-num">01</span><span class="rp-sec-title">釣行ストーリー</span></div>
-      <div class="rp-card rp-text">
-        <p>4月11日夜、3名は鹿島港公共埠頭へ向かった。夜の海風は思いのほか冷たく、特にガキオヤRinは防寒不足で震えながらの釣行となった。</p>
-        <div class="rp-highlight">「サヨリがあんなに釣れてるのに…仕掛けが違った」</div>
-        <p>夜半にNAGANUMAがアジを2連発。夜明け前の根魚タイムにガキオヤRinがカサゴを3連発と底力を見せた。勇者ヨシヒコは今回ノーフィッシュだったが、釣り場の雰囲気を誰よりも楽しんでいた。</p>
-        <p>12時に竿を仕舞い、帰路はラーメンショップへ。熱い一杯が冷えた体に染みた。「また来るぞ、鹿島。」</p>
-      </div>
-    </div>
-
-    <!-- 02 タイムライン -->
-    <div class="rp-section">
-      <div class="rp-sec-hdr"><span class="rp-sec-num">02</span><span class="rp-sec-title">タイムライン</span></div>
-      <div class="rp-card">
-        <div class="rp-tl">
-          <div class="rp-tl-item"><div class="rp-tl-dot"></div><div class="rp-tl-time">21:00</div><div class="rp-tl-txt">鹿島港 公共埠頭 到着・準備開始</div></div>
-          <div class="rp-tl-item"><div class="rp-tl-dot"></div><div class="rp-tl-time">22:51</div><div class="rp-tl-txt"><strong>ガキオヤRin</strong> メバル13cm ファーストフィッシュ！</div></div>
-          <div class="rp-tl-item"><div class="rp-tl-dot"></div><div class="rp-tl-time">23:13〜14</div><div class="rp-tl-txt"><strong>NAGANUMA</strong> アジ12cm・15cm 連続ヒット</div></div>
-          <div class="rp-tl-item"><div class="rp-tl-dot"></div><div class="rp-tl-time">04:34〜05:11</div><div class="rp-tl-txt"><strong>ガキオヤRin</strong> カサゴ3連発！根魚タイムを完全攻略</div></div>
-          <div class="rp-tl-item"><div class="rp-tl-dot"></div><div class="rp-tl-time">10:02</div><div class="rp-tl-txt"><strong>NAGANUMA</strong> メゴチ10cm ラスト1本</div></div>
-          <div class="rp-tl-item"><div class="rp-tl-dot"></div><div class="rp-tl-time">12:00</div><div class="rp-tl-txt">納竿 → ラーメンショップで打ち上げ🍜</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 03 メンバー -->
-    <div class="rp-section">
-      <div class="rp-sec-hdr"><span class="rp-sec-num">03</span><span class="rp-sec-title">参加メンバー</span></div>
-      <div class="rp-members">
-        <div class="rp-member">
-          <div class="rp-mem-icon">🎣</div>
-          <div class="rp-mem-name">NAGANUMA</div>
-          <div class="rp-mem-role">会長 / ドライバー</div>
-          <div class="rp-mem-fish"><span class="rp-fish-tag">アジ×2</span><span class="rp-fish-tag">メゴチ×1</span></div>
-        </div>
-        <div class="rp-member">
-          <div class="rp-mem-icon">🦸</div>
-          <div class="rp-mem-name">勇者ヨシヒコ</div>
-          <div class="rp-mem-role">副会長</div>
-          <div class="rp-mem-fish"><span class="rp-fish-tag" style="color:var(--muted);border-color:var(--rim)">ノーフィッシュ</span></div>
-        </div>
-        <div class="rp-member solo">
-          <div class="rp-mem-icon">👦</div>
-          <div class="rp-mem-name">ガキオヤRin</div>
-          <div class="rp-mem-role">若手エース（防寒要強化）</div>
-          <div class="rp-mem-fish"><span class="rp-fish-tag">メバル×1</span><span class="rp-fish-tag">カサゴ×3</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 04 釣果 -->
-    <div class="rp-section">
-      <div class="rp-sec-hdr"><span class="rp-sec-num">04</span><span class="rp-sec-title">釣果詳細</span></div>
-      <div class="rp-stats">
-        <div class="rp-stat"><div class="rp-stat-val">7</div><div class="rp-stat-lbl">総釣果</div></div>
-        <div class="rp-stat"><div class="rp-stat-val">4</div><div class="rp-stat-lbl">魚種</div></div>
-        <div class="rp-stat"><div class="rp-stat-val">15<span style="font-size:12px">cm</span></div><div class="rp-stat-lbl">最大サイズ</div></div>
-      </div>
-      <div class="rp-card">
-        <table class="rp-table">
-          <thead><tr><th>魚種</th><th>釣った人</th><th>サイズ</th><th>時刻</th></tr></thead>
-          <tbody>
-            <tr><td>🐟 メバル</td><td>ガキオヤRin</td><td>13cm</td><td>22:51</td></tr>
-            <tr><td>🐟 アジ</td><td>NAGANUMA</td><td>12cm</td><td>23:13</td></tr>
-            <tr><td>🐟 アジ</td><td>NAGANUMA</td><td>15cm</td><td>23:14</td></tr>
-            <tr><td>🦀 カサゴ</td><td>ガキオヤRin</td><td>10cm</td><td>04:34</td></tr>
-            <tr><td>🦀 カサゴ</td><td>ガキオヤRin</td><td>10cm</td><td>04:51</td></tr>
-            <tr><td>🦀 カサゴ</td><td>ガキオヤRin</td><td>9cm</td><td>05:11</td></tr>
-            <tr><td>🐠 メゴチ</td><td>NAGANUMA</td><td>10cm</td><td>10:02</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <!-- チャート：メンバー別釣果 -->
-      <div class="rp-chart-wrap">
-        <div class="rp-chart-label">メンバー別 釣果数</div>
-        <canvas id="rpMemberChart"></canvas>
-      </div>
-      <!-- チャート：魚種内訳 -->
-      <div class="rp-chart-wrap" style="margin-top:8px">
-        <div class="rp-chart-label">魚種内訳</div>
-        <canvas id="rpSpeciesChart"></canvas>
-      </div>
-    </div>
-
-    <!-- 05 反省・まとめ -->
-    <div class="rp-section">
-      <div class="rp-sec-hdr"><span class="rp-sec-num">05</span><span class="rp-sec-title">総括・反省点</span></div>
-      <div class="rp-reflection">
-        <div class="rp-ref-title">📝 今回の学び</div>
-        <div class="rp-ref-item"><h4>情報収集</h4><p>サヨリがトリックサビキで爆釣してたのに指を咥えて見るだけ。現地リサーチと事前情報収集が次回への宿題。</p></div>
-        <div class="rp-ref-item"><h4>仕掛け・道具</h4><p>持ち合わせで対応しようとしたが限界あり。状況に合わせた仕掛けの用意が釣果を大きく左右することを実感。</p></div>
-        <div class="rp-ref-item"><h4>経験値の蓄積</h4><p>夜明け前の根魚タイムは確実に攻略できつつある。ガキオヤRinのカサゴ3連発がそれを証明。時合いの把握が鍵。</p></div>
-        <div class="rp-ref-item"><h4>次回への課題</h4><p>サヨリ用トリックサビキを準備。地元釣り師への情報収集。防寒対策（特にガキオヤRin）を万全に。</p></div>
-      </div>
-    </div>
-
-    <!-- フッター -->
-    <div class="rp-card" style="text-align:center;padding:16px">
-      <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.1em">ナガヨシリン fishing club</div>
-      <div style="font-size:18px;font-weight:900;margin:6px 0;color:#f59e0b">また来るぞ、鹿島。</div>
-      <div style="font-size:11px;color:var(--muted)">NAGANUMA ｜ 勇者ヨシヒコ ｜ ガキオヤRin</div>
-    </div>
-
-  </div><!-- /bsub-report -->
+  <!-- ─── ブログ記事（本家ブログサイトへのリンク） ─── -->
+  <div id="bsub-blogs" class="blog-sub">
+    <div class="blog-intro">📖 各釣行の<strong style="color:var(--text)">本家ブログサイト</strong>へのリンクです。カードをタップすると新しいタブで開きます。</div>
+    <div id="blogLinkList"></div>
+  </div>
 
 </div>
 
@@ -931,7 +768,6 @@ select{
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 'use strict';
 
@@ -1536,49 +1372,74 @@ let blogFishTags = [];
 
 try { blogPosts = JSON.parse(Store.get('blogPosts') || '[]'); } catch(e) { blogPosts = []; }
 
+// ══════════════════════
+// ブログ記事リンク（本家ブログサイトへ）
+// ══════════════════════
+// ▼ 新しいブログを追加するときは、この配列に1件追加するだけ。
+//   url に公開URLを入れれば自動で開けるリンクカードになります。
+const CLUB_BLOGS = [
+  {
+    no:    '第1回',
+    title: '鹿島 公共埠頭 釣行レポート',
+    date:  '2026.04.11〜12',
+    place: '茨城県・鹿島 公共埠頭',
+    icon:  '🏆',
+    accent:'#c84b11',
+    url:   'https://creative-pithivier-09f9dd.netlify.app'
+  },
+  {
+    no:    '第2回',
+    title: '小名浜T字堤防 三日間の死闘',
+    date:  '2026.05.04〜06',
+    place: '福島県・いわき市 小名浜T字堤防',
+    icon:  '🌊',
+    accent:'#38bdf8',
+    url:   'https://bigfish60over-rin.github.io/-fishingclub/'
+  }
+];
+
+// URLが本物の公開URLかどうか判定
+function blogUrlReady(u){ return !!u && /^https?:\/\//.test(u) && !/PASTE_/.test(u); }
+
+// HTMLエスケープ
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+}
+
+function renderBlogLinks(){
+  const box = document.getElementById('blogLinkList');
+  if(!box) return;
+  box.innerHTML = CLUB_BLOGS.map(b => {
+    const ready = blogUrlReady(b.url);
+    const inner =
+      '<div class="blink-icon">' + esc(b.icon) + '</div>' +
+      '<div class="blink-body">' +
+        '<div class="blink-no">' + esc(b.no) + ' ・ ' + esc(b.date) + '</div>' +
+        '<div class="blink-title">' + esc(b.title) + '</div>' +
+        '<div class="blink-place">📍 ' + esc(b.place) + '</div>' +
+      '</div>' +
+      (ready
+        ? '<div class="blink-go"><span class="ar">↗</span><span class="tx">OPEN</span></div>'
+        : '<span class="blink-soon-tag">公開準備中</span>');
+    if(ready){
+      return '<a class="blink-card" style="border-left-color:' + esc(b.accent) + '" ' +
+             'href="' + esc(b.url) + '" target="_blank" rel="noopener noreferrer" ' +
+             'aria-label="' + esc(b.no + ' ' + b.title) + ' を新しいタブで開く">' + inner + '</a>';
+    }
+    return '<button type="button" class="blink-card soon" ' +
+           'onclick="toast(\'このブログは公開準備中です 🛠️\')">' + inner + '</button>';
+  }).join('');
+}
+
 // ブログトップサブタブ切替
-let _rpChartsInited = false;
 function blogTopGo(name, btn) {
   document.querySelectorAll('.blog-sub').forEach(el => el.classList.remove('on'));
   document.querySelectorAll('.bttab').forEach(b => b.classList.remove('on'));
   document.getElementById('bsub-' + name).classList.add('on');
   btn.classList.add('on');
-  if (name === 'report' && !_rpChartsInited) { _rpChartsInited = true; initReportCharts(); }
-}
-
-function initReportCharts() {
-  if (typeof Chart === 'undefined') return;
-  const amber = '#f59e0b', seafoam = '#0ea5a0', rust = '#c84b11', mist = '#8fa3b1';
-  Chart.defaults.color = 'rgba(226,238,249,0.6)';
-  Chart.defaults.borderColor = 'rgba(56,189,248,0.12)';
-  // メンバー別釣果
-  new Chart(document.getElementById('rpMemberChart'), {
-    type: 'bar',
-    data: {
-      labels: ['NAGANUMA', '勇者ヨシヒコ', 'ガキオヤRin'],
-      datasets: [
-        { label: 'アジ',   data: [2,0,0], backgroundColor: amber,   borderWidth:0 },
-        { label: 'メバル', data: [0,0,1], backgroundColor: seafoam, borderWidth:0 },
-        { label: 'カサゴ', data: [0,0,3], backgroundColor: rust,    borderWidth:0 },
-        { label: 'メゴチ', data: [1,0,0], backgroundColor: mist,    borderWidth:0 },
-      ]
-    },
-    options: { responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, padding:10, font:{size:10} } } },
-      scales:{ x:{ stacked:true }, y:{ stacked:true, beginAtZero:true, ticks:{ stepSize:1 } } }
-    }
-  });
-  // 魚種ドーナツ
-  new Chart(document.getElementById('rpSpeciesChart'), {
-    type: 'doughnut',
-    data: {
-      labels: ['アジ','メバル','カサゴ','メゴチ'],
-      datasets: [{ data:[2,1,3,1], backgroundColor:[amber,seafoam,rust,mist], borderWidth:2, borderColor:'#1a3252' }]
-    },
-    options: { responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, padding:10, font:{size:10} } } }
-    }
-  });
+  if (name === 'blogs') renderBlogLinks();
 }
 
 function blogAdminToggle() {
