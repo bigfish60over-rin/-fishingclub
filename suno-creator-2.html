@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUNO CREATOR | ナガヨシリンfishing club</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; padding: 0 0 80px;
+    background: linear-gradient(135deg,#0a0f1e 0%,#0d1a2e 50%,#0a1528 100%);
+    background-attachment: fixed;
+    font-family: 'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;
+    color: #e0eeff; min-height: 100vh;
+  }
+  .header {
+    background: linear-gradient(90deg,#0d2044,#0a3060);
+    border-bottom: 2px solid #38bdf8;
+    padding: 16px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-size: 21px; font-weight: 900; letter-spacing: 2px; color: #38bdf8; }
+  .logo-sub { font-size: 11px; color: #7ab3d4; margin-top: 2px; }
+  .btn-hist {
+    background: transparent; border: 1px solid #38bdf8; color: #38bdf8;
+    border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .btn-hist.on { background: #38bdf8; color: #0a0f1e; }
+  .tabs {
+    display: flex; background: #0a1525; border-bottom: 1px solid #1e3a5a;
+    position: sticky; top: 64px; z-index: 99;
+  }
+  .tab {
+    flex: 1; padding: 12px 0; font-size: 13px; font-weight: 700;
+    background: transparent; color: #7ab3d4; border: none;
+    border-bottom: 2px solid transparent; cursor: pointer;
+  }
+  .tab.on { background: #0d2044; color: #38bdf8; border-bottom: 2px solid #38bdf8; }
+  .wrap { padding: 16px 16px 0; max-width: 640px; margin: 0 auto; }
+  .section {
+    background: #0a1525; border: 1px solid #1e3a5a;
+    border-radius: 12px; padding: 14px; margin-bottom: 12px;
+  }
+  .section-title { font-size: 13px; font-weight: 700; color: #38bdf8; margin-bottom: 10px; }
+  textarea, input[type=text], input[type=password] {
+    width: 100%; background: #0a1a30; border: 1px solid #1e4a7a;
+    border-radius: 10px; color: #e0eeff; font-size: 14px; padding: 10px 12px;
+    resize: vertical; font-family: inherit;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips.scroll { max-height: 160px; overflow-y: auto; padding-right: 4px; }
+  .chip {
+    background: #0a1a30; border: 1px solid #1e3a5a; color: #94a3b8;
+    border-radius: 20px; padding: 5px 12px; font-size: 12px; cursor: pointer; white-space: nowrap;
+  }
+  .chip.on { background: #0d3060; border-color: #38bdf8; color: #38bdf8; font-weight: 700; }
+  .opt-btn {
+    display: block; width: 100%; text-align: left;
+    background: #0a1a30; border: 1px solid #1e3a5a; color: #94a3b8;
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; font-size: 13px; cursor: pointer;
+  }
+  .opt-btn.on { background: #0d3060; border-color: #38bdf8; color: #38bdf8; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .grid3 { display: flex; gap: 8px; }
+  .vbtn {
+    background: #0a1a30; border: 1px solid #1e3a5a; color: #94a3b8;
+    border-radius: 8px; padding: 10px 8px; font-size: 12px; cursor: pointer;
+  }
+  .vbtn.on { background: #0d3060; border-color: #38bdf8; color: #38bdf8; font-weight: 700; }
+  .slider-row { margin-bottom: 14px; }
+  .slider-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .slider-flex { display: flex; align-items: center; gap: 8px; }
+  input[type=range] { flex: 1; accent-color: #38bdf8; }
+  .slider-end { font-size: 11px; color: #7ab3d4; min-width: 44px; }
+  .big-btn {
+    width: 100%; padding: 16px 0; font-size: 16px; font-weight: 900;
+    background: linear-gradient(90deg,#0066cc,#0099ff); color: #fff;
+    border: none; border-radius: 12px; cursor: pointer; letter-spacing: 2px;
+    box-shadow: 0 4px 20px rgba(56,189,248,0.3); margin-bottom: 12px;
+  }
+  .big-btn:disabled { background: #0a2a4a; color: #7ab3d4; cursor: not-allowed; box-shadow: none; }
+  .gen-btn {
+    width: 100%; padding: 14px 0; font-size: 14px; font-weight: 700;
+    background: linear-gradient(90deg,#7c3aed,#4f46e5); color: #fff;
+    border: none; border-radius: 10px; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.3);
+  }
+  .gen-btn:disabled { background: #0a2a4a; color: #7ab3d4; cursor: not-allowed; box-shadow: none; }
+  .out-card {
+    background: #0a1a30; border: 1px solid #1e4a7a;
+    border-radius: 12px; padding: 16px; margin-bottom: 12px;
+  }
+  .out-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .out-head .t { font-size: 14px; font-weight: 700; color: #38bdf8; }
+  .small-btns { display: flex; gap: 6px; }
+  .sbtn {
+    background: #0d2040; border: 1px solid #1e4a7a; color: #7ab3d4;
+    border-radius: 6px; padding: 4px 10px; font-size: 14px; cursor: pointer;
+  }
+  .sbtn:disabled { opacity: .5; cursor: not-allowed; }
+  pre.lyrics {
+    white-space: pre-wrap; font-size: 13px; line-height: 1.8; color: #e0eeff;
+    margin: 0; font-family: inherit; max-height: 360px; overflow-y: auto;
+  }
+  .placeholder { color: #7ab3d4; font-size: 13px; text-align: center; padding: 20px; }
+  .counter { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 8px; }
+  .bar-bg { width: 100%; height: 4px; background: #0a2040; border-radius: 4px; margin-bottom: 10px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+  .style-area {
+    width: 100%; min-height: 120px; background: #0a1225; border: 1px solid #1e3a5a;
+    border-radius: 8px; color: #e0eeff; font-size: 12px; padding: 10px 12px;
+    line-height: 1.6; margin-bottom: 8px; resize: vertical; font-family: inherit;
+  }
+  .save-btn {
+    width: 100%; padding: 12px 0; font-size: 13px; font-weight: 700;
+    background: #0a2a1a; border: 1px solid #16a34a; color: #4ade80;
+    border-radius: 10px; cursor: pointer; margin-bottom: 12px;
+  }
+  .msg { border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 12px; }
+  .msg.err { background: #2d0f0f; border: 1px solid #dc2626; color: #fca5a5; }
+  .msg.info { background: #0a2e1a; border: 1px solid #16a34a; color: #4ade80; }
+  .score-card {
+    background: #0a1a30; border: 1px solid #1e4a7a;
+    border-radius: 12px; padding: 20px; margin-bottom: 12px; text-align: center;
+  }
+  .score-num { font-size: 56px; font-weight: 900; }
+  .hist-item {
+    background: #0a2040; border: 1px solid #1e3a5a;
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer;
+  }
+  .hist-drawer { background: #0d1e35; border-bottom: 1px solid #1e3a5a; padding: 12px 16px; max-height: 240px; overflow-y: auto; }
+  .badge { color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .key-warn { font-size: 11px; color: #7ab3d4; margin-top: 8px; line-height: 1.5; }
+  .key-ok { color: #4ade80; }
+  details summary { cursor: pointer; color: #38bdf8; font-size: 13px; font-weight: 700; }
+  .loop-item { background: #0a1225; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; }
+  .crit-row { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid #0d2440; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">🎵 SUNO CREATOR</div>
+    <div class="logo-sub">AI作詞 &amp; スタイルプロンプト自動生成</div>
+  </div>
+  <button class="btn-hist" id="histBtn" onclick="toggleHist()">📚 履歴 (0)</button>
+</div>
+
+<div class="hist-drawer" id="histDrawer" style="display:none;"></div>
+
+<div class="tabs">
+  <button class="tab on" data-tab="input" onclick="switchTab('input')">⚙️ 設定</button>
+  <button class="tab" data-tab="output" onclick="switchTab('output')">📝 出力</button>
+  <button class="tab" data-tab="score" onclick="switchTab('score')">📊 スコア</button>
+</div>
+
+<div class="wrap">
+
+  <!-- ===== 設定タブ ===== -->
+  <div id="tab-input">
+
+    <!-- APIキー -->
+    <div class="section">
+      <div class="section-title">🔑 Gemini APIキー（各自で入力）</div>
+      <input type="password" id="apiKey" placeholder="Gemini APIキーを貼り付け（形式は問いません）"
+        oninput="saveKey()" autocomplete="off">
+      <div class="key-warn" id="keyStatus">
+        ※ キーはこの端末のブラウザにだけ保存され、外部には送信されません。<br>
+        ※ <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#38bdf8;">aistudio.google.com/apikey</a> で無料取得できます。<br>
+        ※ キーの形式（AIzaSy〜 や AQ.Ab〜 など）は問いません。そのまま貼ればOK！
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">💡 キーワード</div>
+      <textarea id="keywords" style="min-height:80px;" placeholder="例：波止場、夕暮れ、釣り、ひとり旅、懐かしい匂い"></textarea>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🎸 ジャンル</div>
+      <input type="text" id="genreSearch" placeholder="ジャンル検索..." oninput="renderGenres()" style="margin-bottom:10px;">
+      <div class="chips scroll" id="genreChips"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🌙 ムード</div>
+      <div class="chips" id="moodChips"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🎣 テーマ</div>
+      <div class="chips" id="themeChips"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🏗️ 曲の構成</div>
+      <div id="structOpts"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🎤 ボーカル</div>
+      <div class="grid2" id="vocalGrid"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📏 歌詞の長さ</div>
+      <div class="grid3" id="lenGrid"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🎚️ 雰囲気スライダー</div>
+      <div id="sliders"></div>
+    </div>
+
+    <div id="inputMsg"></div>
+
+    <button class="big-btn" id="genLyricsBtn" onclick="generateLyrics()">🎵 歌詞を生成する</button>
+  </div>
+
+  <!-- ===== 出力タブ ===== -->
+  <div id="tab-output" style="display:none;">
+    <div class="out-card">
+      <div class="out-head">
+        <span class="t">📝 歌詞（貼り付け用）</span>
+        <div class="small-btns">
+          <button class="sbtn" id="reLyrics" onclick="generateLyrics()" title="再生成">🔄</button>
+          <button class="sbtn" onclick="copyText('lyricsOut','cpL')" title="コピー"><span id="cpL">📋</span></button>
+        </div>
+      </div>
+      <div id="lyricsBox"><div class="placeholder">設定タブで「歌詞を生成する」を押してください</div></div>
+    </div>
+
+    <div class="out-card">
+      <div class="out-head">
+        <span class="t">🎨 スタイルプロンプト</span>
+        <div class="small-btns">
+          <button class="sbtn" id="reStyle" onclick="generateStyle()" title="再生成">🔄</button>
+          <button class="sbtn" onclick="copyText('styleVal','cpS')" title="コピー"><span id="cpS">📋</span></button>
+        </div>
+      </div>
+      <div class="counter">
+        <span style="color:#7ab3d4;">文字数カウンター</span>
+        <span id="styleLen" style="font-weight:700;">0 / 1000文字</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" id="styleBar" style="width:0%;background:#38bdf8;"></div></div>
+      <div id="styleBox">
+        <button class="gen-btn" id="genStyleBtn" onclick="generateStyle()">🎨 スタイルプロンプトを生成する</button>
+      </div>
+    </div>
+
+    <button class="save-btn" id="saveBtn" onclick="saveHistory()" style="display:none;">💾 この歌詞セットを保存する</button>
+  </div>
+
+  <!-- ===== スコアタブ ===== -->
+  <div id="tab-score" style="display:none;">
+    <div id="scoreContent"><div class="placeholder">まず設定タブで歌詞を生成してください</div></div>
+  </div>
+
+</div>
+
+<script>
+// ───────── DATA ─────────
+const GENRES = [
+  "J-POP","J-Rock","City Pop","シティポップ","歌謡曲","演歌","J-Hip Hop","J-R&B",
+  "アニソン","ボカロ系","昭和歌謡","フォーク","ニューウェーブ","パンク","メタル",
+  "Visual Kei","和風ロック","沖縄民謡","ロック","アコースティック","インディーポップ",
+  "Pop","Rock","Hip Hop","R&B","Soul","Funk","Disco","House","Techno","Trance",
+  "EDM","Dubstep","Drum and Bass","Ambient","Lo-Fi","Jazz","Blues","Country",
+  "Folk","Reggae","Dancehall","Latin","Bossa Nova","Samba","Flamenco","Afrobeat",
+  "Gospel","Neo Soul","Indie Pop","Indie Rock","Shoegaze","Dream Pop","Synth Pop",
+  "Post-Rock","Math Rock","Prog Rock","Psychedelic","Grunge","Emo","Metalcore",
+  "Classical","Orchestral","Cinematic","New Age","Trap","Drill","Phonk",
+  "Hyperpop","Bedroom Pop","Chillwave","Vaporwave","Dark Pop","Alt Pop",
+  "Reggaeton","K-POP","Afropop","Celtic","Middle Eastern","Bollywood",
+  "Bluegrass","Rockabilly","Swing","Big Band","Smooth Jazz","Fusion",
+];
+const MOODS = ["明るい","切ない","エモい","激しい","穏やか","ロマンティック","ノスタルジック","ダークネス","ユーフォリック","孤独","力強い","優しい","ドラマティック","クール","神秘的","疾走感","哀愁","希望","怒り","懐かしい","夢幻","緊張感","開放的"];
+const THEMES = ["恋愛","別れ","友情","冒険","自然","海","夜","夏","故郷","夢","成長","戦い","旅","孤独","釣り","祭り","食","都市","宇宙","時間","記憶","自由","仕事","青春","家族","再会","決意","喪失","希望","日常"];
+const STRUCTURES = [
+  "サビ先行（Chorus→Verse→Chorus）",
+  "標準（Intro→Verse→PreChorus→Chorus×2→Bridge→Chorus）",
+  "ミニマル（Verse→Chorus→Verse→Chorus）",
+  "バラード（Intro→Verse→Chorus→Verse→Chorus→Outro）",
+  "カスタム",
+];
+const STRUCT_TAGS = {
+  "サビ先行（Chorus→Verse→Chorus）": ["[Chorus]","[Verse]","[Pre-Chorus]","[Chorus]","[Bridge]","[Outro]"],
+  "標準（Intro→Verse→PreChorus→Chorus×2→Bridge→Chorus）": ["[Intro]","[Verse]","[Pre-Chorus]","[Chorus]","[Verse 2]","[Chorus]","[Bridge]","[Chorus]","[Outro]"],
+  "ミニマル（Verse→Chorus→Verse→Chorus）": ["[Verse]","[Chorus]","[Verse 2]","[Chorus]","[Outro]"],
+  "バラード（Intro→Verse→Chorus→Verse→Chorus→Outro）": ["[Intro]","[Verse]","[Chorus]","[Verse 2]","[Chorus]","[Bridge]","[Outro]"],
+  "カスタム": ["[Intro]","[Verse]","[Chorus]","[Bridge]","[Outro]"],
+};
+const VOCALS = [
+  { id:"female_soft", label:"女性・ソフト", en:"soft female vocal, gentle, breathy" },
+  { id:"female_power", label:"女性・パワフル", en:"powerful female vocal, belting, emotional" },
+  { id:"female_pop", label:"女性・アイドル系", en:"cute female idol vocal, bright, kawaii" },
+  { id:"female_mature", label:"女性・ハスキー", en:"mature husky female voice, smoky, sensual" },
+  { id:"male_soft", label:"男性・ソフト", en:"gentle male vocal, tender, acoustic" },
+  { id:"male_rock", label:"男性・ロック", en:"gritty male rock vocal, raspy, intense" },
+  { id:"male_hip", label:"男性・ラップ", en:"male rap vocal, rhythmic flow, sharp delivery" },
+  { id:"male_tenor", label:"男性・テノール", en:"clean tenor male vocal, melodic, clear" },
+  { id:"duet", label:"デュエット（男女）", en:"male and female duet vocals, harmonized" },
+  { id:"chorus", label:"コーラス重視", en:"lush harmonized chorus vocals, choir-like backing" },
+  { id:"falsetto", label:"ファルセット", en:"falsetto vocal, airy, high-pitched, ethereal" },
+  { id:"whisper", label:"ウィスパー", en:"whispered intimate vocal, ASMR-like, close-mic" },
+];
+const LYRIC_LENGTHS = [
+  { id:"short", label:"短め(4)" },
+  { id:"normal", label:"標準(6-8)" },
+  { id:"long", label:"長め(10+)" },
+];
+const MAX_STYLE_CHARS = 1000;
+
+// ───────── STATE ─────────
+const state = {
+  genre: "City Pop", mood: "切ない", theme: "恋愛",
+  structure: STRUCTURES[0], vocal: VOCALS[0].id, lyricLen: "normal",
+  brightness: 50, intensity: 50, emotion: 50, tempoFeel: 50,
+  lyrics: "", style: "",
+  scoreInfo: null, loopLog: [], history: [],
+};
+
+// ───────── HELPERS ─────────
+function scorePrompt(lyrics, style) {
+  let score = 0; const notes = [];
+  if (lyrics && lyrics.length > 100) score += 20; else notes.push("⚠ 歌詞が短い");
+  if (lyrics && /\[/.test(lyrics)) { score += 15; notes.push("✓ セクションタグあり"); }
+  if (style && style.length >= 100 && style.length <= MAX_STYLE_CHARS) { score += 20; notes.push("✓ スタイル文字数適切"); }
+  if (style && !/[\u4e00-\u9faf]/.test(style)) { score += 15; notes.push("✓ スタイルに日本語なし"); }
+  if (lyrics && /[\u30A0-\u30FF]/.test(lyrics)) { score += 15; notes.push("✓ カタカナ使用"); }
+  if (lyrics && lyrics.split("\n\n").length >= 3) { score += 15; notes.push("✓ 複数セクション"); }
+  return { score, notes };
+}
+
+// ───────── GEMINI API ─────────
+async function callGemini(prompt) {
+  const key = document.getElementById("apiKey").value.trim();
+  if (!key) throw new Error("APIキーが未入力です。設定タブでキーを貼ってください。");
+  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + key;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+  });
+  if (!res.ok) {
+    let detail = res.status;
+    try { const e = await res.json(); detail = e.error?.message || res.status; } catch(_) {}
+    if (res.status === 400) throw new Error("APIキーの形式エラーです。キーをコピーし直してみてください。");
+    if (res.status === 401 || res.status === 403) throw new Error("APIキーが無効です。aistudio.google.com/apikey で新しいキーを取得してください。");
+    throw new Error("Gemini APIエラー: " + detail);
+  }
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+}
+
+// ───────── KEY PERSIST ─────────
+function saveKey() {
+  const k = document.getElementById("apiKey").value.trim();
+  try { localStorage.setItem("suno_gemini_key", k); } catch(_) {}
+  const st = document.getElementById("keyStatus");
+  if (k.length > 10) {
+    st.innerHTML = '<span class="key-ok">✓ キーを保存しました（この端末のみ）</span>';
+  } else if (k.length > 0) {
+    st.innerHTML = '⚠️ キーが短すぎます。コピーし直してみてください。';
+  }
+}
+function loadKey() {
+  try {
+    const k = localStorage.getItem("suno_gemini_key");
+    if (k) { document.getElementById("apiKey").value = k; saveKey(); }
+  } catch(_) {}
+}
+
+// ───────── RENDER ─────────
+function renderGenres() {
+  const q = document.getElementById("genreSearch").value.toLowerCase();
+  const box = document.getElementById("genreChips");
+  box.innerHTML = "";
+  GENRES.filter(g => g.toLowerCase().includes(q)).forEach(g => {
+    const b = document.createElement("button");
+    b.className = "chip" + (state.genre === g ? " on" : "");
+    b.textContent = (state.genre === g ? "✓ " : "") + g;
+    b.onclick = () => { state.genre = g; renderGenres(); };
+    box.appendChild(b);
+  });
+}
+function renderChips(arr, boxId, key) {
+  const box = document.getElementById(boxId);
+  box.innerHTML = "";
+  arr.forEach(v => {
+    const b = document.createElement("button");
+    b.className = "chip" + (state[key] === v ? " on" : "");
+    b.textContent = (state[key] === v ? "✓ " : "") + v;
+    b.onclick = () => { state[key] = v; renderChips(arr, boxId, key); };
+    box.appendChild(b);
+  });
+}
+function renderStruct() {
+  const box = document.getElementById("structOpts");
+  box.innerHTML = "";
+  STRUCTURES.forEach(s => {
+    const b = document.createElement("button");
+    b.className = "opt-btn" + (state.structure === s ? " on" : "");
+    b.textContent = (state.structure === s ? "✅ " : "○ ") + s;
+    b.onclick = () => { state.structure = s; renderStruct(); };
+    box.appendChild(b);
+  });
+}
+function renderVocals() {
+  const box = document.getElementById("vocalGrid");
+  box.innerHTML = "";
+  VOCALS.forEach(v => {
+    const b = document.createElement("button");
+    b.className = "vbtn" + (state.vocal === v.id ? " on" : "");
+    b.textContent = (state.vocal === v.id ? "✅ " : "") + v.label;
+    b.onclick = () => { state.vocal = v.id; renderVocals(); };
+    box.appendChild(b);
+  });
+}
+function renderLen() {
+  const box = document.getElementById("lenGrid");
+  box.innerHTML = "";
+  LYRIC_LENGTHS.forEach(l => {
+    const b = document.createElement("button");
+    b.className = "vbtn" + (state.lyricLen === l.id ? " on" : "");
+    b.style.flex = "1";
+    b.textContent = l.label;
+    b.onclick = () => { state.lyricLen = l.id; renderLen(); };
+    box.appendChild(b);
+  });
+}
+function renderSliders() {
+  const defs = [
+    ["☀️ 明るさ","brightness","暗い","明るい"],
+    ["⚡ 激しさ","intensity","穏やか","激しい"],
+    ["💧 感情の深さ","emotion","クール","エモい"],
+    ["🥁 テンポ感","tempoFeel","スロー","アップ"],
+  ];
+  const box = document.getElementById("sliders");
+  box.innerHTML = "";
+  defs.forEach(([label,key,lo,hi]) => {
+    const row = document.createElement("div");
+    row.className = "slider-row";
+    row.innerHTML =
+      '<div class="slider-label"><span style="color:#7ab3d4;">'+label+'</span><span style="color:#38bdf8;font-weight:700;" id="val-'+key+'">'+state[key]+'</span></div>'+
+      '<div class="slider-flex"><span class="slider-end">'+lo+'</span>'+
+      '<input type="range" min="0" max="100" value="'+state[key]+'" oninput="state.'+key+'=+this.value;document.getElementById(\'val-'+key+'\').textContent=this.value;">'+
+      '<span class="slider-end" style="text-align:right;">'+hi+'</span></div>';
+    box.appendChild(row);
+  });
+}
+
+// ───────── TABS ─────────
+function switchTab(tab) {
+  ["input","output","score"].forEach(t => {
+    document.getElementById("tab-"+t).style.display = (t===tab ? "block" : "none");
+    document.querySelector('.tab[data-tab="'+t+'"]').classList.toggle("on", t===tab);
+  });
+}
+
+// ───────── MESSAGES ─────────
+function showMsg(text, type) {
+  const box = document.getElementById("inputMsg");
+  box.innerHTML = text ? '<div class="msg '+type+'">'+text+'</div>' : "";
+}
+
+// ───────── GENERATE LYRICS ─────────
+async function generateLyrics() {
+  const kw = document.getElementById("keywords").value.trim();
+  if (!kw) { showMsg("⚠️ キーワードを入力してください", "err"); switchTab("input"); return; }
+  const btn = document.getElementById("genLyricsBtn");
+  const reBtn = document.getElementById("reLyrics");
+  btn.disabled = true; btn.textContent = "⏳ 生成中..."; if (reBtn) reBtn.disabled = true;
+  showMsg("", "");
+  state.loopLog = [];
+
+  const tags = STRUCT_TAGS[state.structure] || STRUCT_TAGS["カスタム"];
+  const vObj = VOCALS.find(v => v.id === state.vocal);
+  const lenLabel = LYRIC_LENGTHS.find(l => l.id === state.lyricLen).label;
+
+  const prompt =
+`あなたはSUNO AI専用の日本語作詞家です。以下の条件で歌詞を生成してください。
+
+【キーワード】${kw}
+【ジャンル】${state.genre}
+【ムード】${state.mood}
+【テーマ】${state.theme}
+【構成】${state.structure}（使うセクションタグ: ${tags.join(", ")}）
+【ボーカル】${vObj.label}
+【長さ】${lenLabel}
+【雰囲気】明るさ:${state.brightness}/100、激しさ:${state.intensity}/100、感情:${state.emotion}/100、テンポ:${state.tempoFeel}/100
+
+【SUNO歌詞ルール・厳守】
+1. 漢字はカタカナに変換する（例：海→ウミ、愛→アイ、夜→ヨル）
+2. 送り仮名・接続詞・助詞は平仮名のまま（例：の、が、を、て、に、は、だ、です）
+3. セクションタグは必ず英語で（[Chorus][Verse][Bridge][Intro][Outro][Pre-Chorus]等）
+4. 日本語タグ（Aメロ等）は絶対に使わない
+5. 各セクション4〜8行程度
+6. 韻を踏む、メロディに乗りやすい言葉選び
+7. 歌詞のみ出力（説明文・前置き不要）
+
+今すぐ歌詞を出力してください：`;
+
+  let best = "", bestScore = 0;
+  const logs = [];
+  for (let i = 1; i <= 3; i++) {
+    try {
+      let result = await callGemini(prompt);
+      result = result.trim().replace(/^```[a-z]*\n?/i, "").replace(/\n?```$/, "");
+      const { score, notes } = scorePrompt(result, "dummy");
+      logs.push({ round: i, score, notes: notes.join(" / "), preview: result.slice(0, 40) });
+      if (score > bestScore) { bestScore = score; best = result; }
+      if (score >= 80) break;
+    } catch (e) {
+      logs.push({ round: i, score: 0, notes: e.message, preview: "" });
+      showMsg("⚠️ " + e.message, "err");
+      break;
+    }
+  }
+
+  btn.disabled = false; btn.textContent = "🎵 歌詞を生成する"; if (reBtn) reBtn.disabled = false;
+
+  if (!best) { switchTab("input"); return; }
+
+  state.lyrics = best;
+  state.loopLog = logs;
+  state.scoreInfo = scorePrompt(best, state.style);
+  renderLyrics();
+  renderScore();
+  document.getElementById("saveBtn").style.display = "block";
+  switchTab("output");
+  if (!state.style) {
+    showMsg("💡 歌詞が完成！次に出力タブで「スタイルプロンプトを生成」を押してください", "info");
+  }
+}
+
+// ───────── GENERATE STYLE ─────────
+async function generateStyle() {
+  const btn = document.getElementById("genStyleBtn");
+  const reBtn = document.getElementById("reStyle");
+  const kw = document.getElementById("keywords").value.trim();
+  const vObj = VOCALS.find(v => v.id === state.vocal);
+  if (btn) { btn.disabled = true; btn.textContent = "⏳ 生成中..."; }
+  if (reBtn) reBtn.disabled = true;
+
+  const prompt =
+`あなたはSUNO AI専用のスタイルプロンプト専門家です。英語のスタイルプロンプトを生成してください。
+
+【ジャンル】${state.genre}
+【ムード】${state.mood}
+【テーマ】${state.theme}
+【ボーカル】${vObj.en}
+【明るさ】${state.brightness}/100
+【激しさ】${state.intensity}/100
+【感情の深さ】${state.emotion}/100
+【テンポ感】${state.tempoFeel}/100
+【追加キーワード】${kw}
+
+【ルール・厳守】
+1. 英語のみ（日本語不可）
+2. 歌手名・アーティスト名を絶対に入れない
+3. ${MAX_STYLE_CHARS}文字以内
+4. 楽器、リズム、雰囲気、音質、BPM感覚、ボーカルスタイルを含める
+5. カンマ区切りのタグ形式
+6. 説明文なし・タグのみ出力
+
+スタイルプロンプトのみ出力：`;
+
+  let ok = false;
+  for (let r = 0; r < 3; r++) {
+    try {
+      let result = await callGemini(prompt);
+      result = result.trim().replace(/^```[a-z]*\n?/i, "").replace(/\n?```$/, "").trim();
+      if (result.length > MAX_STYLE_CHARS) result = result.slice(0, MAX_STYLE_CHARS);
+      state.style = result;
+      state.scoreInfo = scorePrompt(state.lyrics, result);
+      renderStyle();
+      renderScore();
+      ok = true;
+      break;
+    } catch (e) {
+      if (r === 2) { showMsg("⚠️ スタイル生成失敗: " + e.message, "err"); switchTab("input"); }
+      else await new Promise(res => setTimeout(res, 1000 * (r+1)));
+    }
+  }
+  if (btn) { btn.disabled = false; btn.textContent = "🎨 スタイルプロンプトを生成する"; }
+  if (reBtn) reBtn.disabled = false;
+}
+
+// ───────── RENDER OUTPUT ─────────
+function renderLyrics() {
+  const box = document.getElementById("lyricsBox");
+  if (state.lyrics) {
+    box.innerHTML = '<pre class="lyrics" id="lyricsOut"></pre>';
+    document.getElementById("lyricsOut").textContent = state.lyrics;
+  } else {
+    box.innerHTML = '<div class="placeholder">設定タブで「歌詞を生成する」を押してください</div>';
+  }
+}
+function renderStyle() {
+  const box = document.getElementById("styleBox");
+  if (state.style) {
+    box.innerHTML =
+      '<textarea class="style-area" id="styleVal" oninput="onStyleEdit()"></textarea>'+
+      '<button class="gen-btn" style="background:#0a2040;color:#38bdf8;border:1px solid #38bdf8;box-shadow:none;" onclick="generateStyle()">🔄 スタイルを再生成</button>';
+    document.getElementById("styleVal").value = state.style;
+  } else {
+    box.innerHTML = '<button class="gen-btn" id="genStyleBtn" onclick="generateStyle()">🎨 スタイルプロンプトを生成する</button>';
+  }
+  updateStyleCounter();
+}
+function onStyleEdit() {
+  const v = document.getElementById("styleVal").value.slice(0, MAX_STYLE_CHARS);
+  state.style = v;
+  updateStyleCounter();
+}
+function updateStyleCounter() {
+  const len = (state.style || "").length;
+  const el = document.getElementById("styleLen");
+  const bar = document.getElementById("styleBar");
+  const color = len > MAX_STYLE_CHARS ? "#dc2626" : len > 900 ? "#d97706" : "#38bdf8";
+  el.textContent = len + " / " + MAX_STYLE_CHARS + "文字" + (len > MAX_STYLE_CHARS ? " ⚠️ 超過！" : "");
+  el.style.color = color;
+  bar.style.width = Math.min(len/MAX_STYLE_CHARS*100,100) + "%";
+  bar.style.background = color;
+}
+
+// ───────── RENDER SCORE ─────────
+function renderScore() {
+  const c = document.getElementById("scoreContent");
+  const si = state.scoreInfo;
+  if (!si) { c.innerHTML = '<div class="placeholder">まず設定タブで歌詞を生成してください</div>'; return; }
+  const col = si.score >= 80 ? "#4ade80" : si.score >= 60 ? "#fbbf24" : "#f87171";
+  const verdict = si.score >= 80 ? "🎉 高品質！SUNO貼り付け推奨"
+    : si.score >= 60 ? "✅ 合格水準。スタイルを生成するとさらに上がります"
+    : "⚠️ 再生成を推奨";
+  const vbg = si.score >= 80 ? "#052e16" : si.score >= 60 ? "#1c1a07" : "#1c0707";
+
+  let html =
+    '<div class="score-card"><div style="font-size:13px;color:#7ab3d4;margin-bottom:8px;">総合クオリティスコア</div>'+
+    '<div class="score-num" style="color:'+col+';">'+si.score+'</div>'+
+    '<div style="font-size:14px;color:#94a3b8;">/ 100 点</div>'+
+    '<div style="margin-top:12px;background:'+vbg+';border-radius:8px;padding:8px 12px;font-size:13px;color:'+col+';">'+verdict+'</div></div>';
+
+  html += '<div class="out-card"><div class="t" style="font-size:13px;font-weight:700;color:#38bdf8;margin-bottom:10px;">📋 チェック項目</div>';
+  si.notes.forEach(n => {
+    html += '<div style="font-size:12px;color:'+(n.startsWith("✓")?"#4ade80":"#f87171")+';padding:4px 0;border-bottom:1px solid #0d2440;">'+n+'</div>';
+  });
+  html += '</div>';
+
+  if (state.loopLog.length) {
+    html += '<div class="out-card"><div style="font-size:13px;font-weight:700;color:#38bdf8;margin-bottom:10px;">🔄 生成ループ履歴</div>';
+    state.loopLog.forEach(l => {
+      const lc = l.score >= 80 ? "#4ade80" : l.score >= 60 ? "#fbbf24" : "#f87171";
+      html += '<div class="loop-item"><div style="display:flex;justify-content:space-between;align-items:center;">'+
+        '<span style="font-size:12px;color:#7ab3d4;">Round '+l.round+'</span>'+
+        '<span style="font-size:13px;font-weight:700;color:'+lc+';">'+l.score+'pt</span></div>'+
+        '<div style="font-size:11px;color:#94a3b8;margin-top:4px;">'+l.notes+'</div>'+
+        (l.preview ? '<div style="font-size:11px;color:#7ab3d4;margin-top:4px;font-style:italic;">「'+l.preview+'...」</div>' : '')+
+        '</div>';
+    });
+    html += '</div>';
+  }
+
+  const crit = [
+    ["歌詞の充実度",20,"100文字以上"],["セクションタグ",15,"英語タグ使用"],
+    ["スタイル文字数",20,"100〜1000文字"],["スタイル英語のみ",15,"日本語なし"],
+    ["カタカナ変換",15,"漢字をカタカナ"],["複数セクション",15,"3以上"],
+  ];
+  html += '<div class="out-card"><div style="font-size:13px;font-weight:700;color:#38bdf8;margin-bottom:10px;">📐 採点基準</div>';
+  crit.forEach(([n,pt,note]) => {
+    html += '<div class="crit-row"><div><span style="color:#e0eeff;">'+n+'</span>'+
+      '<span style="color:#7ab3d4;font-size:11px;margin-left:6px;">('+note+')</span></div>'+
+      '<span style="color:#38bdf8;font-weight:700;">'+pt+'pt</span></div>';
+  });
+  html += '<div style="text-align:right;margin-top:8px;font-size:12px;color:#38bdf8;font-weight:700;">合計 100pt</div></div>';
+
+  c.innerHTML = html;
+}
+
+// ───────── COPY ─────────
+function copyText(elId, iconId) {
+  const el = document.getElementById(elId);
+  const text = el ? (el.value !== undefined ? el.value : el.textContent) : "";
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const icon = document.getElementById(iconId);
+    if (icon) { icon.textContent = "✅"; setTimeout(() => icon.textContent = "📋", 2000); }
+  });
+}
+
+// ───────── HISTORY ─────────
+function saveHistory() {
+  if (!state.lyrics) return;
+  const entry = {
+    id: Date.now(), date: new Date().toLocaleString("ja-JP"),
+    keywords: document.getElementById("keywords").value.trim(),
+    genre: state.genre, mood: state.mood,
+    lyrics: state.lyrics.slice(0,60) + "…",
+    fullLyrics: state.lyrics, style: state.style,
+    score: state.scoreInfo ? state.scoreInfo.score : 0,
+  };
+  state.history.unshift(entry);
+  state.history = state.history.slice(0,10);
+  try { localStorage.setItem("suno_history", JSON.stringify(state.history)); } catch(_) {}
+  renderHistBtn();
+  showMsg("💾 保存しました", "info");
+}
+function loadHistory() {
+  try {
+    const h = localStorage.getItem("suno_history");
+    if (h) state.history = JSON.parse(h);
+  } catch(_) {}
+  renderHistBtn();
+}
+function renderHistBtn() {
+  document.getElementById("histBtn").textContent = "📚 履歴 (" + state.history.length + ")";
+}
+function toggleHist() {
+  const d = document.getElementById("histDrawer");
+  const btn = document.getElementById("histBtn");
+  const open = d.style.display === "none";
+  d.style.display = open ? "block" : "none";
+  btn.classList.toggle("on", open);
+  if (open) renderHistDrawer();
+}
+function renderHistDrawer() {
+  const d = document.getElementById("histDrawer");
+  if (!state.history.length) {
+    d.innerHTML = '<div class="placeholder">まだ保存された履歴はありません</div>';
+    return;
+  }
+  d.innerHTML = "";
+  state.history.forEach(h => {
+    const bg = h.score >= 80 ? "#16a34a" : h.score >= 60 ? "#d97706" : "#dc2626";
+    const div = document.createElement("div");
+    div.className = "hist-item";
+    div.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;">'+
+      '<span style="font-size:12px;color:#7ab3d4;">'+h.date+'</span>'+
+      '<span class="badge" style="background:'+bg+';">'+h.score+'pt</span></div>'+
+      '<div style="font-size:13px;color:#38bdf8;margin-top:4px;">'+h.genre+' / '+h.keywords+'</div>'+
+      '<div style="font-size:12px;color:#94a3b8;margin-top:2px;">'+h.lyrics+'</div>';
+    div.onclick = () => {
+      state.lyrics = h.fullLyrics; state.style = h.style;
+      document.getElementById("keywords").value = h.keywords;
+      state.scoreInfo = scorePrompt(h.fullLyrics, h.style);
+      renderLyrics(); renderStyle(); renderScore();
+      document.getElementById("saveBtn").style.display = "block";
+      toggleHist(); switchTab("output");
+    };
+    d.appendChild(div);
+  });
+}
+
+// ───────── INIT ─────────
+loadKey();
+loadHistory();
+renderGenres();
+renderChips(MOODS, "moodChips", "mood");
+renderChips(THEMES, "themeChips", "theme");
+renderStruct();
+renderVocals();
+renderLen();
+renderSliders();
+</script>
+
+</body>
+</html>
