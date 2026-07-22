@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#06131F">
+<meta name="google" content="notranslate">
+<title>Suno歌詞生成アプリ｜ナガヨシリンfishing club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#06131F; --panel:#0E2434; --panel2:#143247; --line:#23465E;
+  --sea:#5FB3C8; --accent:#E4572E; --lamp:#E8C547;
+  --text:#E8F1F5; --muted:#8FAEC0;
+  --ok:#6FCF97; --warn:#E8C547; --ng:#FF6B6B;
+  --r:14px; --tap:48px;
+  --disp:"Shippori Mincho B1",serif;
+  --body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--ink); color:var(--text); font-family:var(--body);
+  font-size:16px; line-height:1.7; -webkit-text-size-adjust:100%;
+  padding-bottom:calc(84px + env(safe-area-inset-bottom));
+  background-image:radial-gradient(120% 60% at 50% 0%,#0E2A3E 0%,#06131F 62%);
+  background-attachment:fixed;
+}
+.wrap{max-width:720px;margin:0 auto;padding:0 14px}
+
+/* ---------- header ---------- */
+header{position:relative;padding:22px 0 6px;overflow:hidden}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;color:var(--sea);text-transform:uppercase}
+h1{font-family:var(--disp);font-size:27px;line-height:1.35;margin:6px 0 2px;letter-spacing:.01em}
+h1 .em{color:var(--lamp)}
+.sub{color:var(--muted);font-size:13px;margin:0}
+.tide{display:block;width:100%;height:54px;margin-top:10px}
+.seal{position:absolute;top:20px;right:12px;width:56px;height:56px;opacity:.92}
+
+/* ---------- cards ---------- */
+section{margin:18px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.card + .card{margin-top:12px}
+h2{font-family:var(--disp);font-size:17px;margin:0 0 12px;display:flex;align-items:center;gap:9px}
+h2 .no{font-family:var(--mono);font-size:11px;color:var(--ink);background:var(--sea);
+  border-radius:5px;padding:3px 7px;letter-spacing:.06em;font-weight:700}
+label{display:block;font-size:12.5px;color:var(--muted);margin:0 0 5px;letter-spacing:.04em}
+.field{margin-bottom:13px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+input[type=text],input[type=number],select,textarea{
+  width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);
+  border-radius:10px;padding:12px;font:inherit;font-size:15px;min-height:var(--tap)
+}
+textarea{min-height:84px;resize:vertical;line-height:1.75}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--sea) 50%),linear-gradient(135deg,var(--sea) 50%,transparent 50%);
+  background-position:calc(100% - 18px) 22px,calc(100% - 13px) 22px;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:38px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;width:100%;height:100%;left:0;top:0;margin:0;cursor:pointer}
+.chip span{display:block;padding:10px 13px;min-height:44px;line-height:24px;border:1px solid var(--line);
+  border-radius:999px;background:var(--panel2);font-size:14px;color:var(--muted);transition:.15s}
+.chip input:checked + span{background:var(--sea);border-color:var(--sea);color:#04202C;font-weight:700}
+.chip input:focus-visible + span{outline:2px solid var(--lamp);outline-offset:2px}
+
+/* buttons */
+button{font:inherit;cursor:pointer;border-radius:11px;border:1px solid var(--line);
+  background:var(--panel2);color:var(--text);min-height:var(--tap);padding:0 15px;transition:.15s}
+button:active{transform:scale(.985)}
+.btn-main{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;width:100%;font-size:16px}
+.btn-sub{width:100%}
+.btn-line{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+.mini{min-height:38px;padding:0 11px;font-size:12.5px;border-radius:9px}
+
+/* output */
+.out{background:#08192A;border:1px solid var(--line);border-radius:11px;padding:13px;
+  font-size:15px;line-height:1.95;white-space:pre-wrap;word-break:break-word;min-height:60px}
+.out.empty{color:#5C7D91;font-size:13.5px;line-height:1.7}
+.out .tag{color:var(--lamp);font-family:var(--mono);font-size:13px;letter-spacing:.06em}
+.out.en{font-family:var(--mono);font-size:13.5px;line-height:1.8}
+.outhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.outhead h3{margin:0;font-size:14px;font-weight:700}
+.tabs{display:flex;gap:7px;margin-bottom:10px}
+.tabs button{flex:1;min-height:40px;font-size:13.5px;border-radius:9px}
+.tabs button[aria-selected=true]{background:var(--sea);border-color:var(--sea);color:#04202C;font-weight:700}
+
+/* tide meter (signature) */
+.meter{margin-top:11px;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#08192A}
+.meter-head{display:flex;justify-content:space-between;padding:9px 12px;font-size:12px;color:var(--muted)}
+.meter-head b{font-family:var(--mono);font-size:14px;color:var(--sea)}
+.meter-body{position:relative;height:44px;overflow:hidden}
+.meter-fill{position:absolute;left:0;bottom:0;width:100%;height:0%;
+  background:linear-gradient(180deg,rgba(95,179,200,.55),rgba(95,179,200,.18));transition:height .45s ease}
+.meter-fill.over{background:linear-gradient(180deg,rgba(255,107,107,.6),rgba(255,107,107,.2))}
+.meter-body::after{content:"";position:absolute;left:0;right:0;top:0;bottom:0;
+  background:repeating-linear-gradient(90deg,transparent 0 23px,rgba(255,255,255,.05) 23px 24px)}
+.limit{position:absolute;left:0;right:0;bottom:100%;border-top:1px dashed var(--ng)}
+
+/* checker */
+.check{list-style:none;margin:0;padding:0}
+.check li{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(35,70,94,.6);font-size:14px;align-items:flex-start}
+.check li:last-child{border-bottom:0}
+.badge{flex:0 0 auto;font-family:var(--mono);font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:5px;margin-top:3px;letter-spacing:.05em}
+.b-ok{background:rgba(111,207,151,.15);color:var(--ok)}
+.b-warn{background:rgba(232,197,71,.15);color:var(--warn)}
+.b-ng{background:rgba(255,107,107,.15);color:var(--ng)}
+.check em{font-style:normal;color:var(--muted);font-size:12.5px;display:block}
+.hl{background:rgba(255,107,107,.22);color:#FFD9D9;border-radius:3px;padding:0 2px}
+.score{display:flex;align-items:baseline;gap:9px;margin-bottom:10px}
+.score b{font-family:var(--mono);font-size:30px;line-height:1;color:var(--lamp)}
+.score span{font-size:12px;color:var(--muted)}
+
+/* history */
+.hist{list-style:none;margin:0;padding:0;font-size:13.5px}
+.hist li{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(35,70,94,.6);align-items:center}
+.hist li:last-child{border-bottom:0}
+.hist .t{font-family:var(--mono);font-size:11px;color:var(--muted);flex:0 0 auto}
+.hist .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* dict */
+details{border:1px solid var(--line);border-radius:11px;background:var(--panel2);padding:0 13px;margin-top:11px}
+summary{min-height:var(--tap);display:flex;align-items:center;font-size:14px;cursor:pointer;color:var(--sea)}
+details[open]{padding-bottom:13px}
+
+/* sticky bar */
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(6,19,31,.93);
+  backdrop-filter:blur(10px);border-top:1px solid var(--line);
+  padding:9px 14px calc(9px + env(safe-area-inset-bottom))}
+.bar-in{max-width:720px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+.bar button{min-height:50px;font-size:14px;padding:0 8px}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);
+  bottom:calc(96px + env(safe-area-inset-bottom));background:var(--lamp);color:#1A1400;
+  padding:11px 20px;border-radius:999px;font-size:14px;font-weight:700;z-index:40;
+  opacity:0;pointer-events:none;transition:.25s;max-width:88vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+footer{color:#5C7D91;font-size:11.5px;text-align:center;padding:22px 0 8px;line-height:1.9}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:360px){.row{grid-template-columns:1fr}h1{font-size:23px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <svg class="seal" viewBox="0 0 100 100" aria-label="長吉凛釣 落款">
+    <rect x="2" y="2" width="96" height="96" rx="7" fill="#C1272D"/>
+    <text x="28" y="42" font-size="30" fill="#fff" font-family="serif" font-weight="700" text-anchor="middle">長</text>
+    <text x="72" y="42" font-size="30" fill="#fff" font-family="serif" font-weight="700" text-anchor="middle">吉</text>
+    <text x="28" y="86" font-size="30" fill="#fff" font-family="serif" font-weight="700" text-anchor="middle">釣</text>
+    <text x="72" y="86" font-size="30" fill="#fff" font-family="serif" font-weight="700" text-anchor="middle">凛</text>
+  </svg>
+  <p class="eyebrow">Nagayoshirin Fishing Club</p>
+  <h1>Suno<span class="em">歌詞</span>生成アプリ</h1>
+  <p class="sub">条件を選ぶ → 歌詞と英語スタイルを作る → 入稿前に自動チェック</p>
+  <svg class="tide" viewBox="0 0 700 54" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 34 C 70 12, 140 12, 210 34 S 350 56, 420 34 S 560 12, 630 34 S 700 46, 700 40"
+          fill="none" stroke="#5FB3C8" stroke-width="2" opacity=".85"/>
+    <path d="M0 44 C 70 26, 140 26, 210 44 S 350 62, 420 44 S 560 26, 630 44 S 700 54, 700 50"
+          fill="none" stroke="#E4572E" stroke-width="1.5" opacity=".55"/>
+  </svg>
+</header>
+
+<!-- 01 条件 -->
+<section>
+<div class="card">
+  <h2><span class="no">01</span>曲の条件</h2>
+
+  <div class="field">
+    <label for="f-title">曲タイトル（空欄なら自動で付ける）</label>
+    <input type="text" id="f-title" placeholder="例：夜明けの埠頭">
+  </div>
+
+  <div class="field">
+    <label for="f-theme">今回のテーマ・出来事（自由入力）</label>
+    <textarea id="f-theme" placeholder="例：三人で朝マズメを狙ったけど坊主。帰りのラーメンが一番うまかった。"></textarea>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="f-spot">釣り場</label>
+      <select id="f-spot"></select>
+    </div>
+    <div class="field">
+      <label for="f-genre">ジャンル</label>
+      <select id="f-genre"></select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>対象魚（複数可）</label>
+    <div class="chips" id="f-fish"></div>
+  </div>
+
+  <div class="field">
+    <label>登場メンバー</label>
+    <div class="chips" id="f-member"></div>
+  </div>
+
+  <div class="field">
+    <label>雰囲気</label>
+    <div class="chips" id="f-mood"></div>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="f-bpm">BPM</label>
+      <input type="number" id="f-bpm" value="112" min="50" max="200" inputmode="numeric">
+    </div>
+    <div class="field">
+      <label for="f-key">キー</label>
+      <select id="f-key"></select>
+    </div>
+  </div>
+
+  <div class="field" style="margin-bottom:0">
+    <label for="f-vocal">ボーカル</label>
+    <select id="f-vocal"></select>
+  </div>
+</div>
+</section>
+
+<!-- 02 歌詞 -->
+<section>
+<div class="card">
+  <h2><span class="no">02</span>歌詞</h2>
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-suno" aria-selected="true" aria-controls="out-lyrics">SUNO入稿用</button>
+    <button role="tab" id="tab-draft" aria-selected="false" aria-controls="out-lyrics">下書き（通常表記）</button>
+  </div>
+  <div class="out empty" id="out-lyrics" role="tabpanel" tabindex="0" translate="no">まだ何もありません。下の「歌詞を作る」を押してください。</div>
+  <div class="btn-line">
+    <button class="btn-sub" id="btn-copy-lyrics">歌詞をコピー</button>
+    <button class="btn-sub" id="btn-reroll">別パターンで作り直す</button>
+  </div>
+  <details>
+    <summary>カタカナ変換辞書に単語を足す</summary>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label for="d-kanji">漢字</label><input type="text" id="d-kanji" placeholder="常夜灯"></div>
+      <div class="field"><label for="d-kana">カタカナ</label><input type="text" id="d-kana" placeholder="ジョウヤトウ"></div>
+    </div>
+    <button class="btn-sub mini" id="btn-dict-add" style="min-height:44px">辞書に追加する</button>
+    <p style="font-size:12px;color:var(--muted);margin:10px 0 0" id="dict-count"></p>
+  </details>
+</div>
+</section>
+
+<!-- 03 スタイル -->
+<section>
+<div class="card">
+  <h2><span class="no">03</span>スタイルプロンプト（英語）</h2>
+  <div class="out en empty" id="out-style" translate="no">歌詞を作ると同時に出ます。</div>
+  <div class="meter" aria-hidden="true">
+    <div class="meter-head"><span>文字数 / 上限 <span id="meter-cap">920</span></span><b id="meter-num">0</b></div>
+    <div class="meter-body"><div class="meter-fill" id="meter-fill"></div></div>
+  </div>
+  <div class="btn-line">
+    <button class="btn-sub" id="btn-copy-style">スタイルをコピー</button>
+    <button class="btn-sub" id="btn-copy-title">タイトルをコピー</button>
+  </div>
+</div>
+</section>
+
+<!-- 04 チェック -->
+<section>
+<div class="card">
+  <h2><span class="no">04</span>入稿前チェック</h2>
+  <div class="score"><b id="score-num">–</b><span id="score-label">歌詞を作るとチェックが走ります</span></div>
+  <ul class="check" id="check-list"></ul>
+</div>
+</section>
+
+<!-- 05 履歴 -->
+<section>
+<div class="card">
+  <h2><span class="no">05</span>保存した曲</h2>
+  <ul class="hist" id="hist-list"></ul>
+  <button class="btn-sub mini" id="btn-hist-clear" style="min-height:44px;margin-top:11px">保存をすべて消す</button>
+</div>
+</section>
+
+<footer>
+  ナガヨシリンfishing club ／ 広報担当部長 ガキオヤRin<br>
+  データはこの端末の中だけに保存されます
+</footer>
+</div>
+
+<div class="bar"><div class="bar-in">
+  <button class="btn-main" id="btn-gen">歌詞を作る</button>
+  <button id="btn-save">保存</button>
+  <button id="btn-copy-all">全部コピー</button>
+</div></div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ===== APP_LOGIC_START ===== */
+(function(){
+"use strict";
+
+/* ---------------- 1. 漢字→カタカナ辞書（長い語から先にマッチ） ---------------- */
+var BASE_DICT = {
+  "何度":"ナンド","日々":"ヒビ","返事":"ヘンジ","笑い声":"ワライゴエ","地元":"ジモト",
+  "探して":"サガして","軽い":"カルい","灯り":"アカり","遠く":"トオく","匂い":"ニオい",
+  "止めて":"トめて","止まら":"トマら","変わ":"カワ","誰も":"ダレも","言わ":"イわ",
+  "乗る":"ノる","乗って":"ノって","好き":"スき","今":"イマ","分かる":"ワかる","分から":"ワから",
+  "最初":"サイショ","最後":"サイゴ","全部":"ゼンブ","本当":"ホントウ","大切":"タイセツ",
+  "元気":"ゲンキ","頑張":"ガンバ","釣果":"チョウカ","潮位":"チョウイ","天気":"テンキ",
+  "気温":"キオン","水温":"スイオン","常連":"ジョウレン","家族":"カゾク","友達":"トモダチ",
+  "電話":"デンワ","写真":"シャシン","動画":"ドウガ","音楽":"オンガク","準備":"ジュンビ",
+  "出発":"シュッパツ","到着":"トウチャク","移動":"イドウ","休憩":"キュウケイ","弁当":"ベントウ",
+  "温泉":"オンセン","温かい":"アタタかい","初めて":"ハジめて","震え":"フルえ","狙":"ネラ",
+  "一番":"イチバン","二番":"ニバン","一匹":"イッピキ","二匹":"ニヒキ","何匹":"ナンビキ",
+  "大変":"タイヘン","景色":"ケシキ","夕方":"ユウガタ","昼間":"ヒルマ","週末":"シュウマツ",
+  "毎週":"マイシュウ","毎回":"マイカイ","今回":"コンカイ","前回":"ゼンカイ","次回":"ジカイ",
+  "約束":"ヤクソク","記録":"キロク","記憶":"キオク","景":"ケイ","理由":"リユウ",
+  "気持ち":"キモち","気配":"ケハイ","本気":"ホンキ","勝負":"ショウブ","反省":"ハンセイ",
+  "納竿":"ノウカン","入れ食い":"イレグい","当たり":"アタり","釣り上げ":"ツリアげ",
+  "一":"イチ","番":"バン","初":"ハツ","震":"シン","変":"ヘン","止":"ト","匂":"ニオ",
+  "何":"ナニ","度":"ド","誰":"ダレ","言":"イ","日":"ヒ","灯":"アカリ","遠":"トオ",
+  "返":"カエ","事":"コト","笑":"ワラ","乗":"ノ","好":"ス","地":"ジ","元":"モト",
+  "探":"サガ","軽":"カル",
+  "鹿島公共埠頭":"カシマコウキョウフトウ","常陸那珂":"ヒタチナカ","那珂湊":"ナカミナト",
+  "鹿島":"カシマ","大洗":"オオアライ","波崎":"ハサキ","銚子":"チョウシ","日立":"ヒタチ",
+  "常夜灯":"ジョウヤトウ","潮見表":"シオミヒョウ","朝焼け":"アサヤけ","夕焼け":"ユウヤけ",
+  "駐車場":"チュウシャジョウ","自動販売機":"ジドウハンバイキ","会長":"カイチョウ","勇者":"ユウシャ",
+  "満潮":"マンチョウ","干潮":"カンチョウ","潮目":"シオメ","大物":"オオモノ","本命":"ホンメイ",
+  "外道":"ゲドウ","坊主":"ボウズ","仕掛け":"シカけ","穂先":"ホサキ","竿先":"サオサキ",
+  "堤防":"テイボウ","埠頭":"フトウ","漁港":"ギョコウ","地磯":"ジイソ","沖":"オキ",
+  "三人":"サンニン","二人":"フタリ","一人":"ヒトリ","一投":"イットウ","三度目":"サンドメ",
+  "一日":"イチニチ","今日":"キョウ","明日":"アシタ","昨日":"キノウ","来週":"ライシュウ",
+  "夜明け":"ヨアけ","真夜中":"マヨナカ","深夜":"シンヤ","早朝":"ソウチョウ",
+  "海":"ウミ","波":"ナミ","潮":"シオ","風":"カゼ","空":"ソラ","星":"ホシ","月":"ツキ",
+  "雨":"アメ","雲":"クモ","光":"ヒカリ","影":"カゲ","色":"イロ","銀":"ギン","金":"キン",
+  "夜":"ヨル","朝":"アサ","昼":"ヒル","夏":"ナツ","冬":"フユ","春":"ハル","秋":"アキ",
+  "釣り":"ツリ","釣":"ツリ","竿":"サオ","糸":"イト","針":"ハリ","餌":"エサ","網":"アミ",
+  "魚":"サカナ","鱗":"ウロコ","群れ":"ムレ","足元":"アシモト","水面":"ミナモ",
+  "音":"オト","声":"コエ","歌":"ウタ","唄":"ウタ","話":"ハナシ","言葉":"コトバ",
+  "心":"ココロ","夢":"ユメ","涙":"ナミダ","汗":"アセ","息":"イキ","腕":"ウデ","指先":"ユビサキ",
+  "頬":"ホホ","背中":"セナカ","肩":"カタ","手":"テ","目":"メ","顔":"カオ",
+  "仲間":"ナカマ","誰か":"ダレか","俺":"オレ","僕":"ボク","君":"キミ","私":"ワタシ",
+  "車":"クルマ","道":"ミチ","街":"マチ","家":"イエ","町":"マチ","橋":"ハシ",
+  "珈琲":"コーヒー","時間":"ジカン","瞬間":"シュンカン","場所":"バショ","重さ":"オモさ",
+  "感覚":"カンカク","支度":"シタク","味方":"ミカタ","最高":"サイコウ","合図":"アイズ",
+  "静か":"シズか","大きく":"オオきく","小さく":"チイさく","少しずつ":"スコしずつ",
+  "冷え":"ヒえ","冷め":"サめ","白む":"シラむ","立て":"タて","巻き上げ":"マきアげ",
+  "逃がさない":"ニがさない","響く":"ヒビく","裂く":"サく","鳴い":"ナい","揺れ":"ユれ",
+  "回る":"マワる","伸びる":"ノびる","跳ねる":"ハねる","撫でて":"ナでて","結び直す":"ムスびナオす",
+  "整える":"トトノえる","確かめた":"タシかめた","追いかけた":"オいかけた","詰めた":"ツめた",
+  "取られて":"トられて","折れる":"オれる","振り続ける":"フりツヅける","笑って":"ワラって",
+  "笑う":"ワラう","泣い":"ナい","帰り":"カエり","来よう":"コよう","会おう":"アおう",
+  "待つ":"マつ","待って":"マって","消える":"キえる","伝わる":"ツタわる","残して":"ノコして",
+  "終わらない":"オワらない","合わせろ":"アワせろ","出す":"ダす","吐く":"ハく","飲み":"ノみ",
+  "在り":"アり","立つ":"タつ","下":"シタ","中":"ナカ","上":"ウエ","東":"ヒガシ","西":"ニシ",
+  "隣":"トナリ","次":"ツギ","前":"マエ","後ろ":"ウシロ","側":"ガワ","分":"ブン",
+  "明け":"アけ","戻":"モド","逃":"ニ","掛":"カ","巻":"マ","投":"ナ","釣れ":"ツレ"
+};
+
+var STYLE_MAX=920, STYLE_WARN=Math.round(STYLE_MAX*0.93);
+var CUSTOM_KEY="nfc_suno_dict_v1", HIST_KEY="nfc_suno_hist_v1";
+function loadCustom(){ try{ return JSON.parse(localStorage.getItem(CUSTOM_KEY)||"{}"); }catch(e){ return {}; } }
+function saveCustom(o){ try{ localStorage.setItem(CUSTOM_KEY,JSON.stringify(o)); }catch(e){} }
+
+function buildDict(){
+  var d={},k;
+  for(k in BASE_DICT) d[k]=BASE_DICT[k];
+  var c=loadCustom();
+  for(k in c) d[k]=c[k];
+  var keys=Object.keys(d).sort(function(a,b){ return b.length-a.length; });
+  return {map:d,keys:keys};
+}
+
+var KANJI_RE=/[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/;
+var KANJI_RE_G=/[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/g;
+
+function toKana(text){
+  var d=buildDict(), out=text, i;
+  for(i=0;i<d.keys.length;i++){
+    var k=d.keys[i];
+    if(out.indexOf(k)>=0) out=out.split(k).join(d.map[k]);
+  }
+  return out;
+}
+function residualKanji(text){
+  var m=text.match(KANJI_RE_G);
+  if(!m) return [];
+  var seen={},list=[],i;
+  for(i=0;i<m.length;i++){ if(!seen[m[i]]){ seen[m[i]]=1; list.push(m[i]); } }
+  return list;
+}
+
+/* ---------------- 2. 選択肢データ ---------------- */
+var SPOTS=["鹿島公共埠頭","大洗","那珂湊","波崎","常陸那珂","地元の漁港"];
+var FISH=["アジ","メバル","カサゴ","シーバス","メゴチ","クロダイ","カマス","タチウオ","サバ","ヒラメ"];
+var MEMBERS=["ナナヌマ会長","勇者ワカグリ","ガキオヤRin"];
+var MOODS=["熱い","切ない","コミカル","爽やか"];
+var KEYS=["Am","Em","Dm","Gm","C","G","D","F","D#m","Bm"];
+var VOCALS={
+  "男性ボーカル":"male lead vocal",
+  "女性ボーカル":"female lead vocal",
+  "男女デュエット":"male and female duet vocals",
+  "コーラス多め":"male lead vocal with layered group harmonies"
+};
+var GENRES={
+  "レゲエ":{en:"roots reggae, laid-back one-drop groove, bubbling organ skank, warm dub delay, deep round bass",bpm:78},
+  "シティポップ":{en:"japanese city pop, chorus-drenched electric piano, slap bass, clean guitar arpeggios, night-drive groove",bpm:112},
+  "演歌ロック":{en:"enka-flavored rock, minor pentatonic melody, wailing lead guitar, dramatic strings, heavy snare",bpm:96},
+  "メロディックパンク":{en:"melodic punk rock, fast downstroke guitars, gang vocal shouts, driving eighth-note bass",bpm:172},
+  "ファンク":{en:"funk, syncopated clavinet, tight horn stabs, popping bass, crisp sixteenth-note hi-hats",bpm:104},
+  "バラード":{en:"piano ballad, wide reverb, restrained brush drums, swelling strings, slow emotional build",bpm:68},
+  "ヒップホップ":{en:"boom bap hip hop, dusty drum break, warm upright bass, vinyl crackle, mellow rhodes loop",bpm:88},
+  "アコースティック":{en:"acoustic folk, fingerpicked steel-string guitar, close-miked vocal, gentle shaker and brushes",bpm:92}
+};
+var MOOD_EN={"熱い":"urgent, triumphant, high energy","切ない":"wistful, bittersweet, nostalgic",
+  "コミカル":"playful, tongue-in-cheek, light-hearted","爽やか":"bright, breezy, open-air"};
+
+/* ---------------- 3. 歌詞パーツ（{SPOT}{FISH}{MEMBER}） ---------------- */
+var CHORUS={
+"熱い":[
+ ["夜が明けるまで 竿を立てろ","{SPOT}の風は 俺たちの味方","{FISH}よ 今日は逃がさない","三人分の声が 波に響く"],
+ ["ドラグが鳴いた その瞬間に","言葉はいらない ただ巻き上げろ","{FISH}の銀が 光を裂く","これが俺たちの 夜明けだ"]
+],
+"切ない":[
+ ["帰りの道は いつも静かで","クーラーの中に 夏を詰めた","{FISH}の影を 追いかけた日々","また来ようと 誰かが笑う"],
+ ["{SPOT}の灯りが 遠くなる","話したいことは まだあるのに","波の音だけが 返事をする","それでも明日 また会おう"]
+],
+"コミカル":[
+ ["坊主 坊主 また坊主","餌だけ取られて 心も折れる","それでも竿を 振り続ける","{MEMBER}が今日も 笑ってる"],
+ ["朝から{FISH}を 探してるのに","釣れたのは 空と風だけ","クーラーボックスは 軽いまま","帰りのラーメンが 最高だ"]
+],
+"爽やか":[
+ ["潮風が 頬を撫でていく","{SPOT}の朝は 光でできてる","{FISH}が跳ねる 音が合図","今日も最高の 一日になる"],
+ ["水面の色が 変わる時間","誰かの笑い声が 風に乗る","{FISH}を待つ この静かさが","いちばん好きな 場所になった"]
+]};
+var VERSE=[
+ "常夜灯の下 影が伸びる","駐車場で 支度を整える","潮見表を 何度も確かめた",
+ "コンビニの珈琲 冷めていく","{MEMBER}のリールが 静かに回る","足元の波が 話しかけてくる",
+ "指先が冷えて 感覚が消える","東の空が 少しずつ白む","隣で誰かが 大きく息を吐く",
+ "仕掛けを結び直す 三度目の夜","{SPOT}の匂いは 変わらないまま","誰も言わないけど みんな笑ってる"
+];
+var PRE=[
+ ["穂先が 小さく揺れた","息を止めて 待つ"],
+ ["合わせろ 今だ","腕に伝わる 重さ"],
+ ["まだ終わらない","もう一投だけ"],
+ ["静かに 立つ","次の潮目まで"]
+];
+var OUTRO=[
+ ["また来週 ここで会おう"],["波の音だけ 残していく"],
+ ["ナガヨシリン ここに在り"],["おつかれさま また明日"]
+];
+var TITLE_A=["夜明けの","銀色の","静かな","三人の","潮風の","帰り道の"];
+var TITLE_B=["埠頭","合図","一投","波打ち際","夜","朝マズメ"];
+
+/* ---------------- 4. 生成 ---------------- */
+function pick(arr,rnd){ return arr[Math.floor(rnd()*arr.length)]; }
+function mulberry(seed){
+  var a=seed>>>0;
+  return function(){
+    a|=0; a=a+0x6D2B79F5|0;
+    var t=Math.imul(a^a>>>15,1|a);
+    t=t+Math.imul(t^t>>>7,61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296;
+  };
+}
+function pickN(arr,n,rnd){
+  var pool=arr.slice(),out=[];
+  while(out.length<n && pool.length) out.push(pool.splice(Math.floor(rnd()*pool.length),1)[0]);
+  return out;
+}
+function fill(line,cfg,rnd){
+  return line
+    .split("{SPOT}").join(cfg.spot)
+    .split("{FISH}").join(cfg.fish.length?pick(cfg.fish,rnd):"サカナ")
+    .split("{MEMBER}").join(cfg.members.length?pick(cfg.members,rnd):"仲間");
+}
+function makeTitle(cfg,rnd){
+  if(cfg.title) return cfg.title;
+  return pick(TITLE_A,rnd)+pick(TITLE_B,rnd);
+}
+function themeLines(theme,rnd){
+  if(!theme) return [];
+  var parts=theme.split(/[。\n、,.！？!?]+/).map(function(s){return s.trim();})
+    .filter(function(s){ return s.length>=3 && s.length<=24; });
+  return pickN(parts,Math.min(2,parts.length),rnd);
+}
+function buildLyrics(cfg,seed){
+  var rnd=mulberry(seed);
+  var moodSet=CHORUS[cfg.mood]||CHORUS["爽やか"];
+  var ch=pick(moodSet,rnd).map(function(l){return fill(l,cfg,rnd);});
+  var vp=pickN(VERSE,4,rnd).map(function(l){return fill(l,cfg,rnd);});
+  var extra=themeLines(cfg.theme,rnd);
+  var v1=vp.slice(0,2).concat(extra.slice(0,1));
+  var v2=vp.slice(2,4).concat(extra.slice(1,2));
+  var p=pickN(PRE,2,rnd);
+  var o=pick(OUTRO,rnd);
+  var grand=ch.slice();
+  if(cfg.members.length) grand.push(pick(cfg.members,rnd)+"も ここにいる");
+
+  var L=[];
+  function sec(tag,lines){ L.push("["+tag+"]"); L.push(lines.join("\n")); L.push(""); }
+  sec("Chorus",ch);
+  sec("Verse",v1);
+  sec("Pre-Chorus",p[0]);
+  sec("Chorus",ch);
+  sec("Verse",v2);
+  sec("Pre-Chorus",p[1]);
+  sec("Grand Chorus",grand);
+  sec("Outro",o);
+  return L.join("\n").replace(/\n{3,}/g,"\n\n").trim();
+}
+function buildStyle(cfg){
+  var g=GENRES[cfg.genre]||GENRES["シティポップ"];
+  var f=cfg.fish.length?cfg.fish.join(" and ")+" fishing":"night fishing";
+  var s=[];
+  s.push(g.en);
+  s.push(cfg.bpm+" BPM, key of "+cfg.key);
+  s.push(MOOD_EN[cfg.mood]||"bright");
+  s.push(VOCALS[cfg.vocal]||"male lead vocal");
+  s.push("Japanese lyrics, clear diction, singable phrasing");
+  s.push("harbor and breakwater atmosphere, "+f+", sea breeze, distant lamp light");
+  s.push("clean modern mix, punchy drums, wide stereo, no harshness");
+  var out=s.join(", ")+".";
+  if(out.length>STYLE_MAX) out=out.slice(0,STYLE_MAX-3).replace(/,[^,]*$/,"")+".";
+  return out;
+}
+
+/* ---------------- 5. チェッカー ---------------- */
+var NG_ARTISTS=["beatles","bts","ed sheeran","taylor swift","bruno mars","michael jackson",
+ "bob marley","queen","nirvana","radiohead","daft punk","米津","サザン","b'z","yoasobi","ado",
+ "あいみょん","星野源","king gnu","vaundy","嵐","乃木坂","宇多田","椎名林檎","長渕","矢沢",
+ "浜田省吾","perfume","babymetal","髭男","スピッツ","ミスチル","mr.children"];
+var ORDER=["Chorus","Verse","Pre-Chorus","Chorus","Verse","Pre-Chorus","Grand Chorus","Outro"];
+
+function runChecks(lyrics,style,title){
+  var r=[],score=150;
+  function add(level,name,detail){ r.push({level:level,name:name,detail:detail||""}); }
+
+  // 1 漢字残り
+  var res=residualKanji(lyrics);
+  if(res.length===0) add("ok","漢字は残っていません","SUNOが読み間違える心配なし");
+  else { add("ng","漢字が "+res.length+" 種類 残っています",res.join(" ")+" ／ 辞書に追加すると次から自動で直ります"); score-=res.length*6; }
+
+  // 2 セクションタグ
+  var tags=lyrics.match(/\[[^\]]*\]/g)||[];
+  var badTag=tags.filter(function(t){ return /[\u3040-\u30FF\u4E00-\u9FFF]/.test(t); });
+  if(tags.length===0){ add("ng","セクションタグがありません","[Chorus] などの英語タグが必要です"); score-=25; }
+  else if(badTag.length){ add("ng","タグに日本語が入っています",badTag.join(" ")); score-=20; }
+  else add("ok","セクションタグは英語のみ",tags.length+"個 / "+tags.map(function(t){return t.replace(/[\[\]]/g,"");}).join(" → "));
+
+  // 3 構成順
+  var seq=tags.map(function(t){ return t.replace(/[\[\]]/g,""); });
+  if(seq.length && seq[0]!=="Chorus"){ add("warn","サビ始まりになっていません","Suno向けはChorus始まりが強い"); score-=8; }
+  else if(seq.length) add("ok","サビ始まりの構成","Chorus → Verse → Pre-Chorus …");
+  if(seq.length && seq[seq.length-1]!=="Outro"){ add("warn","最後がOutroではありません","締まりが弱くなることがあります"); score-=5; }
+
+  // 4 スタイル文字数
+  if(style.length===0){ add("ng","スタイルプロンプトが空です",""); score-=25; }
+  else if(style.length>STYLE_MAX){ add("ng","スタイルが上限超過",style.length+" / "+STYLE_MAX+" 文字"); score-=20; }
+  else if(style.length>STYLE_WARN){ add("warn","スタイルが上限に近い",style.length+" / "+STYLE_MAX+" 文字"); score-=4; }
+  else add("ok","スタイルの文字数OK",style.length+" / "+STYLE_MAX+" 文字（残り "+(STYLE_MAX-style.length)+"）");
+
+  // 5 アーティスト名
+  var low=(style+" "+lyrics+" "+title).toLowerCase();
+  var hit=NG_ARTISTS.filter(function(a){ return low.indexOf(a)>=0; });
+  if(hit.length){ add("ng","アーティスト名が入っています",hit.join(" ")); score-=30; }
+  else add("ok","アーティスト名なし","規約に触れる表現は見つかりません");
+
+  // 6 行の長さ
+  var lines=lyrics.split("\n").filter(function(l){ return l && l.indexOf("[")!==0; });
+  var longs=lines.filter(function(l){ return l.replace(/\s/g,"").length>26; });
+  if(longs.length){ add("warn",longs.length+"行が長すぎます","1行26文字以内が歌いやすい"); score-=longs.length*3; }
+  else add("ok","全行が歌いやすい長さ","最長 "+lines.reduce(function(m,l){return Math.max(m,l.replace(/\s/g,"").length);},0)+"文字");
+
+  // 7 全角数字/半角記号の混入
+  if(/[0-9]/.test(lyrics)){ add("warn","歌詞に半角数字があります","読み上げが不安定になりがち"); score-=5; }
+  else add("ok","歌詞に数字なし","");
+
+  // 8 空セクション
+  var empty=lyrics.split(/\[[^\]]*\]/).slice(1).filter(function(b){ return b.trim()===""; });
+  if(empty.length){ add("ng",empty.length+"個の空セクション",""); score-=15; }
+  else add("ok","空のセクションなし","");
+
+  if(score<0) score=0;
+  if(score>150) score=150;
+  return {score:score,items:r};
+}
+
+/* ---------------- 6. UI ---------------- */
+function $(id){ return document.getElementById(id); }
+var state={lyricsDraft:"",lyricsKana:"",style:"",title:"",seed:1,view:"suno"};
+
+function opts(sel,arr){
+  sel.innerHTML=arr.map(function(v){ return '<option>'+v+'</option>'; }).join("");
+}
+function chips(box,arr,name,type,checked){
+  box.innerHTML=arr.map(function(v,i){
+    var on=(type==="radio")?(i===checked?" checked":""):(checked.indexOf(v)>=0?" checked":"");
+    return '<label class="chip"><input type="'+type+'" name="'+name+'" value="'+v+'"'+on+'><span>'+v+'</span></label>';
+  }).join("");
+}
+function chosen(box){
+  return Array.prototype.slice.call(box.querySelectorAll("input:checked")).map(function(i){ return i.value; });
+}
+
+function initForm(){
+  opts($("f-spot"),SPOTS);
+  opts($("f-genre"),Object.keys(GENRES));
+  opts($("f-key"),KEYS);
+  opts($("f-vocal"),Object.keys(VOCALS));
+  chips($("f-fish"),FISH,"fish","checkbox",["アジ"]);
+  chips($("f-member"),MEMBERS,"member","checkbox",MEMBERS);
+  chips($("f-mood"),MOODS,"mood","radio",3);
+  $("f-genre").addEventListener("change",function(){
+    var g=GENRES[this.value]; if(g) $("f-bpm").value=g.bpm;
+  });
+  refreshDictCount();
+}
+function readForm(){
+  return {
+    title:$("f-title").value.trim(),
+    theme:$("f-theme").value.trim(),
+    spot:$("f-spot").value,
+    genre:$("f-genre").value,
+    key:$("f-key").value,
+    bpm:Math.max(50,Math.min(200,parseInt($("f-bpm").value,10)||100)),
+    vocal:$("f-vocal").value,
+    fish:chosen($("f-fish")),
+    members:chosen($("f-member")),
+    mood:(chosen($("f-mood"))[0]||"爽やか")
+  };
+}
+function escapeHTML(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function renderLyrics(){
+  var box=$("out-lyrics");
+  var txt=(state.view==="suno")?state.lyricsKana:state.lyricsDraft;
+  if(!txt){ box.className="out empty"; box.textContent="まだ何もありません。下の「歌詞を作る」を押してください。"; return; }
+  box.className="out";
+  var html=escapeHTML(txt).replace(/\[([^\]]+)\]/g,'<span class="tag">[$1]</span>');
+  if(state.view==="suno"){
+    html=html.replace(KANJI_RE_G,function(c){ return '<span class="hl">'+c+'</span>'; });
+  }
+  box.innerHTML=html;
+}
+function renderStyle(){
+  var box=$("out-style"),n=state.style.length;
+  if(!n){ box.className="out en empty"; box.textContent="歌詞を作ると同時に出ます。"; }
+  else { box.className="out en"; box.textContent=state.style; }
+  $("meter-num").textContent=n;
+  var pct=Math.min(100,Math.round(n/STYLE_MAX*100));
+  var fillEl=$("meter-fill");
+  fillEl.style.height=pct+"%";
+  fillEl.className="meter-fill"+(n>STYLE_MAX?" over":"");
+  $("meter-cap").textContent=STYLE_MAX;
+}
+function renderChecks(){
+  var list=$("check-list");
+  if(!state.lyricsKana){ list.innerHTML=""; $("score-num").textContent="–";
+    $("score-label").textContent="歌詞を作るとチェックが走ります"; return; }
+  var r=runChecks(state.lyricsKana,state.style,state.title);
+  $("score-num").textContent=r.score;
+  var ng=r.items.filter(function(i){return i.level==="ng";}).length;
+  var wn=r.items.filter(function(i){return i.level==="warn";}).length;
+  $("score-label").textContent="/ 150 点　NG "+ng+"件・注意 "+wn+"件";
+  var LB={ok:"OK",warn:"注意",ng:"NG"};
+  list.innerHTML=r.items.map(function(i){
+    return '<li><span class="badge b-'+i.level+'">'+LB[i.level]+'</span><div>'+
+      escapeHTML(i.name)+(i.detail?'<em>'+escapeHTML(i.detail)+'</em>':'')+'</div></li>';
+  }).join("");
+}
+function generate(newSeed){
+  var cfg=readForm();
+  if(newSeed) state.seed=Math.floor(Math.random()*1e9)+1;
+  state.title=makeTitle(cfg,mulberry(state.seed+7));
+  state.lyricsDraft=buildLyrics(cfg,state.seed);
+  state.lyricsKana=toKana(state.lyricsDraft);
+  state.style=buildStyle(cfg);
+  renderLyrics(); renderStyle(); renderChecks();
+  toast("できました。04のチェックも見てください");
+}
+function toast(msg){
+  var t=$("toast"); t.textContent=msg; t.classList.add("on");
+  clearTimeout(toast._t); toast._t=setTimeout(function(){ t.classList.remove("on"); },2000);
+}
+function copy(text,label){
+  if(!text){ toast("先に歌詞を作ってください"); return; }
+  function fallback(){
+    var ta=document.createElement("textarea");
+    ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try{ document.execCommand("copy"); toast(label+"をコピーしました"); }
+    catch(e){ toast("コピーできませんでした。長押しで選択してください"); }
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(function(){ toast(label+"をコピーしました"); },fallback);
+  } else fallback();
+}
+function refreshDictCount(){
+  var c=Object.keys(loadCustom()).length;
+  $("dict-count").textContent="標準 "+Object.keys(BASE_DICT).length+"語 ＋ 追加 "+c+"語";
+}
+function loadHist(){ try{ return JSON.parse(localStorage.getItem(HIST_KEY)||"[]"); }catch(e){ return []; } }
+function renderHist(){
+  var h=loadHist(),list=$("hist-list");
+  if(!h.length){ list.innerHTML='<li style="color:#5C7D91;font-size:13px">まだ保存がありません</li>'; return; }
+  list.innerHTML=h.map(function(item,i){
+    return '<li><span class="t">'+item.date+'</span><span class="n">'+escapeHTML(item.title)+
+      '</span><button class="mini" data-load="'+i+'">開く</button></li>';
+  }).join("");
+  Array.prototype.slice.call(list.querySelectorAll("[data-load]")).forEach(function(b){
+    b.addEventListener("click",function(){
+      var it=loadHist()[parseInt(b.getAttribute("data-load"),10)];
+      if(!it) return;
+      state.title=it.title; state.lyricsDraft=it.draft; state.lyricsKana=it.kana; state.style=it.style;
+      renderLyrics(); renderStyle(); renderChecks();
+      try{ window.scrollTo({top:0,behavior:"smooth"}); }catch(e){ window.scrollTo(0,0); }
+      toast("読み込みました");
+    });
+  });
+}
+function saveCurrent(){
+  if(!state.lyricsKana){ toast("先に歌詞を作ってください"); return; }
+  var h=loadHist();
+  var d=new Date();
+  h.unshift({date:(d.getMonth()+1)+"/"+d.getDate(),title:state.title,
+    draft:state.lyricsDraft,kana:state.lyricsKana,style:state.style});
+  h=h.slice(0,30);
+  try{ localStorage.setItem(HIST_KEY,JSON.stringify(h)); toast("保存しました"); }
+  catch(e){ toast("保存できませんでした（容量オーバー）"); }
+  renderHist();
+}
+
+function bind(){
+  $("btn-gen").addEventListener("click",function(){ generate(true); });
+  $("btn-reroll").addEventListener("click",function(){ generate(true); });
+  $("btn-save").addEventListener("click",saveCurrent);
+  $("btn-copy-lyrics").addEventListener("click",function(){
+    copy(state.view==="suno"?state.lyricsKana:state.lyricsDraft,"歌詞");
+  });
+  $("btn-copy-style").addEventListener("click",function(){ copy(state.style,"スタイル"); });
+  $("btn-copy-title").addEventListener("click",function(){ copy(state.title,"タイトル"); });
+  $("btn-copy-all").addEventListener("click",function(){
+    if(!state.lyricsKana){ toast("先に歌詞を作ってください"); return; }
+    copy("■タイトル\n"+state.title+"\n\n■スタイル\n"+state.style+"\n\n■歌詞\n"+state.lyricsKana,"全部");
+  });
+  $("tab-suno").addEventListener("click",function(){ setView("suno"); });
+  $("tab-draft").addEventListener("click",function(){ setView("draft"); });
+  [$("tab-suno"),$("tab-draft")].forEach(function(t){
+    t.addEventListener("keydown",function(e){
+      if(e.key==="ArrowRight"){ setView("draft"); $("tab-draft").focus(); }
+      if(e.key==="ArrowLeft"){ setView("suno"); $("tab-suno").focus(); }
+    });
+  });
+  $("btn-dict-add").addEventListener("click",function(){
+    var k=$("d-kanji").value.trim(), v=$("d-kana").value.trim();
+    if(!k||!v){ toast("漢字とカタカナの両方を入れてください"); return; }
+    if(!KANJI_RE.test(k)){ toast("左側には漢字を入れてください"); return; }
+    var c=loadCustom(); c[k]=v; saveCustom(c);
+    $("d-kanji").value=""; $("d-kana").value="";
+    refreshDictCount();
+    if(state.lyricsDraft){ state.lyricsKana=toKana(state.lyricsDraft); renderLyrics(); renderChecks(); }
+    toast(k+" → "+v+" を追加しました");
+  });
+  $("btn-hist-clear").addEventListener("click",function(){
+    if(!confirm("保存した曲をすべて消します。よろしいですか？")) return;
+    try{ localStorage.removeItem(HIST_KEY); }catch(e){}
+    renderHist(); toast("消しました");
+  });
+}
+function setView(v){
+  state.view=v;
+  $("tab-suno").setAttribute("aria-selected",String(v==="suno"));
+  $("tab-draft").setAttribute("aria-selected",String(v==="draft"));
+  renderLyrics();
+}
+
+if(typeof document!=="undefined" && document.getElementById("f-spot")){
+  initForm(); bind(); renderHist(); renderStyle();
+}
+if(typeof module!=="undefined" && module.exports){
+  module.exports={toKana:toKana,residualKanji:residualKanji,buildLyrics:buildLyrics,
+    buildStyle:buildStyle,runChecks:runChecks,makeTitle:makeTitle,mulberry:mulberry,
+    SPOTS:SPOTS,FISH:FISH,MEMBERS:MEMBERS,MOODS:MOODS,GENRES:GENRES,KEYS:KEYS,VOCALS:VOCALS,
+    CHORUS:CHORUS,VERSE:VERSE,PRE:PRE,OUTRO:OUTRO,TITLE_A:TITLE_A,TITLE_B:TITLE_B,BASE_DICT:BASE_DICT};
+}
+})();
+/* ===== APP_LOGIC_END ===== */
+</script>
+</body>
+</html>
