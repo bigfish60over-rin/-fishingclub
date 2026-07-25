@@ -42,7 +42,7 @@
 body{
   background:var(--ink);color:var(--text);
   font-family:'Noto Sans JP',sans-serif;
-  min-height:100vh;padding-bottom:72px;
+  min-height:100vh;padding-bottom:132px;
 }
 body::after{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
@@ -413,7 +413,7 @@ select{
 .m-body{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:16px;white-space:pre-line}
 .m-close{background:var(--sun);color:var(--ink);border:none;border-radius:10px;padding:10px 26px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
 
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--fish);color:var(--ink);padding:8px 15px;border-radius:50px;font-size:12px;font-weight:700;opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast{position:fixed;bottom:138px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--fish);color:var(--ink);padding:9px 16px;border-radius:16px;font-size:12px;font-weight:700;opacity:0;transition:all .3s;pointer-events:none;z-index:999;max-width:calc(100vw - 30px);text-align:center;line-height:1.5}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ══════════════════════════════════════
@@ -464,16 +464,174 @@ select{
 .achv-item .a-main{flex:1;min-width:0}
 .achv-item .a-size{font-family:'DM Mono',monospace;color:var(--sun);font-weight:900;font-size:14px;flex-shrink:0}
 .achv-empty{text-align:center;color:var(--muted);font-size:12px;padding:16px 0}
+
+/* ══════════════════════════════════════
+   ホーム＆もっと（導線の再設計）
+══════════════════════════════════════ */
+.hero{
+  padding:6px 2px 14px;border-bottom:1px solid var(--rim);margin-bottom:14px;
+}
+.hero-k{
+  font-family:'DM Mono',monospace;font-size:19px;font-weight:500;
+  letter-spacing:-0.5px;color:var(--text);line-height:1.25;
+}
+.hero-k b{font-family:'Noto Sans JP',sans-serif;font-weight:900;color:var(--text)}
+.hero-k span{display:block;font-size:11px;letter-spacing:3px;color:var(--sky);margin-top:3px}
+.hero-s{
+  display:inline-flex;align-items:center;gap:5px;margin-top:9px;
+  font-size:11px;font-weight:700;color:var(--sun);
+  background:rgba(251,191,36,.09);border:1px solid rgba(251,191,36,.22);
+  border-radius:999px;padding:4px 11px;
+}
+
+/* 今の潮サマリー */
+.hnow{cursor:pointer;display:block;width:100%;text-align:left;font-family:inherit}
+.hnow-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.hnow-loc{font-size:11px;color:var(--muted);font-weight:700;line-height:1.5}
+.hnow-next{text-align:right;flex-shrink:0}
+.hnow-nl{font-size:9px;color:var(--muted);letter-spacing:1px}
+.hnow-nv{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--sky)}
+.hnow-gauge{margin-top:11px}
+.hnow-grow{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:5px}
+.hnow-gl{font-size:11px;font-weight:700;color:var(--text)}
+.hnow-gv{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--sun)}
+.hnow-gv span{font-size:10px;color:var(--muted)}
+.hnow-bar{height:6px;background:rgba(56,189,248,.1);border-radius:3px;overflow:hidden}
+.hnow-fill{height:100%;width:0%;border-radius:3px;background:linear-gradient(90deg,#34d399,#38bdf8);transition:width .5s}
+.hnow-rsn{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+/* 釣行の時間軸スパイン */
+.spine{position:relative;padding-left:21px;margin-top:4px}
+.spine::before{
+  content:'';position:absolute;left:5px;top:7px;bottom:26px;width:1px;
+  background:linear-gradient(180deg,var(--sky),rgba(56,189,248,.07));
+}
+.stage{position:relative;margin-bottom:19px}
+.stage::before{
+  content:'';position:absolute;left:-20px;top:3px;width:9px;height:9px;border-radius:50%;
+  background:var(--ink);border:2px solid var(--sky);
+}
+.stage-lbl{
+  font-size:11px;font-weight:900;color:var(--text);margin-bottom:9px;
+  display:flex;align-items:baseline;gap:8px;
+}
+.stage-lbl em{
+  font-style:normal;font-size:10px;font-weight:500;color:var(--muted);letter-spacing:.3px;
+}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tile{
+  display:flex;align-items:center;gap:9px;min-height:56px;
+  background:rgba(19,36,61,.9);border:1px solid var(--rim);border-radius:var(--r);
+  padding:10px 11px;color:var(--text);text-decoration:none;
+  font-family:inherit;font-size:12px;font-weight:700;text-align:left;
+  cursor:pointer;transition:border-color .2s,background .2s;
+}
+.tile:active{background:rgba(26,50,82,.95);border-color:var(--sky)}
+.tile .ti{font-size:20px;flex-shrink:0;line-height:1}
+.tile .tt{flex:1;min-width:0;line-height:1.35;overflow-wrap:anywhere}
+.tile .tsub{display:block;font-size:9px;font-weight:500;color:var(--muted);margin-top:2px}
+.tile.wide{grid-column:1/-1}
+.tile.primary{
+  background:linear-gradient(135deg,rgba(56,189,248,.16),rgba(56,189,248,.05));
+  border-color:rgba(56,189,248,.45);min-height:62px;font-size:14px;font-weight:900;
+}
+.tile.primary .ti{font-size:24px}
+.tile.soon{opacity:.42;cursor:default;pointer-events:none}
+.tile.soon .tsub{color:var(--muted)}
+
+/* もっと一覧 */
+.mlist{display:flex;flex-direction:column;gap:8px}
+.mrow{
+  display:flex;align-items:center;gap:11px;width:100%;min-height:60px;
+  background:rgba(19,36,61,.9);border:1px solid var(--rim);border-radius:var(--r);
+  padding:11px 13px;color:var(--text);text-decoration:none;
+  font-family:inherit;text-align:left;cursor:pointer;transition:border-color .2s,background .2s;
+}
+.mrow:active{background:rgba(26,50,82,.95);border-color:var(--sky)}
+.mrow .mi{font-size:21px;flex-shrink:0;line-height:1;width:26px;text-align:center}
+.mrow .mb{flex:1;min-width:0}
+.mrow .mt{font-size:13px;font-weight:900;line-height:1.35;overflow-wrap:anywhere}
+.mrow .md{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.4;overflow-wrap:anywhere}
+.mrow .mx{font-size:13px;color:var(--muted);flex-shrink:0}
+.mrow.soon{opacity:.42;cursor:default;pointer-events:none}
+.mfoot{
+  text-align:center;font-size:10px;color:var(--muted);
+  margin-top:18px;line-height:1.8;
+}
+
+/* 🎣 報告ボタン（全タブ共通で固定） */
+.fab{
+  position:fixed;right:13px;bottom:72px;z-index:120;
+  display:flex;align-items:center;gap:7px;
+  height:52px;padding:0 19px 0 16px;border:none;border-radius:26px;
+  background:linear-gradient(145deg,#38bdf8,#0284c7);color:#04121f;
+  font-family:inherit;font-size:14px;font-weight:900;letter-spacing:.5px;
+  box-shadow:0 6px 20px rgba(56,189,248,.34);cursor:pointer;
+}
+.fab i{font-style:normal;font-size:21px;line-height:1}
+.fab:active{transform:translateY(1px)}
+
+/* アクセシビリティ最低ライン */
+:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}
 </style>
 </head>
 <body>
 
 <!-- ナビ -->
 <div class="nav">
-  <button class="ntab on" onclick="go('tide',this)"><span class="ni">🌊</span>潮見</button>
-  <button class="ntab"    onclick="go('blog',this)"><span class="ni">📝</span>ブログ</button>
-  <button class="ntab"    onclick="go('stats',this)"><span class="ni">📊</span>成績</button>
-  <button class="ntab"    onclick="go('car', this)"><span class="ni">🚗</span>割り勘</button>
+  <button class="ntab on" data-tab="home"  onclick="go('home',this)"><span class="ni">🏠</span>ホーム</button>
+  <button class="ntab"    data-tab="tide"  onclick="go('tide',this)"><span class="ni">🌊</span>潮見</button>
+  <button class="ntab"    data-tab="stats" onclick="go('stats',this)"><span class="ni">📊</span>成績</button>
+  <button class="ntab"    data-tab="blog"  onclick="go('blog',this)"><span class="ni">📝</span>ブログ</button>
+  <button class="ntab"    data-tab="more"  onclick="go('more',this)"><span class="ni">⋯</span>もっと</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     🎣 報告ボタン（どのタブからでも1タップ）
+══════════════════════════════════════ -->
+<button class="fab" id="fabReport" onclick="openReport()" aria-label="釣果を報告する"><i>🎣</i>報告</button>
+
+<!-- ══════════════════════════════════════
+     ホームパネル（釣行の時間軸で並べる）
+══════════════════════════════════════ -->
+<div id="panel-home" class="panel on">
+
+  <div class="hero">
+    <div class="hero-k"><b>ナガヨシリン</b><span>FISHING CLUB</span></div>
+    <div class="hero-s" id="homeSeason"></div>
+  </div>
+
+  <button class="card hnow" onclick="go('tide')" aria-label="潮見タブを開く">
+    <div class="hnow-top">
+      <div class="hnow-loc" id="hLoc">読み込み中…</div>
+      <div class="hnow-next">
+        <div class="hnow-nl">次の潮</div>
+        <div class="hnow-nv" id="hNext">--:--</div>
+      </div>
+    </div>
+    <div class="hnow-gauge">
+      <div class="hnow-grow">
+        <span class="hnow-gl">🎣 今の釣れる度</span>
+        <span class="hnow-gv"><span id="hScore">--</span><span>/100</span></span>
+      </div>
+      <div class="hnow-bar"><div class="hnow-fill" id="hFill"></div></div>
+      <div class="hnow-rsn" id="hReason">計算中…</div>
+    </div>
+  </button>
+
+  <div class="spine" id="homeSpine"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     もっとパネル（外部ツール・メディア）
+══════════════════════════════════════ -->
+<div id="panel-more" class="panel">
+  <div class="ctitle">🧰 ツール & メディア</div>
+  <div class="mlist" id="moreList"></div>
+  <div class="mfoot" id="moreFoot"></div>
 </div>
 
 <!-- ══════════════════════════════════════
@@ -575,7 +733,7 @@ select{
 <!-- ══════════════════════════════════════
      潮見パネル
 ══════════════════════════════════════ -->
-<div id="panel-tide" class="panel on">
+<div id="panel-tide" class="panel">
   <div class="loc-row">
     <select id="locSel" onchange="saveLoc();updateTide()">
       <optgroup label="── 汎用（湾・主要港）──">
@@ -890,11 +1048,22 @@ const Store=(()=>{const m={};const ts=fn=>{try{return fn(localStorage)}catch(e){
 function toast(msg,dur=2800){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),dur)}
 
 // ─── タブ切替 ─────────────────────────────────
+// 下部ナビに出ていないパネル（割り勘）は「もっと」を点灯させる
+const TAB_OF = { home:'home', tide:'tide', stats:'stats', blog:'blog', more:'more', car:'more' };
+function navBtn(name){
+  return document.querySelector('.ntab[data-tab="' + (TAB_OF[name] || name) + '"]');
+}
 function go(name,btn){
+  const panel = document.getElementById('panel-' + name);
+  if(!panel){ console.warn('unknown tab:', name); return; }
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('on'));
-  document.getElementById('panel-'+name).classList.add('on');
-  btn.classList.add('on');
+  panel.classList.add('on');
+  const nb = (btn && btn.classList && btn.classList.contains('ntab')) ? btn : navBtn(name);
+  if(nb) nb.classList.add('on');
+  try{ window.scrollTo(0,0); }catch(e){}
+  if(name==='home'){renderHome()}
+  if(name==='more'){renderMore()}
   if(name==='tide'){updateTide();renderCal()}
   if(name==='car'){updateClock();renderHistory();updateStats()}
   if(name==='blog'){blogRenderList()}
@@ -1878,7 +2047,168 @@ function blogRenderList() {
 // ブログタブ表示時にレンダリング（go関数に統合済み）
 
 // 初期化
-setTimeout(()=>{updateTide();renderCal();fetchSheetPosts()},200);
+
+// ══════════════════════════════════════════════
+// 🔗 リンク設定 ── ここだけ書き換えればOK
+//    空文字 '' のままの項目は自動で「準備中」表示になり、
+//    タップできなくなる（リンク切れが絶対に出ない仕組み）
+// ══════════════════════════════════════════════
+const LINKS = {
+  form:     'https://forms.gle/aAgyLHaJyGHq2HfWA',   // 🎣 釣果報告フォーム
+  gallery:  '',   // 📷 メンバーギャラリー
+  player:   'https://bigfish60over-rin.github.io/gakioyaji-player/',  // 🎵 ナガヨシリンプレイヤー
+  youtube:  '',   // 📺 YouTubeチャンネル（できたら貼る）
+  suno:     'https://bigfish60over-rin.github.io/-fishingclub/suno-lyrics-app.html', // ✍️ Suno歌詞メーカー
+  hamachan: ''    // 🧪 HAMAchanプレーヤー（実験版）
+};
+
+// 🏆 ホームに出すシーズン表示（大会が変わったらここだけ書き換える）
+const SEASON = '🏆 第2回大会 開催中';
+
+// ── ホーム：釣行の時間軸で並べる ──
+const STAGES = [
+  { lbl:'釣行前', sub:'潮とタイミングを読む', items:[
+    { ico:'🌊', t:'潮見・釣れる度', tab:'tide' },
+    { ico:'📅', t:'釣行カレンダー', tab:'tide' }
+  ]},
+  { lbl:'釣行中', sub:'その場で記録する', items:[
+    { ico:'🎣', t:'釣果を報告', act:'openReport()', wide:true, primary:true, needs:'form' },
+    { ico:'📷', t:'ギャラリー', link:'gallery' },
+    { ico:'✏️', t:'報告をなおす', tab:'stats', sub:'成績タブの✏️から' }
+  ]},
+  { lbl:'釣行後', sub:'まとめて振り返る', items:[
+    { ico:'📊', t:'成績・順位', tab:'stats' },
+    { ico:'🚗', t:'割り勘', tab:'car' },
+    { ico:'📝', t:'ブログ・釣行記', tab:'blog', wide:true }
+  ]},
+  { lbl:'いつでも', sub:'クラブのメディア', items:[
+    { ico:'🎵', t:'ナガヨシリンプレイヤー', link:'player', wide:true, sub:'55曲・別タブで再生' },
+    { ico:'📺', t:'YouTube', link:'youtube' },
+    { ico:'✍️', t:'Suno歌詞', link:'suno' }
+  ]}
+];
+
+// ── もっと：外部ツールとメディア ──
+const MORE_ITEMS = [
+  { ico:'🚗', t:'割り勘ドライブ',        d:'ガソリン代・高速代を一発計算', tab:'car' },
+  { ico:'🎵', t:'ナガヨシリンプレイヤー', d:'クラブのオリジナル曲（別タブで再生）', link:'player' },
+  { ico:'📺', t:'YouTube',              d:'釣行動画チャンネル', link:'youtube' },
+  { ico:'📷', t:'メンバーギャラリー',     d:'各自の釣果アルバム', link:'gallery' },
+  { ico:'✍️', t:'Suno歌詞メーカー',      d:'釣り歌詞を自動生成', link:'suno' },
+  { ico:'🧪', t:'HAMAchanプレーヤー',    d:'実験版・EQ表示つき', link:'hamachan' }
+];
+
+// ── 釣果報告フォームを開く ──
+function openReport(){
+  if(!LINKS.form){
+    toast('🎣 LINKS.form にフォームURLを貼ってください', 4000);
+    return;
+  }
+  window.open(LINKS.form, '_blank', 'noopener');
+}
+
+function openLink(key){
+  const url = LINKS[key];
+  if(!url){ toast('準備中です'); return; }
+  window.open(url, '_blank', 'noopener');
+}
+
+// ── ホームのタイル描画 ──
+function renderSpine(){
+  const s = document.getElementById('homeSeason');
+  if(s) s.textContent = SEASON;
+  const el = document.getElementById('homeSpine');
+  if(!el) return;
+  el.innerHTML = STAGES.map(st => {
+    const tiles = st.items.map(it => {
+      const cls = ['tile'];
+      if(it.wide) cls.push('wide');
+      if(it.primary) cls.push('primary');
+      const subHtml = it.sub ? `<span class="tsub">${esc(it.sub)}</span>` : '';
+      if(it.act){
+        const warn = it.needs && !LINKS[it.needs] ? '<span class="tsub">⚠️ URL未設定</span>' : subHtml;
+        return `<button class="${cls.join(' ')}" onclick="${it.act}"><span class="ti">${it.ico}</span><span class="tt">${esc(it.t)}${warn}</span></button>`;
+      }
+      if(it.link){
+        const ready = !!LINKS[it.link];
+        if(!ready){
+          return `<span class="tile soon${it.wide?' wide':''}"><span class="ti">${it.ico}</span><span class="tt">${esc(it.t)}<span class="tsub">準備中</span></span></span>`;
+        }
+        return `<button class="${cls.join(' ')}" onclick="openLink('${it.link}')"><span class="ti">${it.ico}</span><span class="tt">${esc(it.t)}${subHtml}</span></button>`;
+      }
+      return `<button class="${cls.join(' ')}" onclick="go('${it.tab}')"><span class="ti">${it.ico}</span><span class="tt">${esc(it.t)}${subHtml}</span></button>`;
+    }).join('');
+    return `<div class="stage">
+      <div class="stage-lbl">${esc(st.lbl)}<em>${esc(st.sub)}</em></div>
+      <div class="tiles">${tiles}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── もっと一覧の描画 ──
+function renderMore(){
+  const el = document.getElementById('moreList');
+  if(!el) return;
+  el.innerHTML = MORE_ITEMS.map(it => {
+    const body = `<span class="mi">${it.ico}</span><span class="mb"><span class="mt">${esc(it.t)}</span><span class="md">${esc(it.d)}</span></span>`;
+    if(it.link){
+      if(!LINKS[it.link]) return `<span class="mrow soon">${body}<span class="mx">準備中</span></span>`;
+      return `<button class="mrow" onclick="openLink('${it.link}')">${body}<span class="mx">↗</span></button>`;
+    }
+    return `<button class="mrow" onclick="go('${it.tab}')">${body}<span class="mx">›</span></button>`;
+  }).join('');
+  const f = document.getElementById('moreFoot');
+  if(f) f.innerHTML = 'ナガヨシリンfishing club<br>ホーム画面に追加するとアプリとして使えます';
+}
+
+// ── ホームの潮サマリー更新 ──
+function renderHome(){
+  const p2 = n => String(n).padStart(2,'0');
+  try{
+    const sel = document.getElementById('locSel');
+    const cfg = LOC[(sel && sel.value) || 'tokyo'] || LOC.tokyo;
+    const now = new Date();
+    const peaks = getDayPeaks(now, cfg);
+    const next = peaks.find(p => p.time > now);
+    const fs = fishingScore(now, cfg);
+    document.getElementById('hLoc').textContent = cfg.name;
+    document.getElementById('hNext').textContent = next
+      ? `${p2(next.time.getHours())}:${p2(next.time.getMinutes())} ${next.isHigh ? '⬆️満潮' : '⬇️干潮'}`
+      : '本日終了';
+    document.getElementById('hScore').textContent = fs.score;
+    const fill = document.getElementById('hFill');
+    fill.style.width = fs.score + '%';
+    fill.style.background = fs.score >= 75 ? 'linear-gradient(90deg,#fbbf24,#f87171)'
+                          : fs.score >= 50 ? 'linear-gradient(90deg,#34d399,#38bdf8)'
+                          : 'var(--muted)';
+    document.getElementById('hReason').textContent = fs.reason;
+  }catch(err){
+    console.error('renderHome error:', err);
+    const r = document.getElementById('hReason');
+    if(r) r.textContent = '潮データの取得に失敗しました。潮見タブで再読み込みしてください';
+  }
+}
+
+// ── 直リンク（?tab=stats / #stats）でタブを開く ──
+function initDeepLink(){
+  let q = '';
+  try{ q = new URLSearchParams(location.search).get('tab') || ''; }catch(e){}
+  if(!q && location.hash) q = location.hash.replace('#','');
+  q = (q || '').trim().toLowerCase();
+  if(TAB_OF[q]) go(q);
+}
+
+setTimeout(()=>{
+  updateTide();
+  renderCal();
+  fetchSheetPosts();
+  renderSpine();
+  renderMore();
+  renderHome();
+  initDeepLink();
+},200);
+// ホームの潮サマリーを毎分更新
+setInterval(()=>{if(document.getElementById('panel-home').classList.contains('on'))renderHome()},60000);
 setInterval(()=>{if(document.getElementById('panel-tide').classList.contains('on'))updateTide()},60000);
 </script>
 </body>
