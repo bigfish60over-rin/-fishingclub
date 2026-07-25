@@ -540,6 +540,8 @@ select{
 .tile.soon .tsub{color:var(--muted)}
 
 /* もっと一覧 */
+.mgroup{margin-bottom:20px}
+.mgroup:last-child{margin-bottom:0}
 .mlist{display:flex;flex-direction:column;gap:8px}
 .mrow{
   display:flex;align-items:center;gap:11px;width:100%;min-height:60px;
@@ -571,6 +573,31 @@ select{
 .fab i{font-style:normal;font-size:21px;line-height:1}
 .fab:active{transform:translateY(1px)}
 
+/* 「誰が報告する？」シート */
+.sheet{position:fixed;inset:0;z-index:700;display:none}
+.sheet.on{display:block}
+.sheet-bg{position:absolute;inset:0;background:rgba(6,14,26,.72);backdrop-filter:blur(4px)}
+.sheet-card{
+  position:absolute;left:0;right:0;bottom:0;
+  background:var(--deep);border-top:1px solid var(--rim);
+  border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));
+}
+.sheet-t{font-size:15px;font-weight:900;color:var(--text);text-align:center}
+.sheet-s{font-size:11px;color:var(--muted);text-align:center;margin:5px 0 15px;line-height:1.6}
+.who-btn{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  width:100%;min-height:54px;margin-bottom:9px;
+  background:rgba(26,50,82,.85);border:1px solid var(--rim);border-radius:var(--r);
+  color:var(--text);font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;
+}
+.who-btn.on{border-color:var(--sky);background:rgba(56,189,248,.14)}
+.who-chk{color:var(--sky);font-size:15px}
+.sheet-x{
+  display:block;width:100%;min-height:46px;margin-top:4px;
+  background:transparent;border:none;color:var(--muted);
+  font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;
+}
+
 /* アクセシビリティ最低ライン */
 :focus-visible{outline:2px solid var(--sky);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){
@@ -593,6 +620,18 @@ select{
      🎣 報告ボタン（どのタブからでも1タップ）
 ══════════════════════════════════════ -->
 <button class="fab" id="fabReport" onclick="openReport()" aria-label="釣果を報告する"><i>🎣</i>報告</button>
+
+<!-- 「誰が報告する？」シート -->
+<div class="sheet" id="whoSheet" role="dialog" aria-modal="true" aria-label="報告する人を選ぶ">
+  <div class="sheet-bg" onclick="closeWho()"></div>
+  <div class="sheet-card">
+    <div class="sheet-t">🎣 誰の釣果を報告しますか？</div>
+    <div class="sheet-s">次からはこの名前が自動で入ります<br>（あとで「もっと」から変更できます）</div>
+    <div id="whoList"></div>
+    <button class="sheet-x" onclick="openPlainForm()">名前を決めずに開く</button>
+    <button class="sheet-x" onclick="closeWho()">閉じる</button>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════
      ホームパネル（釣行の時間軸で並べる）
@@ -629,8 +668,7 @@ select{
      もっとパネル（外部ツール・メディア）
 ══════════════════════════════════════ -->
 <div id="panel-more" class="panel">
-  <div class="ctitle">🧰 ツール & メディア</div>
-  <div class="mlist" id="moreList"></div>
+  <div id="moreList"></div>
   <div class="mfoot" id="moreFoot"></div>
 </div>
 
@@ -2049,21 +2087,53 @@ function blogRenderList() {
 // 初期化
 
 // ══════════════════════════════════════════════
-// 🔗 リンク設定 ── ここだけ書き換えればOK
-//    空文字 '' のままの項目は自動で「準備中」表示になり、
+// 🔗 設定 ── ここだけ書き換えればOK
+//    空文字 '' の項目は自動で「準備中」表示になり、
 //    タップできなくなる（リンク切れが絶対に出ない仕組み）
 // ══════════════════════════════════════════════
 const LINKS = {
-  form:     'https://forms.gle/aAgyLHaJyGHq2HfWA',   // 🎣 釣果報告フォーム
-  gallery:  '',   // 📷 メンバーギャラリー
-  player:   'https://bigfish60over-rin.github.io/gakioyaji-player/',  // 🎵 ナガヨシリンプレイヤー
-  youtube:  '',   // 📺 YouTubeチャンネル（できたら貼る）
+  player:   'https://bigfish60over-rin.github.io/gakioyaji-player/',        // 🎵 PRO PLAYER（55曲）
+  anthems:  'https://bigfish60over-rin.github.io/-fishingclub/anthems/',    // 🎺 公式サウンドトラック
+  youtube:  '',                                                             // 📺 YouTube（できたら貼る）
   suno:     'https://bigfish60over-rin.github.io/-fishingclub/suno-lyrics-app.html', // ✍️ Suno歌詞メーカー
-  hamachan: ''    // 🧪 HAMAchanプレーヤー（実験版）
+  tide:     'https://tide736.net/',                                         // 🌊 潮汐・天気（実測値）
+  fishid:   'https://www.google.com/imghp'                                  // 🐠 魚種を調べる
 };
 
 // 🏆 ホームに出すシーズン表示（大会が変わったらここだけ書き換える）
 const SEASON = '🏆 第2回大会 開催中';
+
+// ══════════════════════════════════════════════
+// 👤 メンバー定義
+//    formValue はフォームの選択肢と【一字一句】同じにすること。
+//    違うと事前入力が黙って無視される（旧サイトの不具合の原因）
+// ══════════════════════════════════════════════
+const FORM_ID    = '1FAIpQLSdsVUBv05S-ZIuhOqVPvDvQrTEncMRynA7-kTLS6sH_8aIe7w';
+const NAME_ENTRY = 'entry.1034145862';
+
+const MEMBERS = [
+  { key:'chair', label:'ナナヌマ会長', formValue:'NANANUMA会長',
+    gallery:'https://photos.google.com/share/AF1QipMD-_BMNf59dHO21e3It-xMMv_9ywcKz9j7WWKf4-Ktg8QDUgxWQqbruzOpX3Bt7Q?key=YjVPcGszVXBjSFl0eGwzSkRPcFRRYUtYdmxwT2ZB' },
+  { key:'waka',  label:'勇者ワカグリ', formValue:'勇者ワカグリ',
+    gallery:'https://photos.google.com/share/AF1QipMMhIS52dtzJGmNtIKO-powZmsgQnJJscb0kh9P1h0SPjHKRWG34y9uYjoLP_4D6w?key=VUZzNi04RUpySlhSTkdEQUplV0NMeS1qR1NNQzVR' },
+  { key:'rin',   label:'ガキオヤRin',  formValue:'ガキオヤRin',
+    gallery:'https://photos.google.com/share/AF1QipNEC0IUMER8OtW4xVfCDppYqEP4xxl7rKkJ4uC-GeoEsBr6w66Lqn2E9z7s6ZAyPg?key=V1RsYnhjaHFjSlBkQVNRdVpTTm5KZHN4NFB1YmdR' }
+];
+
+const FORM_PLAIN = 'https://docs.google.com/forms/d/e/' + FORM_ID + '/viewform';
+function formUrlFor(m){
+  return FORM_PLAIN + '?usp=pp_url&' + NAME_ENTRY + '=' + encodeURIComponent(m.formValue);
+}
+
+// ── 「自分は誰か」の記憶 ──
+function getMe(){
+  const k = Store.get('me');
+  return MEMBERS.find(m => m.key === k) || null;
+}
+function setMe(key){
+  Store.set('me', key);
+  renderSpine(); renderMore();
+}
 
 // ── ホーム：釣行の時間軸で並べる ──
 const STAGES = [
@@ -2072,8 +2142,8 @@ const STAGES = [
     { ico:'📅', t:'釣行カレンダー', tab:'tide' }
   ]},
   { lbl:'釣行中', sub:'その場で記録する', items:[
-    { ico:'🎣', t:'釣果を報告', act:'openReport()', wide:true, primary:true, needs:'form' },
-    { ico:'📷', t:'ギャラリー', link:'gallery' },
+    { ico:'🎣', t:'釣果を報告', act:'openReport()', wide:true, primary:true, dyn:'me' },
+    { ico:'📷', t:'ギャラリー', tab:'more', sub:'3人分のアルバム' },
     { ico:'✏️', t:'報告をなおす', tab:'stats', sub:'成績タブの✏️から' }
   ]},
   { lbl:'釣行後', sub:'まとめて振り返る', items:[
@@ -2082,57 +2152,105 @@ const STAGES = [
     { ico:'📝', t:'ブログ・釣行記', tab:'blog', wide:true }
   ]},
   { lbl:'いつでも', sub:'クラブのメディア', items:[
-    { ico:'🎵', t:'ナガヨシリンプレイヤー', link:'player', wide:true, sub:'55曲・別タブで再生' },
+    { ico:'🎵', t:'PRO PLAYER', link:'player', wide:true, sub:'55曲・別タブで再生' },
     { ico:'📺', t:'YouTube', link:'youtube' },
     { ico:'✍️', t:'Suno歌詞', link:'suno' }
   ]}
 ];
 
-// ── もっと：外部ツールとメディア ──
-const MORE_ITEMS = [
-  { ico:'🚗', t:'割り勘ドライブ',        d:'ガソリン代・高速代を一発計算', tab:'car' },
-  { ico:'🎵', t:'ナガヨシリンプレイヤー', d:'クラブのオリジナル曲（別タブで再生）', link:'player' },
-  { ico:'📺', t:'YouTube',              d:'釣行動画チャンネル', link:'youtube' },
-  { ico:'📷', t:'メンバーギャラリー',     d:'各自の釣果アルバム', link:'gallery' },
-  { ico:'✍️', t:'Suno歌詞メーカー',      d:'釣り歌詞を自動生成', link:'suno' },
-  { ico:'🧪', t:'HAMAchanプレーヤー',    d:'実験版・EQ表示つき', link:'hamachan' }
-];
-
-// ── 釣果報告フォームを開く ──
-function openReport(){
-  if(!LINKS.form){
-    toast('🎣 LINKS.form にフォームURLを貼ってください', 4000);
-    return;
-  }
-  window.open(LINKS.form, '_blank', 'noopener');
+// ── もっと：ギャラリー / ツール / メディアの3グループ ──
+function moreGroups(){
+  const me = getMe();
+  return [
+    { title:'📷 メンバーギャラリー', items: MEMBERS.map((m,i) => (
+        { ico:'📷', t:m.label, d:'釣果アルバム', gal:i })) },
+    { title:'🧰 ツール', items:[
+        { ico:'🚗', t:'割り勘ドライブ',   d:'ガソリン代・高速代を一発計算', tab:'car' },
+        { ico:'🌊', t:'潮汐・天気',       d:'tide736の実測データ', link:'tide' },
+        { ico:'🐠', t:'魚種を調べる',     d:'Google画像検索で照合', link:'fishid' },
+        { ico:'✍️', t:'Suno歌詞メーカー', d:'釣り歌詞を自動生成', link:'suno' },
+        { ico:'👤', t:'報告する人',       d: me ? me.label + ' として記憶中' : 'まだ選ばれていません', act:'openWho()' }
+    ]},
+    { title:'🎵 メディア', items:[
+        { ico:'🎵', t:'PRO PLAYER',            d:'55曲・別タブで再生', link:'player' },
+        { ico:'🎺', t:'公式サウンドトラック',   d:'クラブのアンセム集', link:'anthems' },
+        { ico:'📺', t:'YouTube',               d:'釣行動画チャンネル', link:'youtube' }
+    ]}
+  ];
 }
 
+// ══════════════════════════════════════════════
+// 開くための関数
+// ══════════════════════════════════════════════
+function openReport(){
+  const me = getMe();
+  if(!me){ openWho(); return; }
+  window.open(formUrlFor(me), '_blank', 'noopener');
+}
+function openGallery(i){
+  const m = MEMBERS[i];
+  if(!m || !m.gallery){ toast('準備中です'); return; }
+  window.open(m.gallery, '_blank', 'noopener');
+}
 function openLink(key){
   const url = LINKS[key];
   if(!url){ toast('準備中です'); return; }
   window.open(url, '_blank', 'noopener');
 }
 
-// ── ホームのタイル描画 ──
+// ── 「誰が報告する？」シート ──
+function openWho(){
+  const list = document.getElementById('whoList');
+  const me = getMe();
+  if(list){
+    list.innerHTML = MEMBERS.map(m => {
+      const on = me && me.key === m.key;
+      return `<button class="who-btn${on ? ' on' : ''}" onclick="pickWho('${m.key}')">${esc(m.label)}${on ? '<span class="who-chk">✓</span>' : ''}</button>`;
+    }).join('');
+  }
+  const sh = document.getElementById('whoSheet');
+  if(sh) sh.classList.add('on');
+}
+function closeWho(){
+  const sh = document.getElementById('whoSheet');
+  if(sh) sh.classList.remove('on');
+}
+function pickWho(key){
+  const m = MEMBERS.find(x => x.key === key);
+  if(!m) return;
+  setMe(key);
+  closeWho();
+  toast('👤 ' + m.label + ' として記憶しました');
+  window.open(formUrlFor(m), '_blank', 'noopener');
+}
+function openPlainForm(){
+  closeWho();
+  window.open(FORM_PLAIN, '_blank', 'noopener');
+}
+
+// ══════════════════════════════════════════════
+// 描画
+// ══════════════════════════════════════════════
 function renderSpine(){
   const s = document.getElementById('homeSeason');
   if(s) s.textContent = SEASON;
   const el = document.getElementById('homeSpine');
   if(!el) return;
+  const me = getMe();
   el.innerHTML = STAGES.map(st => {
     const tiles = st.items.map(it => {
       const cls = ['tile'];
       if(it.wide) cls.push('wide');
       if(it.primary) cls.push('primary');
-      const subHtml = it.sub ? `<span class="tsub">${esc(it.sub)}</span>` : '';
+      let subTxt = it.sub || '';
+      if(it.dyn === 'me') subTxt = me ? me.label + ' として報告' : 'はじめに名前を選びます';
+      const subHtml = subTxt ? `<span class="tsub">${esc(subTxt)}</span>` : '';
       if(it.act){
-        const warn = it.needs && !LINKS[it.needs] ? '<span class="tsub">⚠️ URL未設定</span>' : subHtml;
-        return `<button class="${cls.join(' ')}" onclick="${it.act}"><span class="ti">${it.ico}</span><span class="tt">${esc(it.t)}${warn}</span></button>`;
+        return `<button class="${cls.join(' ')}" onclick="${it.act}"><span class="ti">${it.ico}</span><span class="tt">${esc(it.t)}${subHtml}</span></button>`;
       }
       if(it.link){
-        const ready = !!LINKS[it.link];
-        if(!ready){
-          return `<span class="tile soon${it.wide?' wide':''}"><span class="ti">${it.ico}</span><span class="tt">${esc(it.t)}<span class="tsub">準備中</span></span></span>`;
+        if(!LINKS[it.link]){
+          return `<span class="tile soon${it.wide ? ' wide' : ''}"><span class="ti">${it.ico}</span><span class="tt">${esc(it.t)}<span class="tsub">準備中</span></span></span>`;
         }
         return `<button class="${cls.join(' ')}" onclick="openLink('${it.link}')"><span class="ti">${it.ico}</span><span class="tt">${esc(it.t)}${subHtml}</span></button>`;
       }
@@ -2145,18 +2263,26 @@ function renderSpine(){
   }).join('');
 }
 
-// ── もっと一覧の描画 ──
+function moreRow(it){
+  const body = `<span class="mi">${it.ico}</span><span class="mb"><span class="mt">${esc(it.t)}</span><span class="md">${esc(it.d)}</span></span>`;
+  if(it.act)  return `<button class="mrow" onclick="${it.act}">${body}<span class="mx">›</span></button>`;
+  if(typeof it.gal === 'number'){
+    if(!MEMBERS[it.gal] || !MEMBERS[it.gal].gallery) return `<span class="mrow soon">${body}<span class="mx">準備中</span></span>`;
+    return `<button class="mrow" onclick="openGallery(${it.gal})">${body}<span class="mx">↗</span></button>`;
+  }
+  if(it.link){
+    if(!LINKS[it.link]) return `<span class="mrow soon">${body}<span class="mx">準備中</span></span>`;
+    return `<button class="mrow" onclick="openLink('${it.link}')">${body}<span class="mx">↗</span></button>`;
+  }
+  return `<button class="mrow" onclick="go('${it.tab}')">${body}<span class="mx">›</span></button>`;
+}
 function renderMore(){
   const el = document.getElementById('moreList');
   if(!el) return;
-  el.innerHTML = MORE_ITEMS.map(it => {
-    const body = `<span class="mi">${it.ico}</span><span class="mb"><span class="mt">${esc(it.t)}</span><span class="md">${esc(it.d)}</span></span>`;
-    if(it.link){
-      if(!LINKS[it.link]) return `<span class="mrow soon">${body}<span class="mx">準備中</span></span>`;
-      return `<button class="mrow" onclick="openLink('${it.link}')">${body}<span class="mx">↗</span></button>`;
-    }
-    return `<button class="mrow" onclick="go('${it.tab}')">${body}<span class="mx">›</span></button>`;
-  }).join('');
+  el.innerHTML = moreGroups().map(g => `<div class="mgroup">
+      <div class="ctitle">${esc(g.title)}</div>
+      <div class="mlist">${g.items.map(moreRow).join('')}</div>
+    </div>`).join('');
   const f = document.getElementById('moreFoot');
   if(f) f.innerHTML = 'ナガヨシリンfishing club<br>ホーム画面に追加するとアプリとして使えます';
 }
