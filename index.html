@@ -181,6 +181,17 @@ select{
 .pw-err{font-size:11px;color:var(--warn);margin-bottom:8px;display:none}
 .pw-err.show{display:block}
 
+/* 📤 エクスポート */
+.admin-btn.ex{background:rgba(52,211,153,.15);border-color:rgba(52,211,153,.35);color:var(--fish);margin-right:6px}
+.admin-bar .adm-actions{display:flex;align-items:center}
+.ex-info{font-size:11px;color:var(--muted);line-height:1.75;text-align:left;background:rgba(255,255,255,.04);border:1px solid var(--rim);border-radius:9px;padding:9px 11px;margin-bottom:13px}
+.ex-info b{color:var(--text);font-weight:700}
+.ex-btn{display:block;width:100%;background:rgba(56,189,248,.13);border:1px solid rgba(56,189,248,.34);border-radius:10px;color:var(--sky);font-family:inherit;font-size:13px;font-weight:700;padding:12px 10px;margin-bottom:8px;cursor:pointer;text-align:center;-webkit-tap-highlight-color:transparent}
+.ex-btn.pri{background:var(--fish);border-color:transparent;color:var(--ink)}
+.ex-btn:active{transform:scale(.98)}
+.ex-btn .sub{display:block;font-size:10px;font-weight:400;opacity:.75;margin-top:2px}
+.ex-close{width:100%;background:transparent;border:1px solid var(--rim);border-radius:10px;color:var(--muted);font-family:inherit;font-size:12px;font-weight:700;padding:10px;cursor:pointer;margin-top:2px}
+
 /* 釣行レポートサブタブ */
 .blog-top-tabs{display:flex;gap:5px;margin-bottom:12px}
 .bttab{flex:1;background:rgba(26,50,82,.4);border:1px solid var(--rim);border-radius:9px;padding:9px 5px;font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .2s}
@@ -709,7 +720,10 @@ select{
   <!-- 管理者バー -->
   <div class="admin-bar">
     <span class="admin-status" id="adminStatus">👤 閲覧モード</span>
-    <button class="admin-btn" id="adminToggleBtn" onclick="blogAdminToggle()">管理者ログイン</button>
+    <span class="adm-actions">
+      <button class="admin-btn ex" id="exportBtn" onclick="blogExportOpen()" style="display:none">📤 出力</button>
+      <button class="admin-btn" id="adminToggleBtn" onclick="blogAdminToggle()">管理者ログイン</button>
+    </span>
   </div>
 
   <!-- 投稿フォーム（管理者のみ表示） -->
@@ -765,6 +779,19 @@ select{
       <button class="pw-cancel" onclick="blogClosePw()">キャンセル</button>
       <button class="pw-ok" onclick="blogCheckPw()">ログイン</button>
     </div>
+  </div>
+</div>
+
+<!-- エクスポートモーダル -->
+<div class="pw-modal" id="exModal" onclick="if(event.target===this)blogExportClose()">
+  <div class="pw-box" style="max-width:320px">
+    <div class="pw-title" style="color:var(--fish)">📤 下書きを書き出す</div>
+    <div class="pw-sub">Claude Code に渡す用データ</div>
+    <div class="ex-info" id="exInfo"></div>
+    <button class="ex-btn pri" onclick="blogExportShare()">📤 共有して送る<span class="sub">Drive・LINE・Gmail などへ（推奨）</span></button>
+    <button class="ex-btn" onclick="blogExportCopy()">📋 コピー<span class="sub">Markdown をクリップボードへ</span></button>
+    <button class="ex-btn" onclick="blogExportSave()">💾 端末に保存<span class="sub">.md ＋ 写真ごと .json バックアップ</span></button>
+    <button class="ex-close" onclick="blogExportClose()">閉じる</button>
   </div>
 </div>
 
@@ -1081,7 +1108,7 @@ async function scheduleNotification(delay, ico, title, body) {
 }
 
 // ─── ユーティリティ ───────────────────────────
-const Store=(()=>{const m={};const ts=fn=>{try{return fn(localStorage)}catch(e){}try{return fn(sessionStorage)}catch(e){}return null};return{get:k=>{const v=ts(s=>s.getItem(k));return v!==null?v:(m[k]??null)},set:(k,v)=>{m[k]=v;ts(s=>{s.setItem(k,v);return true})}};})();
+const Store=(()=>{const m={};const ts=fn=>{try{return fn(localStorage)}catch(e){}try{return fn(sessionStorage)}catch(e){}return null};return{get:k=>{const v=ts(s=>s.getItem(k));return v!==null?v:(m[k]??null)},set:(k,v)=>{m[k]=v;return ts(s=>{s.setItem(k,v);return true})===true}};})();
 
 function toast(msg,dur=2800){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');setTimeout(()=>el.classList.remove('on'),dur)}
 
@@ -1907,6 +1934,8 @@ function blogAdminToggle() {
     document.getElementById('adminStatus').textContent = '👤 閲覧モード';
     document.getElementById('adminToggleBtn').textContent = '管理者ログイン';
     document.getElementById('postForm').style.display = 'none';
+    const exb = document.getElementById('exportBtn'); if (exb) exb.style.display = 'none';
+    blogExportClose();
     toast('🔓 ログアウトしました');
   } else {
     document.getElementById('pwInp').value = '';
@@ -1923,6 +1952,7 @@ function blogCheckPw() {
     document.getElementById('adminStatus').textContent = '🔑 管理者モード';
     document.getElementById('adminToggleBtn').textContent = 'ログアウト';
     document.getElementById('postForm').style.display = 'block';
+    const exb = document.getElementById('exportBtn'); if (exb) exb.style.display = 'inline-block';
     blogClosePw();
     toast('✅ 管理者としてログインしました');
   } else {
@@ -1932,6 +1962,163 @@ function blogCheckPw() {
   }
 }
 document.getElementById('pwInp').addEventListener('keydown', e => { if (e.key === 'Enter') blogCheckPw(); });
+
+/* ══════════════════════════════════════════════
+   📤 下書きエクスポート（Claude Code 連携用）
+══════════════════════════════════════════════ */
+function exStamp(d) {
+  const p = n => String(n).padStart(2, '0');
+  return '' + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes());
+}
+function exData() {
+  const posts = Array.isArray(blogPosts) ? blogPosts.filter(Boolean) : [];
+  const sheet = (typeof sheetPosts !== 'undefined' && Array.isArray(sheetPosts)) ? sheetPosts : [];
+  return { posts, sheet, imgs: posts.filter(p => p.img).length };
+}
+function exUsage() {
+  let chars = 0;
+  try { chars = String(JSON.stringify(exData().posts) || '').length; } catch (e) { chars = 0; }
+  const mb = chars * 2 / 1024 / 1024;   // localStorage は UTF-16 換算
+  return { mb: mb, warn: mb > 3.5, label: (mb < 0.1 ? Math.round(mb * 1024) + 'KB' : mb.toFixed(2) + 'MB') + ' / 目安5MB' };
+}
+function blogExportOpen() {
+  const { posts, sheet, imgs } = exData();
+  if (!posts.length && !sheet.length) { toast('書き出せるデータがまだありません 🐟'); return; }
+  const rep = posts.filter(p => p.type === 'report').length;
+  const use = exUsage();
+  const info = document.getElementById('exInfo');
+  if (info) {
+    info.innerHTML =
+      '📝 下書き投稿：<b>' + posts.length + '件</b>（🐟釣果 ' + rep + ' / 📢お知らせ ' + (posts.length - rep) + '）<br>' +
+      '📷 写真つき：<b>' + imgs + '枚</b><br>' +
+      '📊 シート釣果：<b>' + sheet.length + '件</b><br>' +
+      '💾 端末使用量：<b>' + use.label + '</b>' +
+      (use.warn ? ' <span style="color:var(--warn)">⚠️上限が近いです</span>' : '') +
+      (sheet.length ? '' : '<br><span style="color:var(--sun)">※未読込み。上の「🔄 更新」を押すと釣果データも一緒に出せます</span>');
+  }
+  const m = document.getElementById('exModal'); if (m) m.classList.add('on');
+}
+function blogExportClose() { const m = document.getElementById('exModal'); if (m) m.classList.remove('on'); }
+
+function exMD() {
+  const { posts, sheet } = exData();
+  const L = [];
+  L.push('# ナガヨシリンfishing club ブログ下書き');
+  L.push('');
+  L.push('- 書き出し日時：' + new Date().toLocaleString('ja-JP'));
+  L.push('- 下書き投稿：' + posts.length + '件');
+  L.push('- シート釣果：' + sheet.length + '件');
+  L.push('');
+  L.push('> **Claude Code への依頼例**');
+  L.push('> このメモと釣果データをもとに、`nagayoshirin_blog-6.html` のテンプレート');
+  L.push('> （ダークネイビー×シアン／8セクション構成）で釣行ブログを生成してください。');
+  L.push('> メンバーは ガキオヤRin・ナナヌマ会長・勇者ワカグリ の3名です。');
+  L.push('');
+  L.push('---');
+  L.push('');
+  L.push('## 📝 現場メモ（古い順／時系列）');
+  if (!posts.length) { L.push(''); L.push('（下書き投稿なし）'); }
+  const ordered = posts.slice().sort((a, b) => {
+    const ai = (a && typeof a.id === 'number') ? a.id : 0;
+    const bi = (b && typeof b.id === 'number') ? b.id : 0;
+    return ai - bi;
+  });
+  ordered.forEach((p, i) => {
+    L.push('');
+    L.push('### ' + (i+1) + '. ' + (p.type === 'report' ? '🐟 釣果報告' : '📢 お知らせ') + ' — ' + (p.title || '(無題)'));
+    L.push('');
+    L.push('- 日時：' + (p.date || '-'));
+    if (p.fish && p.fish.length) L.push('- 魚種：' + p.fish.join(' / '));
+    if (p.img) L.push('- 写真：あり（.json バックアップ側に格納）');
+    L.push('');
+    L.push(String(p.body || '').trim() || '（本文なし）');
+  });
+  if (sheet.length) {
+    const keys = Object.keys(sheet[0]).filter(k => k !== '_sheet' && k !== '_idx');
+    const cell = v => String(v == null ? '' : v).replace(/\|/g, '\\|').replace(/\r?\n/g, '<br>');
+    L.push(''); L.push('---'); L.push(''); L.push('## 📊 釣果データ（スプレッドシート）'); L.push('');
+    if (keys.length) {
+      L.push('| ' + keys.map(cell).join(' | ') + ' |');
+      L.push('|' + keys.map(() => ' --- ').join('|') + '|');
+      sheet.forEach(r => L.push('| ' + keys.map(k => cell(r[k])).join(' | ') + ' |'));
+    }
+  }
+  L.push(''); L.push('---'); L.push('');
+  L.push('_ナガヨシリンfishing club / 自動書き出し_');
+  return L.join('\n');
+}
+function exJSON() {
+  const { posts, sheet } = exData();
+  return JSON.stringify({
+    meta: { app: 'ナガヨシリンfishing club', version: 1, exportedAt: new Date().toISOString(),
+            postCount: posts.length, sheetCount: sheet.length },
+    posts: posts, sheet: sheet
+  }, null, 2);
+}
+function exDownload(name, content, mime) {
+  try {
+    const blob = new Blob([content], { type: mime + ';charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.rel = 'noopener'; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { try { document.body.removeChild(a); } catch(e){} URL.revokeObjectURL(url); }, 1500);
+    return true;
+  } catch (e) { console.error('exDownload:', e); return false; }
+}
+async function blogExportCopy() {
+  const md = exMD();
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(md);
+      toast('📋 コピーしました ✓'); blogExportClose(); return;
+    }
+    throw new Error('clipboard unavailable');
+  } catch (e) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = md; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { ta.setSelectionRange(0, md.length); } catch(e3){}
+      const ok = document.execCommand && document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (ok) { toast('📋 コピーしました ✓'); blogExportClose(); return; }
+    } catch (e2) { console.error('copy fallback:', e2); }
+    toast('コピー失敗。「💾 端末に保存」をお試しください');
+  }
+}
+async function blogExportShare() {
+  const md = exMD();
+  const fname = 'nagayoshirin_blog_' + exStamp(new Date()) + '.md';
+  try {
+    if (navigator.canShare && typeof File !== 'undefined') {
+      const file = new File([md], fname, { type: 'text/markdown' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'ブログ下書き' });
+        blogExportClose(); return;
+      }
+    }
+    if (navigator.share) { await navigator.share({ title: 'ブログ下書き', text: md }); blogExportClose(); return; }
+    throw new Error('share unavailable');
+  } catch (e) {
+    if (e && e.name === 'AbortError') return;
+    if (exDownload(fname, md, 'text/markdown')) { toast('💾 共有が使えないため端末に保存しました'); blogExportClose(); }
+    else toast('書き出しに失敗しました');
+  }
+}
+function blogExportSave() {
+  const st = exStamp(new Date());
+  const { imgs } = exData();
+  const ok1 = exDownload('nagayoshirin_blog_' + st + '.md', exMD(), 'text/markdown');
+  setTimeout(() => {
+    const ok2 = exDownload('nagayoshirin_backup_' + st + '.json', exJSON(), 'application/json');
+    if (ok1 && ok2) toast(imgs ? '💾 .md と .json（写真込み）を保存しました ✓' : '💾 .md と .json を保存しました ✓');
+    else toast('保存に失敗しました');
+  }, 900);
+  if (ok1) { toast('💾 保存中…「複数ファイル」の確認が出たら許可してください'); blogExportClose(); }
+  else toast('保存に失敗しました');
+}
 
 function blogSetType(type, btn) {
   blogCurrentType = type;
@@ -1955,14 +2142,49 @@ function blogRenderFishPreview() {
 }
 function blogRemoveFish(i) { blogFishTags.splice(i, 1); blogRenderFishPreview(); }
 
+/* 写真は 1280px / JPEG80% に自動縮小してから保持（localStorage 容量対策） */
+function exShrinkImage(dataUrl, maxPx, q) {
+  return new Promise((resolve, reject) => {
+    let done = false;
+    const settle = (fn, v) => { if (done) return; done = true; clearTimeout(tm); fn(v); };
+    const tm = setTimeout(() => settle(reject, new Error('timeout')), 6000);
+    try {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const wd = img.naturalWidth || img.width, ht = img.naturalHeight || img.height;
+          if (!wd || !ht) return settle(reject, new Error('no size'));
+          const sc = Math.min(1, maxPx / Math.max(wd, ht));
+          if (sc >= 1 && dataUrl.length < 400000) return settle(resolve, dataUrl);
+          const cv = document.createElement('canvas');
+          cv.width = Math.max(1, Math.round(wd * sc));
+          cv.height = Math.max(1, Math.round(ht * sc));
+          const cx = cv.getContext && cv.getContext('2d');
+          if (!cx) return settle(reject, new Error('no ctx'));
+          cx.drawImage(img, 0, 0, cv.width, cv.height);
+          const out = cv.toDataURL('image/jpeg', q);
+          settle(resolve, (out && out.length > 100 && out.length < dataUrl.length) ? out : dataUrl);
+        } catch (err) { settle(reject, err); }
+      };
+      img.onerror = () => settle(reject, new Error('decode failed'));
+      img.src = dataUrl;
+    } catch (err) { settle(reject, err); }
+  });
+}
 function blogPreviewImg(input) {
-  const file = input.files[0];
+  const file = input.files && input.files[0];
   if (!file) return;
+  const prev = document.getElementById('imgPreview');
   const reader = new FileReader();
+  reader.onerror = () => toast('⚠️ 写真の読み込みに失敗しました');
   reader.onload = e => {
-    const prev = document.getElementById('imgPreview');
-    prev.src = e.target.result;
-    prev.classList.add('show');
+    const raw = e.target.result;
+    const show = src => {
+      prev.src = src; prev.classList.add('show');
+      const kb = Math.round(String(src).length * 0.75 / 1024);
+      toast('📷 写真を追加しました（約' + kb.toLocaleString() + 'KB）' + (kb > 900 ? ' ⚠️容量注意' : ''));
+    };
+    exShrinkImage(raw, 1280, 0.8).then(show).catch(() => show(raw));
   };
   reader.readAsDataURL(file);
 }
@@ -1994,7 +2216,9 @@ function blogSubmit() {
     blogPosts.unshift(post);
     toast('✅ 投稿しました！');
   }
-  Store.set('blogPosts', JSON.stringify(blogPosts));
+  if (Store.set('blogPosts', JSON.stringify(blogPosts)) === false) {
+    toast('⚠️ 端末に保存できませんでした（容量オーバーの可能性）。すぐ「📤 出力」でバックアップしてください', 6000);
+  }
   // フォームリセット
   document.getElementById('postTitle').value = '';
   document.getElementById('postBody').value = '';
