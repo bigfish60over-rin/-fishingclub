@@ -2330,7 +2330,8 @@ const LINKS = {
   youtube:  '',                                                             // 📺 YouTube（できたら貼る）
   suno:     '',                                                             // ✨ Suno歌詞メーカー（汎用版を繋ぐまで準備中）
   tide:     'https://tide736.net/',                                         // 🌊 潮汐・天気（実測値）
-  fishid:   'https://www.google.com/imghp'                                  // 🐠 魚種を調べる
+  fishid:   'https://www.google.com/imghp',                                 // 🐠 魚種を調べる
+  minato:   'https://bigfish60over-rin.github.io/minato-densetsu/'          // 🎮 港伝説（釣りRPG）
 };
 
 // 🏆 ホームに出すシーズン表示（大会が変わったらここだけ書き換える）
@@ -2402,6 +2403,7 @@ function moreGroups(){
         { ico:'🌊', t:'潮汐・天気',       d:'tide736の実測データ', link:'tide' },
         { ico:'🐠', t:'魚種を調べる',     d:'Google画像検索で照合', link:'fishid' },
         { ico:'✍️', t:'Suno歌詞メーカー', d:'釣り歌詞を自動生成', link:'suno' },
+        { ico:'🎮', t:'港伝説',           d:'3人で海を鎮める釣りRPG', link:'minato' },
         { ico:'👤', t:'報告する人',       d: me ? me.label + ' として記憶中' : 'まだ選ばれていません', act:'openWho()' }
     ]},
     { title:'🎵 メディア', items:[
