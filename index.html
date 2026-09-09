@@ -2342,7 +2342,7 @@ function blogRenderList() {
 //    タップできなくなる（リンク切れが絶対に出ない仕組み）
 // ══════════════════════════════════════════════
 const LINKS = {
-  player:   'https://bigfish60over-rin.github.io/gakioyaji-player/',        // 🎵 PRO PLAYER（55曲）
+  player:   'https://bigfish60over-rin.github.io/gakioyaji-player/',        // 🎵 PRO PLAYER（クラブ共有曲）
   anthems:  'https://bigfish60over-rin.github.io/-fishingclub/anthems/',    // 🎺 公式サウンドトラック
   tide:     'https://tide736.net/',                                         // 🌊 潮汐・天気（実測値）
   fishid:   'https://www.google.com/imghp',                                 // 🐠 魚種を調べる
@@ -2401,7 +2401,7 @@ const STAGES = [
     { ico:'📝', t:'ブログ・釣行記', tab:'blog', wide:true }
   ]},
   { lbl:'いつでも', sub:'クラブのメディア', items:[
-    { ico:'🎵', t:'PRO PLAYER', link:'player', wide:true, sub:'55曲・別タブで再生' }
+    { ico:'🎵', t:'PRO PLAYER', link:'player', wide:true, sub:'別タブで再生' }
   ]}
 ];
 
@@ -2419,7 +2419,7 @@ function moreGroups(){
         { ico:'👤', t:'報告する人',       d: me ? me.label + ' として記憶中' : 'まだ選ばれていません', act:'openWho()' }
     ]},
     { title:'🎵 メディア', items:[
-        { ico:'🎵', t:'PRO PLAYER',            d:'55曲・別タブで再生', link:'player' },
+        { ico:'🎵', t:'PRO PLAYER',            d:'別タブで再生', link:'player' },
         { ico:'🎺', t:'公式サウンドトラック',   d:'クラブのアンセム集', link:'anthems' }
     ]}
   ];
