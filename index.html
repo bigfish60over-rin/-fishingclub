@@ -2344,8 +2344,6 @@ function blogRenderList() {
 const LINKS = {
   player:   'https://bigfish60over-rin.github.io/gakioyaji-player/',        // 🎵 PRO PLAYER（55曲）
   anthems:  'https://bigfish60over-rin.github.io/-fishingclub/anthems/',    // 🎺 公式サウンドトラック
-  youtube:  '',                                                             // 📺 YouTube（できたら貼る）
-  suno:     '',                                                             // ✨ Suno歌詞メーカー（汎用版を繋ぐまで準備中）
   tide:     'https://tide736.net/',                                         // 🌊 潮汐・天気（実測値）
   fishid:   'https://www.google.com/imghp',                                 // 🐠 魚種を調べる
   minato:   'https://bigfish60over-rin.github.io/minato-densetsu/'          // 🎮 港伝説（釣りRPG）
@@ -2403,9 +2401,7 @@ const STAGES = [
     { ico:'📝', t:'ブログ・釣行記', tab:'blog', wide:true }
   ]},
   { lbl:'いつでも', sub:'クラブのメディア', items:[
-    { ico:'🎵', t:'PRO PLAYER', link:'player', wide:true, sub:'55曲・別タブで再生' },
-    { ico:'📺', t:'YouTube', link:'youtube' },
-    { ico:'✍️', t:'Suno歌詞', link:'suno' }
+    { ico:'🎵', t:'PRO PLAYER', link:'player', wide:true, sub:'55曲・別タブで再生' }
   ]}
 ];
 
@@ -2424,8 +2420,7 @@ function moreGroups(){
     ]},
     { title:'🎵 メディア', items:[
         { ico:'🎵', t:'PRO PLAYER',            d:'55曲・別タブで再生', link:'player' },
-        { ico:'🎺', t:'公式サウンドトラック',   d:'クラブのアンセム集', link:'anthems' },
-        { ico:'📺', t:'YouTube',               d:'釣行動画チャンネル', link:'youtube' }
+        { ico:'🎺', t:'公式サウンドトラック',   d:'クラブのアンセム集', link:'anthems' }
     ]}
   ];
 }
