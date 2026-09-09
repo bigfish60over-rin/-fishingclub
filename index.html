@@ -632,6 +632,23 @@ select{
 ══════════════════════════════════════ -->
 <button class="fab" id="fabReport" onclick="openReport()" aria-label="釣果を報告する"><i>🎣</i>報告</button>
 
+<!-- 港伝説：ホーム画面に置くのを助けるシート（Rin 依頼 2026-09-09） -->
+<div class="sheet" id="minatoSheet" role="dialog" aria-modal="true" aria-label="港伝説を開く">
+  <div class="sheet-bg" onclick="closeMinato()"></div>
+  <div class="sheet-card">
+    <div class="sheet-t">🎮 港伝説</div>
+    <div class="sheet-s">ホーム画面に置くと、曲が鳴って画面も広くなる<br>入れかたは下のとおり</div>
+    <button class="who-btn" onclick="openMinatoGame()">▶ そのまま開く</button>
+    <button class="who-btn" onclick="copyMinato()">📋 URLをコピー</button>
+    <div class="sheet-s" style="text-align:left;margin-top:10px">
+      ① コピーしたURLを <b>Chrome</b> に貼って開く<br>
+      ② 右上の <b>⋮</b> を押す<br>
+      ③ <b>「ホーム画面に追加」</b>（または「アプリをインストール」）を押す
+    </div>
+    <button class="sheet-x" onclick="closeMinato()">閉じる</button>
+  </div>
+</div>
+
 <!-- 「誰が報告する？」シート -->
 <div class="sheet" id="whoSheet" role="dialog" aria-modal="true" aria-label="報告する人を選ぶ">
   <div class="sheet-bg" onclick="closeWho()"></div>
@@ -2402,8 +2419,7 @@ function moreGroups(){
         { ico:'🚗', t:'割り勘ドライブ',   d:'ガソリン代・高速代を一発計算', tab:'car' },
         { ico:'🌊', t:'潮汐・天気',       d:'tide736の実測データ', link:'tide' },
         { ico:'🐠', t:'魚種を調べる',     d:'Google画像検索で照合', link:'fishid' },
-        { ico:'✍️', t:'Suno歌詞メーカー', d:'釣り歌詞を自動生成', link:'suno' },
-        { ico:'🎮', t:'港伝説',           d:'3人で海を鎮める釣りRPG', link:'minato' },
+        { ico:'🎮', t:'港伝説',           d:'3人で海を鎮める釣りRPG', act:'openMinato()' },
         { ico:'👤', t:'報告する人',       d: me ? me.label + ' として記憶中' : 'まだ選ばれていません', act:'openWho()' }
     ]},
     { title:'🎵 メディア', items:[
@@ -2445,6 +2461,39 @@ function openWho(){
   }
   const sh = document.getElementById('whoSheet');
   if(sh) sh.classList.add('on');
+}
+// ── 港伝説（Rin 依頼 2026-09-09）──
+// クラブアプリから開くと「アプリをインストール」が出ない、という実機報告への答え。
+// 押す回数を増やさないよう「そのまま開く」を先頭に置き、コピーと入れかたを同じ札に並べる。
+function openMinato(){
+  const sh = document.getElementById('minatoSheet');
+  if(sh) sh.classList.add('on');
+}
+function closeMinato(){
+  const sh = document.getElementById('minatoSheet');
+  if(sh) sh.classList.remove('on');
+}
+function openMinatoGame(){
+  closeMinato();
+  openLink('minato');
+}
+// コピーできたかを必ず知らせる。古い端末では選択に倒す（黙って失敗させない）
+function copyMinato(){
+  const url = LINKS.minato;
+  if(!url){ toast('準備中です'); return; }
+  const done = () => toast('📋 URLをコピーしました。Chrome に貼ってください');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done).catch(() => copyMinatoFallback(url));
+  } else { copyMinatoFallback(url); }
+}
+function copyMinatoFallback(url){
+  const ta = document.createElement('textarea');
+  ta.value = url; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.top='-1000px';
+  document.body.appendChild(ta); ta.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch(e) { ok = false; }
+  document.body.removeChild(ta);
+  toast(ok ? '📋 URLをコピーしました。Chrome に貼ってください' : url);
 }
 function closeWho(){
   const sh = document.getElementById('whoSheet');
