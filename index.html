@@ -1310,7 +1310,7 @@ function getDiscount(date){const h=date.getHours(),day=date.getDay();const isWE=
 function updateClock(){const now=new Date();const hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0');document.getElementById('liveClk').textContent=`${hh}:${mm}`;const d=getDiscount(now);document.getElementById('liveDisc').textContent=d.label;if(!manualOverride){autoDiscount=currentDiscount=d.rate;const pill=document.getElementById('discPill');document.getElementById('discIcon').textContent=d.rate>0?'✅':'➖';document.getElementById('discText').textContent=d.label;pill.style.cssText=`color:${d.color};background:${d.rate>0?'rgba(52,211,153,.1)':'rgba(100,131,158,.08)'};border-color:${d.rate>0?'rgba(52,211,153,.22)':'rgba(56,189,248,.15)'}`}}
 setInterval(updateClock,5000);updateClock();
 
-// ══ IC検出（精度向上版：220箇所以上、道路名付き、候補複数表示） ══
+// ══ IC検出（精度向上版：道路名付き、候補複数表示） ══
 // 凡例: n=IC名, r=道路名, la=緯度, lo=経度
 const IC_DATA=[
   // ━━ 東北自動車道 ━━
@@ -2350,7 +2350,7 @@ const LINKS = {
 };
 
 // 🏆 ホームに出すシーズン表示（大会が変わったらここだけ書き換える）
-const SEASON = '🏆 第2回大会 開催中';
+const SEASON = '🏆 シーズン2 第1回 開催中';
 
 // ══════════════════════════════════════════════
 // 👤 メンバー定義
