@@ -649,6 +649,24 @@ select{
   </div>
 </div>
 
+<!-- データ釣りRin：港伝説と同じ形のシート（Rin 決定 2026-10-11） -->
+<div class="sheet" id="tsuririnSheet" role="dialog" aria-modal="true" aria-label="データ釣りRinを開く">
+  <div class="sheet-bg" onclick="closeTsuriRin()"></div>
+  <div class="sheet-card">
+    <div class="sheet-t">🎣 データ釣りRin</div>
+    <div class="sheet-s">ホーム画面に置いておくと、すぐに開ける<br>入れかたは下のとおり</div>
+    <button class="who-btn" onclick="openTsuriRinGame()">▶ そのまま開く</button>
+    <button class="who-btn" onclick="copyTsuriRin()">📋 URLをコピー</button>
+    <div class="sheet-s" style="text-align:left;margin-top:10px">
+      ① コピーしたURLを <b>Chrome</b> に貼って開く<br>
+      ② 右上の <b>⋮</b> を押す<br>
+      ③ <b>「ホーム画面に追加」</b>を押す
+    </div>
+    <div class="sheet-s" style="text-align:left;margin-top:8px">記録はスマホの中に保存されます。機種変更の前は、ゲームの「タックル」→「記録を書き出す」で保存してください</div>
+    <button class="sheet-x" onclick="closeTsuriRin()">閉じる</button>
+  </div>
+</div>
+
 <!-- 「誰が報告する？」シート -->
 <div class="sheet" id="whoSheet" role="dialog" aria-modal="true" aria-label="報告する人を選ぶ">
   <div class="sheet-bg" onclick="closeWho()"></div>
@@ -2346,7 +2364,8 @@ const LINKS = {
   anthems:  'https://bigfish60over-rin.github.io/-fishingclub/anthems/',    // 🎺 公式サウンドトラック
   tide:     'https://tide736.net/',                                         // 🌊 潮汐・天気（実測値）
   fishid:   'https://www.google.com/imghp',                                 // 🐠 魚種を調べる
-  minato:   'https://bigfish60over-rin.github.io/minato-densetsu/'          // 🎮 港伝説（釣りRPG）
+  minato:   'https://bigfish60over-rin.github.io/minato-densetsu/',         // 🎮 港伝説（釣りRPG）
+  tsuririn: 'https://bigfish60over-rin.github.io/data-tsuri-rin/'           // 🎣 データ釣りRin（釣りゲーム）
 };
 
 // 🏆 ホームに出すシーズン表示（大会が変わったらここだけ書き換える）
@@ -2415,12 +2434,13 @@ function moreGroups(){
         { ico:'🚗', t:'割り勘ドライブ',   d:'ガソリン代・高速代を一発計算', tab:'car' },
         { ico:'🌊', t:'潮汐・天気',       d:'tide736の実測データ', link:'tide' },
         { ico:'🐠', t:'魚種を調べる',     d:'Google画像検索で照合', link:'fishid' },
-        { ico:'🎮', t:'港伝説',           d:'3人で海を鎮める釣りRPG', act:'openMinato()' },
         { ico:'👤', t:'報告する人',       d: me ? me.label + ' として記憶中' : 'まだ選ばれていません', act:'openWho()' }
     ]},
     { title:'🎵 メディア', items:[
         { ico:'🎵', t:'PRO PLAYER',            d:'別タブで再生', link:'player' },
-        { ico:'🎺', t:'公式サウンドトラック',   d:'クラブのアンセム集', link:'anthems' }
+        { ico:'🎺', t:'公式サウンドトラック',   d:'クラブのアンセム集', link:'anthems' },
+        { ico:'🎮', t:'港伝説',                 d:'3人で海を鎮める釣りRPG', act:'openMinato()' },
+        { ico:'🎣', t:'データ釣りRin',          d:'魚影を探す釣りゲーム', act:'openTsuriRin()' }
     ]}
   ];
 }
@@ -2489,6 +2509,27 @@ function copyMinatoFallback(url){
   try { ok = document.execCommand('copy'); } catch(e) { ok = false; }
   document.body.removeChild(ta);
   toast(ok ? '📋 URLをコピーしました。Chrome に貼ってください' : url);
+}
+// ── データ釣りRin（Rin 決定 2026-10-11）：港伝説と同じ形 ──
+function openTsuriRin(){
+  const sh = document.getElementById('tsuririnSheet');
+  if(sh) sh.classList.add('on');
+}
+function closeTsuriRin(){
+  const sh = document.getElementById('tsuririnSheet');
+  if(sh) sh.classList.remove('on');
+}
+function openTsuriRinGame(){
+  closeTsuriRin();
+  openLink('tsuririn');
+}
+function copyTsuriRin(){
+  const url = LINKS.tsuririn;
+  if(!url){ toast('準備中です'); return; }
+  const done = () => toast('📋 URLをコピーしました。Chrome に貼ってください');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done).catch(() => copyMinatoFallback(url));
+  } else { copyMinatoFallback(url); }
 }
 function closeWho(){
   const sh = document.getElementById('whoSheet');
